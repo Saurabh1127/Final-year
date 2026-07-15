@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
@@ -17,34 +17,35 @@ const MeetingRoom = ({ roomCode }) => {
   const [error, setError] = useState(null);
   const [joinedRoom, setJoinedRoom] = useState(false);
   const [isEchoTestActive, setIsEchoTestActive] = useState(false);
-  const echoAudioRef = React.useRef(null);
+  const echoAudioRef = useRef(null);
+  const joinedRef = useRef(false); // Prevents double-join
 
   // Audio/Video capture
   const { localStream, startCapture, stopCapture, isMuted, toggleMute, isVideoOff, toggleVideo, error: mediaError } = useAudioCapture();
   
-  // Apply local stream to echo test audio element when activated
-  React.useEffect(() => {
+  // WebRTC — only pass localStream once it's ready
+  const { remoteStreams, removePeerConnection } = useWebRTC(localStream, user?.id);
+
+  // Echo test
+  useEffect(() => {
     if (echoAudioRef.current && localStream && isEchoTestActive) {
       echoAudioRef.current.srcObject = localStream;
     }
+    if (echoAudioRef.current && !isEchoTestActive) {
+      echoAudioRef.current.srcObject = null;
+    }
   }, [localStream, isEchoTestActive]);
 
-  // WebRTC
-  const { remoteStreams, removePeerConnection } = useWebRTC(localStream, user?.id);
-
-  // Fetch meeting details and start media capture on mount
+  // 1. Fetch meeting data + start media capture (runs once on mount)
   useEffect(() => {
     let mounted = true;
-    
+
     api.get(`/meetings/${roomCode}`)
-      .then(res => {
-        if (mounted) setMeeting(res.data);
-      })
+      .then(res => { if (mounted) setMeeting(res.data); })
       .catch(err => {
         if (mounted) setError(err.response?.data?.message || 'Failed to join meeting.');
       });
 
-    // Start capture with video enabled by default
     startCapture(true);
 
     return () => {
@@ -53,46 +54,52 @@ const MeetingRoom = ({ roomCode }) => {
     };
   }, [roomCode, startCapture, stopCapture]);
 
-  // Join socket room only AFTER we have the local media stream and meeting data
+  // 2. Join the socket room ONLY after we have meeting data + local media
   useEffect(() => {
-    if (meeting && socket && connected && localStream && !joinedRoom) {
-      socket.emit('join-meeting', {
-        roomCode,
-        userId: user.id,
-        displayName: user.name,
-        targetLanguage: user.preferredLanguage || 'en',
-        isMuted,
-        isVideoOff
-      });
-      setJoinedRoom(true);
-    }
-  }, [meeting, socket, connected, localStream, joinedRoom, roomCode, user, isMuted, isVideoOff]);
+    if (!meeting || !socket || !connected || !localStream || joinedRef.current) return;
 
-  // Leave meeting on unmount
+    console.log('🚀 [Meeting] Joining room:', roomCode);
+    socket.emit('join-meeting', {
+      roomCode,
+      userId: user.id,
+      displayName: user.name,
+      targetLanguage: user.preferredLanguage || 'en',
+      isMuted,
+      isVideoOff
+    });
+    joinedRef.current = true;
+    setJoinedRoom(true);
+  }, [meeting, socket, connected, localStream, roomCode, user, isMuted, isVideoOff]);
+
+  // 3. Leave room on unmount
   useEffect(() => {
     return () => {
-      if (socket && joinedRoom) {
+      if (socket && joinedRef.current) {
+        console.log('👋 [Meeting] Leaving room:', roomCode);
         socket.emit('leave-meeting', { roomCode, userId: user?.id });
+        joinedRef.current = false;
       }
     };
-  }, [socket, joinedRoom, roomCode, user?.id]);
+  }, [socket, roomCode, user?.id]);
 
-  // Broadcast media state changes to others
+  // 4. Broadcast mute/video changes to other participants
   useEffect(() => {
-    if (socket && connected && meeting && joinedRoom) {
+    if (socket && connected && joinedRef.current) {
       socket.emit('toggle-media', { roomCode, userId: user?.id, isMuted, isVideoOff });
     }
-  }, [isMuted, isVideoOff, socket, connected, roomCode, user, meeting, joinedRoom]);
+  }, [isMuted, isVideoOff, socket, connected, roomCode, user]);
 
-  // Socket event listeners for participant changes
+  // 5. Socket event listeners
   useEffect(() => {
     if (!socket) return;
 
     const handleMeetingJoined = ({ participants: initialParticipants }) => {
+      console.log('✅ [Meeting] Joined, existing participants:', initialParticipants.length);
       setParticipants(initialParticipants.filter(p => p.userId !== user.id));
     };
 
     const handleParticipantJoined = (newParticipant) => {
+      console.log('👤 [Meeting] Participant joined:', newParticipant.displayName);
       setParticipants(prev => {
         const filtered = prev.filter(p => p.userId !== newParticipant.userId);
         return [...filtered, newParticipant];
@@ -100,17 +107,15 @@ const MeetingRoom = ({ roomCode }) => {
     };
 
     const handleParticipantLeft = ({ userId: leftUserId }) => {
+      console.log('👤 [Meeting] Participant left:', leftUserId);
       setParticipants(prev => prev.filter(p => p.userId !== leftUserId));
       removePeerConnection(leftUserId);
     };
 
-    const handleMediaChanged = ({ userId: changedUserId, isMuted: changedMuted, isVideoOff: changedVideoOff }) => {
-      setParticipants(prev => prev.map(p => {
-        if (p.userId === changedUserId) {
-          return { ...p, isMuted: changedMuted, isVideoOff: changedVideoOff };
-        }
-        return p;
-      }));
+    const handleMediaChanged = ({ userId: changedUserId, isMuted: m, isVideoOff: v }) => {
+      setParticipants(prev => prev.map(p =>
+        p.userId === changedUserId ? { ...p, isMuted: m, isVideoOff: v } : p
+      ));
     };
 
     socket.on('meeting-joined', handleMeetingJoined);
@@ -182,7 +187,7 @@ const MeetingRoom = ({ roomCode }) => {
         isVideoOff={isVideoOff}
         toggleVideo={toggleVideo}
         isEchoTestActive={isEchoTestActive}
-        toggleEchoTest={() => setIsEchoTestActive(!isEchoTestActive)}
+        toggleEchoTest={() => setIsEchoTestActive(prev => !prev)}
         onLeave={handleLeave} 
       />
     </div>

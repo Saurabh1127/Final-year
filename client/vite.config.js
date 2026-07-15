@@ -11,12 +11,22 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
-        changeOrigin: true
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
+            console.log('[Proxy] API proxy error (backend may be restarting):', err.code);
+          });
+        }
       },
       '/socket.io': {
         target: 'http://localhost:5000',
         ws: true,
-        changeOrigin: true
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
+            console.log('[Proxy] Socket proxy error (backend may be restarting):', err.code);
+          });
+        }
       }
     }
   }
