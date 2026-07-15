@@ -1,0 +1,71 @@
+const mongoose = require('mongoose');
+const crypto = require('crypto');
+
+const meetingSchema = new mongoose.Schema(
+  {
+    roomCode: {
+      type: String,
+      unique: true,
+      required: true,
+      index: true,
+    },
+    title: {
+      type: String,
+      default: 'Untitled Meeting',
+      trim: true,
+      maxlength: 100,
+    },
+    hostId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ['waiting', 'active', 'ended'],
+      default: 'waiting',
+    },
+    participants: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+        },
+        displayName: String,
+        targetLanguage: {
+          type: String,
+          default: 'en',
+        },
+        socketId: String,
+        joinedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        isActive: {
+          type: Boolean,
+          default: true,
+        },
+      },
+    ],
+    endedAt: Date,
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Generate a unique room code (e.g., "abc-defg-hij")
+meetingSchema.statics.generateRoomCode = function () {
+  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  const seg1 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const seg2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const seg3 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return `${seg1}-${seg2}-${seg3}`;
+};
+
+// Get active participants
+meetingSchema.methods.getActiveParticipants = function () {
+  return this.participants.filter((p) => p.isActive);
+};
+
+module.exports = mongoose.model('Meeting', meetingSchema);

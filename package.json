@@ -1,0 +1,16 @@
+{
+  "name": "linguameet",
+  "version": "1.0.0",
+  "description": "Multilingual meeting platform with real-time translated subtitles",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names \"CLIENT,SERVER,AI\" --prefix-colors \"cyan,yellow,magenta\" \"npm run dev:client\" \"npm run dev:server\" \"npm run dev:ai\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "dev:ai": "cd ai-service && .\\venv\\Scripts\\python -m uvicorn app.main:app --reload --port 8000",
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
