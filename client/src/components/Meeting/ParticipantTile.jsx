@@ -2,15 +2,24 @@ import React, { useEffect, useRef } from 'react';
 import { useAudioVolume } from '../../hooks/useAudioVolume';
 
 const ParticipantTile = ({ participant, stream, isLocal }) => {
-  const mediaRef = useRef(null);
+  const videoRef = useRef(null);
+  const audioRef = useRef(null);
   
   // Use the audio volume hook to detect speaking (only if not muted)
   const isSpeaking = useAudioVolume(stream);
   const actuallySpeaking = isSpeaking && !participant.isMuted;
 
+  // Attach stream to the video element
   useEffect(() => {
-    if (mediaRef.current && stream) {
-      mediaRef.current.srcObject = stream;
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+
+  // Attach stream to the audio element (separate ref so both video and audio work independently)
+  useEffect(() => {
+    if (audioRef.current && stream) {
+      audioRef.current.srcObject = stream;
     }
   }, [stream]);
 
@@ -20,7 +29,7 @@ const ParticipantTile = ({ participant, stream, isLocal }) => {
     <div className={`participant-tile ${isLocal ? 'local-tile' : ''} ${actuallySpeaking ? 'speaking' : ''}`}>
       {hasVideo ? (
         <video 
-          ref={mediaRef} 
+          ref={videoRef} 
           autoPlay 
           playsInline 
           muted={isLocal} 
@@ -34,9 +43,11 @@ const ParticipantTile = ({ participant, stream, isLocal }) => {
         </div>
       )}
       
-      {/* Fallback audio element if video track is not present, though video tag handles both */}
-      {!hasVideo && (
-        <audio ref={mediaRef} autoPlay playsInline muted={isLocal} />
+      {/* Always render a hidden audio element for remote participants to ensure audio plays
+          even when video is off. The video tag also plays audio, so this is only needed 
+          when video is not rendering. */}
+      {!hasVideo && !isLocal && (
+        <audio ref={audioRef} autoPlay playsInline style={{ display: 'none' }} />
       )}
 
       <div className="participant-info">
