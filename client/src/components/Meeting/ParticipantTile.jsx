@@ -1,25 +1,24 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback } from 'react';
 import { useAudioVolume } from '../../hooks/useAudioVolume';
 
 const ParticipantTile = ({ participant, stream, isLocal }) => {
-  const videoRef = useRef(null);
-  const audioRef = useRef(null);
-  
   // Use the audio volume hook to detect speaking (only if not muted)
   const isSpeaking = useAudioVolume(stream);
   const actuallySpeaking = isSpeaking && !participant.isMuted;
 
-  // Attach stream to the video element
-  useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
+  // Use a callback ref for the video element.
+  // This guarantees that when React mounts the <video> element (after it was hidden),
+  // the stream is instantly attached to it.
+  const setVideoRef = useCallback((node) => {
+    if (node && stream) {
+      node.srcObject = stream;
     }
   }, [stream]);
 
-  // Attach stream to the audio element (separate ref so both video and audio work independently)
-  useEffect(() => {
-    if (audioRef.current && stream) {
-      audioRef.current.srcObject = stream;
+  // Use a callback ref for the audio element as well, since it's also conditionally rendered.
+  const setAudioRef = useCallback((node) => {
+    if (node && stream) {
+      node.srcObject = stream;
     }
   }, [stream]);
 
@@ -29,7 +28,7 @@ const ParticipantTile = ({ participant, stream, isLocal }) => {
     <div className={`participant-tile ${isLocal ? 'local-tile' : ''} ${actuallySpeaking ? 'speaking' : ''}`}>
       {hasVideo ? (
         <video 
-          ref={videoRef} 
+          ref={setVideoRef} 
           autoPlay 
           playsInline 
           muted={isLocal} 
@@ -47,7 +46,7 @@ const ParticipantTile = ({ participant, stream, isLocal }) => {
           even when video is off. The video tag also plays audio, so this is only needed 
           when video is not rendering. */}
       {!hasVideo && !isLocal && (
-        <audio ref={audioRef} autoPlay playsInline style={{ display: 'none' }} />
+        <audio ref={setAudioRef} autoPlay playsInline style={{ display: 'none' }} />
       )}
 
       <div className="participant-info">
