@@ -71,13 +71,16 @@ GTTS_LANG_MAP: dict[str, str] = {
 
 def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = None) -> bytes:
     """Synthesise Indian Regional Speech via Sarvam AI API (bulbul:v1 model)."""
-    key = api_key or os.getenv("SARVAM_API_KEY")
-    if not key:
+    raw_key = api_key or os.getenv("SARVAM_API_KEY")
+    if not raw_key:
         raise ValueError("SARVAM_API_KEY environment variable is missing.")
 
+    key = raw_key.replace("Bearer ", "").strip()
     target_code = SARVAM_LANG_MAP.get(target_lang, "hi-IN")
+    
     headers = {
         "api-subscription-key": key,
+        "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
     }
     payload = {
@@ -94,7 +97,7 @@ def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = 
 
     resp = requests.post("https://api.sarvam.ai/text-to-speech", headers=headers, json=payload, timeout=20)
     if resp.status_code != 200:
-        raise RuntimeError(f"Sarvam AI TTS Error ({resp.status_code}): {resp.text}")
+        raise RuntimeError(f"Sarvam AI API ({resp.status_code}): {resp.text}")
 
     audio_base64_list = resp.json().get("audios", [])
     if not audio_base64_list:
@@ -181,7 +184,7 @@ def synthesize_speech(
     # Option 3: Google TTS
     if raw is None:
         raw = synthesize_gtts(text, target_lang)
-        mime, engine_name = "audio/mp3", "🔈 gTTS Fallback"
+        mime, engine_name = "audio/mp3", "gTTS Fallback"
 
     return {
         "audio_base64": base64.b64encode(raw).decode("utf-8") if return_base64 else None,
