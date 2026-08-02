@@ -2,7 +2,7 @@
 Text-to-Speech & OpenVoice v2 Zero-Shot Voice Retention Module
 
 Engine Architecture:
-  1. Base Speech Generation: Microsoft Edge Neural TTS (edge-tts) — Crisp studio neural speech.
+  1. Base Speech Generation: Microsoft Edge Neural TTS (Male & Female Studio Voices).
   2. Tone Color Transfer: OpenVoice v2 (MyShell AI) — Transfers speaker's voice timbre onto base speech.
 """
 
@@ -30,38 +30,35 @@ try:
 except ImportError:
     _GTTS_AVAILABLE = False
 
-# OpenVoice v2 singleton
-_tone_converter = None
+# ── Microsoft Edge Neural Voice Map (Female & Male Studio Voices) ─────────────
+EDGE_VOICE_MAP_FEMALE: dict[str, str] = {
+    "en": "en-US-AvaNeural",         # English — Ava (Female)
+    "hi": "hi-IN-SwaraNeural",       # Hindi — Swara (Female)
+    "fr": "fr-FR-DeniseNeural",      # French — Denise
+    "es": "es-ES-ElviraNeural",      # Spanish — Elvira
+    "de": "de-DE-KatjaNeural",       # German — Katja
+    "ja": "ja-JP-NanamiNeural",      # Japanese — Nanami
+    "zh": "zh-CN-XiaoxiaoNeural",    # Chinese — Xiaoxiao
+    "ar": "ar-SA-ZariyahNeural",     # Arabic — Zariyah
+    "pt": "pt-BR-FranciscaNeural",   # Portuguese — Francisca
+    "ru": "ru-RU-SvetlanaNeural",    # Russian — Svetlana
+    "ko": "ko-KR-SunHiNeural",       # Korean — Sun-Hi
+    "it": "it-IT-ElsaNeural",        # Italian — Elsa
+}
 
-# ── Microsoft Edge Neural Voice Map ───────────────────────────────────────────
-EDGE_VOICE_MAP: dict[str, str] = {
-    "en": "en-US-AvaNeural",
-    "hi": "hi-IN-SwaraNeural",
-    "fr": "fr-FR-DeniseNeural",
-    "es": "es-ES-ElviraNeural",
-    "de": "de-DE-KatjaNeural",
-    "ja": "ja-JP-NanamiNeural",
-    "zh": "zh-CN-XiaoxiaoNeural",
-    "ar": "ar-SA-ZariyahNeural",
-    "pt": "pt-BR-FranciscaNeural",
-    "ru": "ru-RU-SvetlanaNeural",
-    "ko": "ko-KR-SunHiNeural",
-    "it": "it-IT-ElsaNeural",
-    "ta": "ta-IN-PallaviNeural",
-    "te": "te-IN-ShrutiNeural",
-    "mr": "mr-IN-AarohiNeural",
-    "bn": "bn-IN-TanishaaNeural",
-    "ur": "ur-PK-UzmaNeural",
-    "gu": "gu-IN-DhwaniNeural",
-    "kn": "kn-IN-SapnaNeural",
-    "ml": "ml-IN-SobhanaNeural",
-    "pa": "pa-IN-GurpreetNeural",
-    "nl": "nl-NL-ColetteNeural",
-    "tr": "tr-TR-EmelNeural",
-    "pl": "pl-PL-ZofiaNeural",
-    "uk": "uk-UA-PolinaNeural",
-    "vi": "vie-VN-HoaiMyNeural",
-    "sw": "sw-KE-ZuriNeural",
+EDGE_VOICE_MAP_MALE: dict[str, str] = {
+    "en": "en-US-ChristopherNeural", # English — Christopher (Deep Natural Male)
+    "hi": "hi-IN-MadhurNeural",      # Hindi — Madhur (Natural Male)
+    "fr": "fr-FR-HenriNeural",       # French — Henri (Male)
+    "es": "es-ES-AlvaroNeural",      # Spanish — Alvaro (Male)
+    "de": "de-DE-ConradNeural",      # German — Conrad (Male)
+    "ja": "ja-JP-KeitaNeural",       # Japanese — Keita (Male)
+    "zh": "zh-CN-YunjianNeural",     # Chinese — Yunjian (Male)
+    "ar": "ar-SA-HamedNeural",       # Arabic — Hamed (Male)
+    "pt": "pt-BR-AntonioNeural",     # Portuguese — Antonio (Male)
+    "ru": "ru-RU-DmitryNeural",      # Russian — Dmitry (Male)
+    "ko": "ko-KR-InJoonNeural",      # Korean — InJoon (Male)
+    "it": "it-IT-DiegoNeural",       # Italian — Diego (Male)
 }
 
 GTTS_LANG_MAP: dict[str, str] = {
@@ -75,7 +72,7 @@ GTTS_LANG_MAP: dict[str, str] = {
 
 
 def _convert_to_wav(audio_bytes: bytes, target_sr: int = 16000) -> str:
-    """Convert raw audio bytes to 16kHz WAV temp file."""
+    """Convert raw audio bytes to WAV temp file."""
     with tempfile.NamedTemporaryFile(suffix=".raw", delete=False) as tmp_in:
         tmp_in.write(audio_bytes)
         in_path = tmp_in.name
@@ -103,12 +100,14 @@ async def _edge_tts_async(text: str, voice: str) -> bytes:
     return mp3_bytes
 
 
-def synthesize_edge_tts(text: str, target_lang: str) -> bytes:
+def synthesize_edge_tts(text: str, target_lang: str, gender: str = "male") -> bytes:
     """Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS."""
     if not _EDGE_TTS_AVAILABLE:
         raise RuntimeError("edge-tts not installed.")
 
-    voice = EDGE_VOICE_MAP.get(target_lang, "en-US-AvaNeural")
+    voice_map = EDGE_VOICE_MAP_MALE if gender.lower() == "male" else EDGE_VOICE_MAP_FEMALE
+    fallback_default = "en-US-ChristopherNeural" if gender.lower() == "male" else "en-US-AvaNeural"
+    voice = voice_map.get(target_lang, fallback_default)
 
     try:
         loop = asyncio.get_event_loop()
@@ -134,13 +133,18 @@ def synthesize_gtts(text: str, target_lang: str) -> bytes:
     return buf.read()
 
 
-def synthesize_openvoice(text: str, target_lang: str, speaker_audio_bytes: bytes) -> bytes:
+def synthesize_openvoice(
+    text: str,
+    target_lang: str,
+    speaker_audio_bytes: bytes,
+    gender: str = "male"
+) -> bytes:
     """
     OpenVoice v2 Tone Color Transfer.
-    Generates crisp studio neural base speech via edge-tts, then converts tone color to match user's voice!
+    Generates studio male/female base speech, then converts tone color to match user's voice timbre!
     """
-    # 1. Base studio speech
-    base_mp3 = synthesize_edge_tts(text, target_lang)
+    # 1. Base studio speech matching speaker gender
+    base_mp3 = synthesize_edge_tts(text, target_lang, gender=gender)
     base_wav_path = _convert_to_wav(base_mp3, target_sr=24000)
     ref_wav_path = _convert_to_wav(speaker_audio_bytes, target_sr=24000)
     output_wav_path = tempfile.mktemp(suffix=".wav")
@@ -184,19 +188,20 @@ def synthesize_speech(
     target_lang: str,
     speaker_audio_bytes: Optional[bytes] = None,
     return_base64: bool = True,
+    gender: str = "male",
 ) -> dict:
     """
     Public Speech Synthesis Entry Point.
-    Uses Edge Neural TTS for base speech, and OpenVoice v2 for voice cloning if USE_XTTS=true.
+    Supports Male & Female base speech contours for accurate voice cloning!
     """
     use_cloning = os.getenv("USE_XTTS", "false").strip().lower() == "true"
 
     if use_cloning and speaker_audio_bytes and len(speaker_audio_bytes) > 0:
-        raw = synthesize_openvoice(text, target_lang, speaker_audio_bytes)
+        raw = synthesize_openvoice(text, target_lang, speaker_audio_bytes, gender=gender)
         mime, engine_name = "audio/wav", "openvoice_v2_cloning"
     elif _EDGE_TTS_AVAILABLE:
         try:
-            raw = synthesize_edge_tts(text, target_lang)
+            raw = synthesize_edge_tts(text, target_lang, gender=gender)
             mime, engine_name = "audio/mp3", "edge_neural_tts"
         except Exception as exc:
             print(f"⚠️ Edge TTS failed for '{target_lang}': {exc} — fallback to gTTS")
