@@ -1,9 +1,9 @@
 """
-Text-to-Speech Module
+Text-to-Speech & Zero-Shot Voice Cloning Module
 
-Primary  : Microsoft Edge Neural TTS (edge-tts) — Studio-grade natural human voices.
-Secondary: Coqui XTTS-v2 — Zero-shot voice cloning (enabled via USE_XTTS=true).
-Fallback : gTTS (Google TTS).
+Primary Engine  : Coqui XTTS-v2 — Zero-Shot Voice Cloning on CUDA GPU (enabled via USE_XTTS=true).
+Secondary Engine: Microsoft Edge Neural TTS (edge-tts) — Studio-grade human voices (~0.15s).
+Fallback Engine : gTTS (Google TTS).
 """
 
 from __future__ import annotations
@@ -13,9 +13,10 @@ import os
 import base64
 import tempfile
 import asyncio
+import subprocess
 from typing import Optional
 
-# edge-tts — Microsoft Edge Neural TTS (Studio-grade human voices)
+# edge-tts — Microsoft Edge Neural TTS
 try:
     import edge_tts  # type: ignore
     _EDGE_TTS_AVAILABLE = True
@@ -34,8 +35,8 @@ _xtts_model = None
 
 # ── Microsoft Edge Neural Voice Map (ISO 639-1 → Studio Neural Voice) ─────────
 EDGE_VOICE_MAP: dict[str, str] = {
-    "en": "en-US-AvaNeural",         # English (US) — Ava (Natural Female)
-    "hi": "hi-IN-SwaraNeural",       # Hindi — Swara (Natural Female)
+    "en": "en-US-AvaNeural",         # English — Ava
+    "hi": "hi-IN-SwaraNeural",       # Hindi — Swara
     "fr": "fr-FR-DeniseNeural",      # French — Denise
     "es": "es-ES-ElviraNeural",      # Spanish — Elvira
     "de": "de-DE-KatjaNeural",       # German — Katja
@@ -80,6 +81,88 @@ XTTS_LANG_MAP: dict[str, str] = {
 }
 
 
+def _convert_to_16k_wav(audio_bytes: bytes) -> str:
+    """
+    Convert raw audio bytes (WebM, OGG, MP3, WAV) into a clean
+    16kHz mono WAV file for Coqui XTTS-v2 speaker embedding extraction.
+    """
+    with tempfile.NamedTemporaryFile(suffix=".raw", delete=False) as tmp_in:
+        tmp_in.write(audio_bytes)
+        in_path = tmp_in.name
+
+    out_path = tempfile.mktemp(suffix=".wav")
+
+    cmd = [
+        "ffmpeg", "-y", "-i", in_path,
+        "-ar", "16000", "-ac", "1", "-f", "wav", out_path
+    ]
+    try:
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    except Exception:
+        out_path = in_path
+    finally:
+        try: os.unlink(in_path)
+        except OSError: pass
+
+    return out_path
+
+
+def _load_xtts():
+    """Lazy-load Coqui XTTS-v2 model on GPU (singleton)."""
+    global _xtts_model
+    if _xtts_model is None:
+        try:
+            from TTS.api import TTS  # type: ignore
+            import torch              # type: ignore
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"🎙️  Loading Coqui XTTS-v2 Voice Cloning Engine on {device.upper()} ...")
+            _xtts_model = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+            print("✅ Coqui XTTS-v2 ready — Zero-Shot Voice Cloning active!")
+        except ImportError:
+            print("⚠️  Coqui TTS library not installed. Run: pip install TTS>=0.22.0")
+        except Exception as exc:
+            print(f"⚠️  XTTS-v2 load error: {exc}")
+    return _xtts_model
+
+
+def _xtts_clone_voice(text: str, lang: str, speaker_audio_bytes: Optional[bytes] = None) -> bytes:
+    """
+    Synthesise translated text in the speaker's cloned voice using Coqui XTTS-v2.
+    """
+    model = _load_xtts()
+    if model is None:
+        print("⚠️  XTTS-v2 model unavailable — falling back to edge-tts.")
+        return synthesize_edge_tts(text, lang)
+
+    xtts_lang = XTTS_LANG_MAP.get(lang, "en")
+    out_wav_path = tempfile.mktemp(suffix=".wav")
+    ref_wav_path = None
+
+    try:
+        if speaker_audio_bytes and len(speaker_audio_bytes) > 0:
+            # Convert user's microphone audio to clean 16kHz WAV
+            ref_wav_path = _convert_to_16k_wav(speaker_audio_bytes)
+            print(f"🧬 Extracting speaker voice embedding from audio for '{lang}'...")
+            model.tts_to_file(
+                text=text,
+                speaker_wav=ref_wav_path,
+                language=xtts_lang,
+                file_path=out_wav_path,
+            )
+        else:
+            print(f"🎙️  Synthesising XTTS default voice for '{lang}'...")
+            model.tts_to_file(text=text, language=xtts_lang, file_path=out_wav_path)
+
+        with open(out_wav_path, "rb") as f:
+            return f.read()
+
+    finally:
+        for p in (out_wav_path, ref_wav_path):
+            if p:
+                try: os.unlink(p)
+                except OSError: pass
+
+
 async def _edge_tts_async(text: str, voice: str) -> bytes:
     """Async helper for edge-tts."""
     communicate = edge_tts.Communicate(text, voice)
@@ -91,27 +174,21 @@ async def _edge_tts_async(text: str, voice: str) -> bytes:
 
 
 def synthesize_edge_tts(text: str, target_lang: str) -> bytes:
-    """
-    Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS.
-    Returns raw MP3 audio bytes.
-    """
+    """Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS."""
     if not _EDGE_TTS_AVAILABLE:
         raise RuntimeError("edge-tts not installed. Run: pip install edge-tts")
 
     voice = EDGE_VOICE_MAP.get(target_lang, "en-US-AvaNeural")
 
     try:
-        # Handle running inside an existing event loop or standard sync context
         loop = asyncio.get_event_loop()
         if loop.is_running():
-            # If called inside an active async event loop (like FastAPI)
             import nest_asyncio  # type: ignore
             nest_asyncio.apply()
             return loop.run_until_complete(_edge_tts_async(text, voice))
         else:
             return loop.run_until_complete(_edge_tts_async(text, voice))
     except Exception:
-        # Fallback to creating a fresh runner loop
         return asyncio.run(_edge_tts_async(text, voice))
 
 
@@ -127,53 +204,6 @@ def synthesize_gtts(text: str, target_lang: str) -> bytes:
     return buf.read()
 
 
-def _load_xtts():
-    """Lazy-load Coqui XTTS-v2 model (GPU-only)."""
-    global _xtts_model
-    if _xtts_model is None:
-        try:
-            from TTS.api import TTS  # type: ignore
-            import torch              # type: ignore
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-            print(f"🎙️ Loading XTTS-v2 on {device.upper()} ...")
-            _xtts_model = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
-            print("✅ XTTS-v2 ready — voice cloning active.")
-        except ImportError:
-            print("⚠️ Coqui TTS not installed.")
-        except Exception as exc:
-            print(f"⚠️ XTTS-v2 load error: {exc}")
-    return _xtts_model
-
-
-def _xtts(text: str, lang: str, speaker_audio: Optional[bytes] = None) -> bytes:
-    """Synthesise speech via XTTS-v2 zero-shot voice cloning."""
-    model = _load_xtts()
-    if model is None:
-        return synthesize_edge_tts(text, lang)
-
-    xtts_lang = XTTS_LANG_MAP.get(lang, "en")
-    out_path = tempfile.mktemp(suffix=".wav")
-
-    try:
-        if speaker_audio:
-            ref_path = tempfile.mktemp(suffix=".wav")
-            with open(ref_path, "wb") as f:
-                f.write(speaker_audio)
-            try:
-                model.tts_to_file(text=text, speaker_wav=ref_path, language=xtts_lang, file_path=out_path)
-            finally:
-                try: os.unlink(ref_path)
-                except OSError: pass
-        else:
-            model.tts_to_file(text=text, language=xtts_lang, file_path=out_path)
-
-        with open(out_path, "rb") as f:
-            return f.read()
-    finally:
-        try: os.unlink(out_path)
-        except OSError: pass
-
-
 def synthesize_speech(
     text: str,
     target_lang: str,
@@ -181,32 +211,32 @@ def synthesize_speech(
     return_base64: bool = True,
 ) -> dict:
     """
-    Public TTS entry point.
-    Engine Priority:
-      1. XTTS-v2 (if USE_XTTS=true)
-      2. Microsoft Edge Neural TTS (edge-tts) — Studio-grade human voices
-      3. gTTS fallback
+    Public Speech Synthesis Entry Point.
+
+    Modes:
+      • USE_XTTS=true  ➔ Coqui XTTS-v2 Zero-Shot Voice Cloning (Clones user's voice on GPU)
+      • USE_XTTS=false ➔ Microsoft Edge Neural TTS (Studio-grade human voices, ~0.15s)
     """
     use_xtts = os.getenv("USE_XTTS", "false").strip().lower() == "true"
 
     if use_xtts:
-        raw = _xtts(text, target_lang, speaker_audio_bytes)
-        mime, engine_name = "audio/wav", "xtts"
+        raw = _xtts_clone_voice(text, target_lang, speaker_audio_bytes)
+        mime, engine_name = "audio/wav", "xtts_v2_voice_cloning"
     elif _EDGE_TTS_AVAILABLE:
         try:
             raw = synthesize_edge_tts(text, target_lang)
-            mime, engine_name = "audio/mp3", "edge-tts"
+            mime, engine_name = "audio/mp3", "edge_neural_tts"
         except Exception as exc:
-            print(f"⚠️ Edge TTS failed for '{target_lang}': {exc} — falling back to gTTS")
+            print(f"⚠️  Edge TTS failed for '{target_lang}': {exc} — fallback to gTTS")
             raw = synthesize_gtts(text, target_lang)
-            mime, engine_name = "audio/mp3", "gtts"
+            mime, engine_name = "audio/mp3", "gtts_fallback"
     else:
         raw = synthesize_gtts(text, target_lang)
-        mime, engine_name = "audio/mp3", "gtts"
+        mime, engine_name = "audio/mp3", "gtts_fallback"
 
     return {
         "audio_base64": base64.b64encode(raw).decode("utf-8") if return_base64 else None,
-        "audio_bytes": raw if not return_base64 else None,
-        "mime_type": mime,
-        "engine": engine_name,
+        "audio_bytes":  raw if not return_base64 else None,
+        "mime_type":    mime,
+        "engine":       engine_name,
     }
