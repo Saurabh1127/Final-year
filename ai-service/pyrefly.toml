@@ -1,0 +1,17 @@
+# Pyrefly configuration — suppresses missing-import errors for packages
+# not yet installed locally (torch, fastapi, transformers, whisper, gtts, etc.)
+# These are installed on Google Colab when testing.
+# See: https://github.com/facebook/pyrefly
+
+[errors]
+# Disable missing import / missing module errors globally
+ignore = [
+    "missing-import",
+    "import-error",
+    "unresolved-import",
+    "missing-module-source",
+]
+
+[project]
+# Tell Pyrefly the project root is the ai-service directory
+include = ["app/**/*.py", "colab_test.py"]

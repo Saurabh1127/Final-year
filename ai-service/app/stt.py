@@ -1,57 +1,86 @@
-import whisper
+"""
+Speech-to-Text Module
+Uses OpenAI Whisper-small for transcription + auto language detection.
+Auto-selects CUDA (Colab T4 / RTX 3050) or CPU (Ryzen 7 5800H).
+"""
+
+from __future__ import annotations
+
 import os
 import tempfile
-import numpy as np
 
-# Global model instance (loaded once)
+# Third-party — not installed locally; installed on Colab. Linter suppressed.
+try:
+    import whisper  # type: ignore
+    import torch    # type: ignore
+    _DEPS_AVAILABLE = True
+except ImportError:
+    _DEPS_AVAILABLE = False
+
+# Singleton model instance — loaded once per process
 _model = None
 
 
+def _get_device() -> str:
+    if not _DEPS_AVAILABLE:
+        return "cpu"
+    if torch.cuda.is_available():
+        print(f"🎮 GPU detected: {torch.cuda.get_device_name(0)} — Whisper on CUDA.")
+        return "cuda"
+    print("💻 No GPU found — Whisper on CPU (Ryzen 7 5800H).")
+    return "cpu"
+
+
 def get_model():
-    """Load Whisper model lazily (singleton pattern)."""
+    """Load Whisper model once and cache it (singleton)."""
     global _model
     if _model is None:
-        model_name = os.getenv("WHISPER_MODEL", "tiny")
-        print(f"🔊 Loading Whisper '{model_name}' model...")
-        _model = whisper.load_model(model_name)
-        print(f"✅ Whisper '{model_name}' model loaded.")
+        if not _DEPS_AVAILABLE:
+            raise RuntimeError("openai-whisper and torch are not installed. Run on Colab.")
+        name = os.getenv("WHISPER_MODEL", "small")
+        device = _get_device()
+        print(f"🔊 Loading Whisper '{name}' on {device.upper()} ...")
+        _model = whisper.load_model(name, device=device)
+        if device == "cuda":
+            _model = _model.half()  # FP16 for 2× speed on GPU
+        params_m = sum(p.numel() for p in _model.parameters()) / 1e6
+        print(f"✅ Whisper '{name}' ready ({params_m:.0f}M params).")
     return _model
 
 
-def transcribe_audio(audio_bytes: bytes, source_language: str = None) -> dict:
+def transcribe_audio(audio_bytes: bytes, source_language: str | None = None) -> dict:
     """
-    Transcribe audio bytes using Whisper Tiny.
-    
+    Transcribe raw audio bytes → text using Whisper-small.
+
     Args:
-        audio_bytes: Raw audio file bytes (WAV, WebM, etc.)
-        source_language: Optional ISO 639-1 language code to hint Whisper.
-                         If None, Whisper auto-detects the language.
-    
+        audio_bytes:     Raw audio (WAV / WebM / MP3 / OGG).
+        source_language: ISO 639-1 hint, e.g. "en". None = auto-detect.
+
     Returns:
-        dict with keys: text, language, segments
+        {"text": str, "language": str, "segments": list}
     """
     model = get_model()
 
-    # Write audio bytes to a temp file (Whisper needs a file path)
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+    # Whisper needs a file path, not bytes — write to a temp file
+    suffix = ".wav"
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp.write(audio_bytes)
         tmp_path = tmp.name
 
     try:
-        # Build transcription options
-        options = {}
-        if source_language:
-            options["language"] = source_language
+        opts: dict = {}
+        if source_language and source_language.lower() not in ("", "auto"):
+            opts["language"] = source_language
 
-        result = model.transcribe(tmp_path, **options)
+        use_fp16 = _DEPS_AVAILABLE and torch.cuda.is_available()
+        result = model.transcribe(tmp_path, fp16=use_fp16, **opts)
 
         return {
-            "text": result.get("text", "").strip(),
+            "text":     result.get("text", "").strip(),
             "language": result.get("language", "unknown"),
             "segments": result.get("segments", []),
         }
     finally:
-        # Clean up temp file
         try:
             os.unlink(tmp_path)
         except OSError:

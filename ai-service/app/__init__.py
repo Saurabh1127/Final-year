@@ -1,1 +1,1 @@
-# LinguaMeet AI Service
+"""LinguaMeet AI Service — App Package"""

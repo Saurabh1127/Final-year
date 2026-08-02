@@ -1,0 +1,9 @@
+[tool.pyrefly]
+# Suppress missing-import errors — packages are installed on Colab, not locally
+ignore_missing_imports = true
+permissive_ignores = ["missing-import", "import-error", "unresolved-import"]
+
+[tool.pyright]
+reportMissingImports = false
+reportMissingModuleSource = false
+reportUndefinedVariable = false
