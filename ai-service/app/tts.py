@@ -86,13 +86,13 @@ def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = 
     payload = {
         "inputs": [text],
         "target_language_code": target_code,
-        "speaker": "meera",
+        "speaker": "anushka",
         "pitch": 0,
         "pace": 1.05,
         "loudness": 1.5,
         "speech_sample_rate": 22050,
         "enable_preprocessing": True,
-        "model": "bulbul:v1",
+        "model": "bulbul:v2",
     }
 
     resp = requests.post("https://api.sarvam.ai/text-to-speech", headers=headers, json=payload, timeout=20)
