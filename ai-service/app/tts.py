@@ -17,7 +17,7 @@ import requests
 import subprocess
 from typing import Optional
 
-# edge-tts — Microsoft Edge Neural TTS
+# edge-tts check
 try:
     import edge_tts  # type: ignore
     _EDGE_TTS_AVAILABLE = True
@@ -106,34 +106,18 @@ def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = 
     return base64.b64decode(audio_base64_list[0])
 
 
-def _run_async(coro):
-    """Run async coroutine safely across notebook & server event loops."""
-    try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            import nest_asyncio  # type: ignore
-            nest_asyncio.apply()
-            return loop.run_until_complete(coro)
-        else:
-            return loop.run_until_complete(coro)
-    except Exception:
-        return asyncio.run(coro)
-
-
-async def _edge_tts_async(text: str, voice: str) -> bytes:
-    """Async helper for edge-tts."""
-    communicate = edge_tts.Communicate(text, voice)
-    mp3_bytes = b""
-    async for chunk in communicate.stream():
-        if chunk["type"] == "audio":
-            mp3_bytes += chunk["data"]
-    return mp3_bytes
-
-
 def synthesize_edge_tts(text: str, target_lang: str) -> bytes:
-    """Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS."""
+    """Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS CLI (100% reliable)."""
     voice = EDGE_VOICE_MAP_MALE.get(target_lang, "en-US-ChristopherNeural")
-    return _run_async(_edge_tts_async(text, voice))
+    out_mp3 = tempfile.mktemp(suffix=".mp3")
+    cmd = ["edge-tts", "--voice", voice, "--text", text, "--write-media", out_mp3]
+    try:
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        with open(out_mp3, "rb") as f:
+            return f.read()
+    finally:
+        try: os.unlink(out_mp3)
+        except OSError: pass
 
 
 def synthesize_gtts(text: str, target_lang: str) -> bytes:
