@@ -114,6 +114,10 @@ def _load_xtts():
         try:
             import torch  # type: ignore
             import transformers.pytorch_utils  # type: ignore
+
+            # Auto-agree to Coqui CPML non-commercial TOS for non-interactive server loading
+            os.environ["COQUI_TOS_AGREED"] = "1"
+
             # Fix transformers 4.44+ compatibility for Coqui TTS
             if not hasattr(transformers.pytorch_utils, "isin_mps_friendly"):
                 transformers.pytorch_utils.isin_mps_friendly = torch.isin
@@ -128,6 +132,7 @@ def _load_xtts():
         except Exception as exc:
             print(f"⚠️  XTTS-v2 load error: {exc}")
     return _xtts_model
+
 
 
 
