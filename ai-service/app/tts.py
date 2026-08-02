@@ -1,9 +1,11 @@
 """
-Text-to-Speech & OpenVoice v2 Zero-Shot Voice Retention Module
+Text-to-Speech & Pure Zero-Shot Voice Cloning Module
 
-Engine Architecture:
-  1. Base Speech Generation: Microsoft Edge Neural TTS (Male & Female Studio Voices).
-  2. Tone Color Transfer: OpenVoice v2 (MyShell AI) — Transfers speaker's voice timbre onto base speech.
+Primary Voice Cloning Engine: Coqui XTTS-v2 (Pure Neural Voice Cloning on GPU)
+  • Extracts 512-dim speaker embeddings from clean audio.
+  • Synthesises speech directly in speaker's exact voice.
+
+Primary Fast TTS Engine: Microsoft Edge Neural Speech (edge-tts).
 """
 
 from __future__ import annotations
@@ -30,55 +32,40 @@ try:
 except ImportError:
     _GTTS_AVAILABLE = False
 
-# ── Microsoft Edge Neural Voice Map (Female & Male Studio Voices) ─────────────
-EDGE_VOICE_MAP_FEMALE: dict[str, str] = {
-    "en": "en-US-AvaNeural",         # English — Ava (Female)
-    "hi": "hi-IN-SwaraNeural",       # Hindi — Swara (Female)
-    "fr": "fr-FR-DeniseNeural",      # French — Denise
-    "es": "es-ES-ElviraNeural",      # Spanish — Elvira
-    "de": "de-DE-KatjaNeural",       # German — Katja
-    "ja": "ja-JP-NanamiNeural",      # Japanese — Nanami
-    "zh": "zh-CN-XiaoxiaoNeural",    # Chinese — Xiaoxiao
-    "ar": "ar-SA-ZariyahNeural",     # Arabic — Zariyah
-    "pt": "pt-BR-FranciscaNeural",   # Portuguese — Francisca
-    "ru": "ru-RU-SvetlanaNeural",    # Russian — Svetlana
-    "ko": "ko-KR-SunHiNeural",       # Korean — Sun-Hi
-    "it": "it-IT-ElsaNeural",        # Italian — Elsa
-}
+# XTTS-v2 singleton
+_xtts_model = None
 
+# ── Microsoft Edge Neural Voice Map ───────────────────────────────────────────
 EDGE_VOICE_MAP_MALE: dict[str, str] = {
-    "en": "en-US-ChristopherNeural", # English — Christopher (Deep Natural Male)
-    "hi": "hi-IN-MadhurNeural",      # Hindi — Madhur (Natural Male)
-    "fr": "fr-FR-HenriNeural",       # French — Henri (Male)
-    "es": "es-ES-AlvaroNeural",      # Spanish — Alvaro (Male)
-    "de": "de-DE-ConradNeural",      # German — Conrad (Male)
-    "ja": "ja-JP-KeitaNeural",       # Japanese — Keita (Male)
-    "zh": "zh-CN-YunjianNeural",     # Chinese — Yunjian (Male)
-    "ar": "ar-SA-HamedNeural",       # Arabic — Hamed (Male)
-    "pt": "pt-BR-AntonioNeural",     # Portuguese — Antonio (Male)
-    "ru": "ru-RU-DmitryNeural",      # Russian — Dmitry (Male)
-    "ko": "ko-KR-InJoonNeural",      # Korean — InJoon (Male)
-    "it": "it-IT-DiegoNeural",       # Italian — Diego (Male)
+    "en": "en-US-ChristopherNeural",
+    "hi": "hi-IN-MadhurNeural",
+    "fr": "fr-FR-HenriNeural",
+    "es": "es-ES-AlvaroNeural",
+    "de": "de-DE-ConradNeural",
+    "ja": "ja-JP-KeitaNeural",
 }
 
 GTTS_LANG_MAP: dict[str, str] = {
     "en": "en", "hi": "hi", "fr": "fr", "es": "es", "de": "de",
     "ja": "ja", "zh": "zh", "ar": "ar", "pt": "pt", "ru": "ru",
     "ko": "ko", "it": "it", "nl": "nl", "tr": "tr", "vi": "vi",
-    "ta": "ta", "te": "te", "bn": "bn", "mr": "mr", "ur": "ur",
-    "gu": "gu", "kn": "kn", "ml": "ml", "pa": "pa", "pl": "pl",
-    "uk": "uk", "sw": "sw",
+}
+
+XTTS_LANG_MAP: dict[str, str] = {
+    "en": "en", "hi": "hi", "fr": "fr", "es": "es", "de": "de",
+    "ja": "ja", "zh": "zh", "ar": "ar", "pt": "pt", "ru": "ru",
+    "ko": "ko", "it": "it", "nl": "nl", "tr": "tr", "pl": "pl",
 }
 
 
-def _convert_to_wav(audio_bytes: bytes, target_sr: int = 16000) -> str:
-    """Convert raw audio bytes to WAV temp file."""
+def _convert_to_16k_wav(audio_bytes: bytes) -> str:
+    """Convert raw audio bytes into 16kHz mono WAV temp file."""
     with tempfile.NamedTemporaryFile(suffix=".raw", delete=False) as tmp_in:
         tmp_in.write(audio_bytes)
         in_path = tmp_in.name
 
     out_path = tempfile.mktemp(suffix=".wav")
-    cmd = ["ffmpeg", "-y", "-i", in_path, "-ar", str(target_sr), "-ac", "1", "-f", "wav", out_path]
+    cmd = ["ffmpeg", "-y", "-i", in_path, "-ar", "16000", "-ac", "1", "-f", "wav", out_path]
     try:
         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     except Exception:
@@ -88,6 +75,59 @@ def _convert_to_wav(audio_bytes: bytes, target_sr: int = 16000) -> str:
         except OSError: pass
 
     return out_path
+
+
+def _load_xtts():
+    """Lazy-load Coqui XTTS-v2 model on GPU (singleton)."""
+    global _xtts_model
+    if _xtts_model is None:
+        try:
+            import torch  # type: ignore
+            import transformers.pytorch_utils  # type: ignore
+
+            os.environ["COQUI_TOS_AGREED"] = "1"
+            if not hasattr(transformers.pytorch_utils, "isin_mps_friendly"):
+                transformers.pytorch_utils.isin_mps_friendly = torch.isin
+
+            from TTS.api import TTS  # type: ignore
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"🎙️ Loading Coqui XTTS-v2 Pure Neural Voice Cloning Engine on {device.upper()} ...")
+            _xtts_model = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+            print("✅ Coqui XTTS-v2 ready — Pure Voice Cloning active!")
+        except Exception as exc:
+            print(f"⚠️ XTTS-v2 load error: {exc}")
+    return _xtts_model
+
+
+def synthesize_xtts_pure_clone(text: str, target_lang: str, speaker_audio_bytes: bytes) -> bytes:
+    """
+    Pure Zero-Shot Voice Cloning using Coqui XTTS-v2.
+    Takes cleaned speaker audio and synthesises speech directly in speaker's exact voice!
+    """
+    model = _load_xtts()
+    if model is None:
+        return synthesize_edge_tts(text, target_lang)
+
+    xtts_lang = XTTS_LANG_MAP.get(target_lang, "en")
+    ref_wav_path = _convert_to_16k_wav(speaker_audio_bytes)
+    out_wav_path = tempfile.mktemp(suffix=".wav")
+
+    try:
+        print(f"🧬 Synthesising pure neural voice clone for '{target_lang}'...")
+        model.tts_to_file(
+            text=text,
+            speaker_wav=ref_wav_path,
+            language=xtts_lang,
+            file_path=out_wav_path,
+            gpt_cond_len=6,     # Optimum conditioning length for high voice similarity
+            temperature=0.75,   # Natural pitch variation without hallucinations
+        )
+        with open(out_wav_path, "rb") as f:
+            return f.read()
+    finally:
+        for p in (ref_wav_path, out_wav_path):
+            try: os.unlink(p)
+            except OSError: pass
 
 
 async def _edge_tts_async(text: str, voice: str) -> bytes:
@@ -105,9 +145,7 @@ def synthesize_edge_tts(text: str, target_lang: str, gender: str = "male") -> by
     if not _EDGE_TTS_AVAILABLE:
         raise RuntimeError("edge-tts not installed.")
 
-    voice_map = EDGE_VOICE_MAP_MALE if gender.lower() == "male" else EDGE_VOICE_MAP_FEMALE
-    fallback_default = "en-US-ChristopherNeural" if gender.lower() == "male" else "en-US-AvaNeural"
-    voice = voice_map.get(target_lang, fallback_default)
+    voice = EDGE_VOICE_MAP_MALE.get(target_lang, "en-US-ChristopherNeural")
 
     try:
         loop = asyncio.get_event_loop()
@@ -133,56 +171,6 @@ def synthesize_gtts(text: str, target_lang: str) -> bytes:
     return buf.read()
 
 
-def synthesize_openvoice(
-    text: str,
-    target_lang: str,
-    speaker_audio_bytes: bytes,
-    gender: str = "male"
-) -> bytes:
-    """
-    OpenVoice v2 Tone Color Transfer.
-    Generates studio male/female base speech, then converts tone color to match user's voice timbre!
-    """
-    # 1. Base studio speech matching speaker gender
-    base_mp3 = synthesize_edge_tts(text, target_lang, gender=gender)
-    base_wav_path = _convert_to_wav(base_mp3, target_sr=24000)
-    ref_wav_path = _convert_to_wav(speaker_audio_bytes, target_sr=24000)
-    output_wav_path = tempfile.mktemp(suffix=".wav")
-
-    try:
-        from openvoice import se_extractor  # type: ignore
-        from openvoice.api import ToneColorConverter  # type: ignore
-        import torch  # type: ignore
-
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        ckpt_path = os.getenv("OPENVOICE_CKPT", "/content/checkpoints_v2/converter")
-
-        if os.path.exists(ckpt_path):
-            converter = ToneColorConverter(f"{ckpt_path}/config.json", device=device)
-            converter.load_ckpt(f"{ckpt_path}/checkpoint.pth")
-
-            target_se, _ = se_extractor.get_se(ref_wav_path, converter, target_dir="/tmp/se", vad=True)
-            source_se, _ = se_extractor.get_se(base_wav_path, converter, target_dir="/tmp/se", vad=True)
-
-            converter.convert(
-                audio_src_path=base_wav_path,
-                src_se=source_se,
-                tgt_se=target_se,
-                output_path=output_wav_path,
-            )
-            with open(output_wav_path, "rb") as f:
-                return f.read()
-    except Exception as exc:
-        print(f"⚠️ OpenVoice v2 tone transfer fallback to base edge-tts: {exc}")
-
-    finally:
-        for p in (base_wav_path, ref_wav_path, output_wav_path):
-            try: os.unlink(p)
-            except OSError: pass
-
-    return base_mp3
-
-
 def synthesize_speech(
     text: str,
     target_lang: str,
@@ -192,13 +180,13 @@ def synthesize_speech(
 ) -> dict:
     """
     Public Speech Synthesis Entry Point.
-    Supports Male & Female base speech contours for accurate voice cloning!
+    When USE_XTTS=true, performs PURE ZERO-SHOT VOICE CLONING via Coqui XTTS-v2!
     """
     use_cloning = os.getenv("USE_XTTS", "false").strip().lower() == "true"
 
     if use_cloning and speaker_audio_bytes and len(speaker_audio_bytes) > 0:
-        raw = synthesize_openvoice(text, target_lang, speaker_audio_bytes, gender=gender)
-        mime, engine_name = "audio/wav", "openvoice_v2_cloning"
+        raw = synthesize_xtts_pure_clone(text, target_lang, speaker_audio_bytes)
+        mime, engine_name = "audio/wav", "coqui_xtts_v2_pure_voice_clone"
     elif _EDGE_TTS_AVAILABLE:
         try:
             raw = synthesize_edge_tts(text, target_lang, gender=gender)
