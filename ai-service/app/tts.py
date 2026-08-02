@@ -70,9 +70,7 @@ GTTS_LANG_MAP: dict[str, str] = {
 
 
 def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = None) -> bytes:
-    """
-    Synthesise Indian Regional Speech via Sarvam AI API (bulbul:v1 model).
-    """
+    """Synthesise Indian Regional Speech via Sarvam AI API (bulbul:v1 model)."""
     key = api_key or os.getenv("SARVAM_API_KEY")
     if not key:
         raise ValueError("SARVAM_API_KEY environment variable is missing.")
@@ -85,7 +83,7 @@ def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = 
     payload = {
         "inputs": [text],
         "target_language_code": target_code,
-        "speaker": "meera",  # High-quality female Indian voice (or 'pavithra' / 'arvind')
+        "speaker": "meera",
         "pitch": 0,
         "pace": 1.05,
         "loudness": 1.5,
@@ -94,7 +92,6 @@ def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = 
         "model": "bulbul:v1",
     }
 
-    print(f"🇮🇳 Synthesising speech via Sarvam AI (bulbul:v1) for '{target_code}'...")
     resp = requests.post("https://api.sarvam.ai/text-to-speech", headers=headers, json=payload, timeout=20)
     if resp.status_code != 200:
         raise RuntimeError(f"Sarvam AI TTS Error ({resp.status_code}): {resp.text}")
@@ -104,6 +101,20 @@ def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = 
         raise RuntimeError("Sarvam AI returned empty audio payload.")
 
     return base64.b64decode(audio_base64_list[0])
+
+
+def _run_async(coro):
+    """Run async coroutine safely across notebook & server event loops."""
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            import nest_asyncio  # type: ignore
+            nest_asyncio.apply()
+            return loop.run_until_complete(coro)
+        else:
+            return loop.run_until_complete(coro)
+    except Exception:
+        return asyncio.run(coro)
 
 
 async def _edge_tts_async(text: str, voice: str) -> bytes:
@@ -118,21 +129,8 @@ async def _edge_tts_async(text: str, voice: str) -> bytes:
 
 def synthesize_edge_tts(text: str, target_lang: str) -> bytes:
     """Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS."""
-    if not _EDGE_TTS_AVAILABLE:
-        raise RuntimeError("edge-tts not installed.")
-
     voice = EDGE_VOICE_MAP_MALE.get(target_lang, "en-US-ChristopherNeural")
-
-    try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            import nest_asyncio  # type: ignore
-            nest_asyncio.apply()
-            return loop.run_until_complete(_edge_tts_async(text, voice))
-        else:
-            return loop.run_until_complete(_edge_tts_async(text, voice))
-    except Exception:
-        return asyncio.run(_edge_tts_async(text, voice))
+    return _run_async(_edge_tts_async(text, voice))
 
 
 def synthesize_gtts(text: str, target_lang: str) -> bytes:
@@ -155,37 +153,35 @@ def synthesize_speech(
 ) -> dict:
     """
     Public Speech Synthesis Entry Point.
-    1. Primary Indian Speech: Sarvam AI (bulbul:v1) if SARVAM_API_KEY is present & target is Indian lang.
-    2. Primary Global Speech: Microsoft Edge Neural Speech (edge-tts).
-    3. Fallback: Google Text-to-Speech (gTTS).
+    Returns audio + explicit active engine name metadata.
     """
     sarvam_key = os.getenv("SARVAM_API_KEY")
-    use_sarvam = os.getenv("USE_SARVAM", "false").strip().lower() == "true" or (sarvam_key and target_lang in SARVAM_LANG_MAP)
+    use_sarvam = (sarvam_key and sarvam_key.strip() != "" and target_lang in SARVAM_LANG_MAP)
 
     raw: Optional[bytes] = None
     engine_name = "unknown"
     mime = "audio/mp3"
 
     # Option 1: Sarvam AI Sovereign Indian TTS
-    if use_sarvam and sarvam_key and target_lang in SARVAM_LANG_MAP:
+    if use_sarvam and target_lang in SARVAM_LANG_MAP:
         try:
             raw = synthesize_sarvam_tts(text, target_lang, api_key=sarvam_key)
-            mime, engine_name = "audio/wav", "sarvam_ai_bulbul_v1"
+            mime, engine_name = "audio/wav", "🇮🇳 Sarvam AI (bulbul:v1)"
         except Exception as exc:
             print(f"⚠️ Sarvam AI TTS failed for '{target_lang}': {exc} — Fallback to Edge Neural TTS")
 
     # Option 2: Microsoft Edge Neural Speech
-    if raw is None and _EDGE_TTS_AVAILABLE:
+    if raw is None:
         try:
             raw = synthesize_edge_tts(text, target_lang)
-            mime, engine_name = "audio/mp3", "edge_neural_tts"
+            mime, engine_name = "audio/mp3", f"🎙️ Microsoft Edge Neural Speech ({EDGE_VOICE_MAP_MALE.get(target_lang, 'default')})"
         except Exception as exc:
             print(f"⚠️ Edge TTS failed for '{target_lang}': {exc} — Fallback to gTTS")
 
     # Option 3: Google TTS
     if raw is None:
         raw = synthesize_gtts(text, target_lang)
-        mime, engine_name = "audio/mp3", "gtts_fallback"
+        mime, engine_name = "audio/mp3", "🔈 gTTS Fallback"
 
     return {
         "audio_base64": base64.b64encode(raw).decode("utf-8") if return_base64 else None,
