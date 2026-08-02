@@ -93,21 +93,20 @@ load_dotenv()
 # ─────────────────────────────────────────────────────────────────────────────
 
 @asynccontextmanager
-async def lifespan(_app: Any):
-    """
-    FastAPI lifespan context manager.
-    Eagerly loads Whisper + NLLB models at startup so the first request
-    has no cold-start delay.
-    """
+async def lifespan(app: "FastAPI"):  # type: ignore[valid-type]
+    """Eagerly load Whisper, NLLB, and XTTS-v2 on boot so first request has no cold-start."""
     print("🚀 Preloading AI models on startup...")
-    from .stt import get_model as _whisper_load
-    from .translator import get_model_and_tokenizer as _nllb_load
+    from .stt import get_model as get_whisper
+    from .translator import get_model_and_tokenizer as get_nllb
+    from .tts import _load_xtts
     try:
-        _whisper_load()
-        _nllb_load()
-        print("✅ All models loaded and ready.")
+        get_whisper()
+        get_nllb()
+        if os.getenv("USE_XTTS", "false").lower() == "true":
+            _load_xtts()
+        print("✅ ALL AI MODELS (Whisper + NLLB + XTTS-v2) LOADED AND READY ON GPU!")
     except Exception as exc:
-        print(f"⚠️  Model preload failed (will load on first request): {exc}")
+        print(f"⚠️  Model preload exception: {exc}")
     yield
     print("🛑 AI Service shutting down.")
 
