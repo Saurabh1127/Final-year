@@ -21,32 +21,38 @@ else:
 
 
 # ───────────────────────────────────────────────────────────────────
-# CELL 2 — Clone your GitHub repo (replace with your actual repo URL)
+# CELL 2 — Clone your GitHub repo
 # ───────────────────────────────────────────────────────────────────
-import os
+import os, shutil
 
-GITHUB_REPO = "https://github.com/YOUR_USERNAME/Final-year.git"  # ← CHANGE THIS
+GITHUB_REPO = "https://github.com/Saurabh1127/Final-year.git"  # If private: "https://<TOKEN>@github.com/Saurabh1127/Final-year.git"
 REPO_DIR    = "/content/Final-year"
 
-if not os.path.exists(REPO_DIR):
-    os.system(f"git clone {GITHUB_REPO} {REPO_DIR}")
-    print("✅ Repo cloned.")
-else:
-    os.chdir(REPO_DIR)
-    os.system("git pull")
-    print("✅ Repo updated.")
+# Remove existing directory to ensure a fresh, clean clone
+if os.path.exists(REPO_DIR):
+    shutil.rmtree(REPO_DIR)
 
-os.chdir(f"{REPO_DIR}/ai-service")
-print("Working directory:", os.getcwd())
-os.system("ls -la")
+print(f"📥 Cloning repository: {GITHUB_REPO} ...")
+exit_code = os.system(f"git clone {GITHUB_REPO} {REPO_DIR}")
+
+if exit_code != 0 or not os.path.exists(f"{REPO_DIR}/ai-service"):
+    print("\n❌ ERROR: Failed to clone repository or 'ai-service' directory missing!")
+    print("👉 If your GitHub repo is PRIVATE, edit GITHUB_REPO with a Personal Access Token:")
+    print("   GITHUB_REPO = 'https://YOUR_TOKEN@github.com/Saurabh1127/Final-year.git'")
+else:
+    os.chdir(f"{REPO_DIR}/ai-service")
+    print("✅ Repo cloned successfully!")
+    print("Working directory:", os.getcwd())
+    os.system("ls -la")
+
 
 
 # ───────────────────────────────────────────────────────────────────
 # CELL 3 — Install all dependencies
-#   ⏱  Takes ~3–5 minutes on first run.
 # ───────────────────────────────────────────────────────────────────
-os.system("""
-pip install -q \
+# In Jupyter/Colab, standard shell commands (!) ensure the packages
+# are installed directly into the active Python environment's path.
+!pip install -q \
     fastapi==0.111.0 \
     uvicorn[standard]==0.30.1 \
     pydantic==2.7.4 \
@@ -63,8 +69,9 @@ pip install -q \
     scipy \
     gTTS==2.5.1 \
     pyngrok
-""")
+
 print("✅ All packages installed.")
+
 
 
 # ───────────────────────────────────────────────────────────────────

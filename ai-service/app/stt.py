@@ -40,12 +40,12 @@ def get_model():
         name = os.getenv("WHISPER_MODEL", "small")
         device = _get_device()
         print(f"🔊 Loading Whisper '{name}' on {device.upper()} ...")
+        # Whisper automatically manages FP16 precision inside model.transcribe(..., fp16=True)
         _model = whisper.load_model(name, device=device)
-        if device == "cuda":
-            _model = _model.half()  # FP16 for 2× speed on GPU
         params_m = sum(p.numel() for p in _model.parameters()) / 1e6
         print(f"✅ Whisper '{name}' ready ({params_m:.0f}M params).")
     return _model
+
 
 
 def transcribe_audio(audio_bytes: bytes, source_language: str | None = None) -> dict:

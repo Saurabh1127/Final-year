@@ -187,14 +187,31 @@ async def process_audio(
     except (json.JSONDecodeError, ValueError):
         targets = ["en"]
 
-    return engine.process(
-        audio_bytes=audio_bytes,
-        target_languages=targets,
-        source_language=source_language,
-        user_id=user_id,
-        meeting_id=meeting_id,
-        include_audio=include_audio.strip().lower() == "true",
-    )
+    try:
+        return engine.process(
+            audio_bytes=audio_bytes,
+            target_languages=targets,
+            source_language=source_language,
+            user_id=user_id,
+            meeting_id=meeting_id,
+            include_audio=include_audio.strip().lower() == "true",
+        )
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return {
+            "error": str(exc),
+            "original_text": "[Pipeline Error]",
+            "source_language": "unknown",
+            "translations": {},
+            "audio_translations": {},
+            "speaker_id": user_id,
+            "meeting_id": meeting_id,
+            "timestamp": time.time(),
+            "latency": {"asr_seconds": 0, "nmt_seconds": 0, "tts_seconds": 0, "total_seconds": 0},
+            "voice_retention": {"enabled": False, "engine": "xtts_v2", "status": "error"},
+        }
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -65,15 +65,15 @@ def get_model_and_tokenizer():
         device = _get_device()
         print(f"🌐 Loading NLLB '{name}' on {device.upper()} ...")
         _tokenizer = AutoTokenizer.from_pretrained(name)
-        _model = AutoModelForSeq2SeqLM.from_pretrained(name)
         if device == "cuda":
-            _model = _model.half().to(device)
+            _model = AutoModelForSeq2SeqLM.from_pretrained(name, torch_dtype=torch.float16).to(device)
             print("⚡ NLLB FP16 on GPU enabled.")
         else:
-            _model = _model.to(device)
+            _model = AutoModelForSeq2SeqLM.from_pretrained(name).to(device)
         params_m = sum(p.numel() for p in _model.parameters()) / 1e6
         print(f"✅ NLLB '{name}' ready ({params_m:.0f}M params).")
     return _model, _tokenizer
+
 
 
 def get_nllb_code(iso: str) -> str:
@@ -117,9 +117,10 @@ def translate_text(text: str, src: str, tgt: str) -> str:
             **inputs,
             forced_bos_token_id=forced_bos,
             max_new_tokens=512,
-            num_beams=4,
-            early_stopping=True,
+            num_beams=1,
+            do_sample=False,
         )
+
 
     return tokenizer.batch_decode(tokens, skip_special_tokens=True)[0]
 
