@@ -1,10 +1,8 @@
 """
-Text-to-Speech & Hyper-Realistic Voice Retention Module
-
-Architecture:
-  1. Primary Zero-Shot Voice Retention: ElevenLabs Multilingual v2 API (Hyper-realistic Voice Cloning).
-  2. Fallback 1: Microsoft Edge Neural Speech (edge-tts) — Studio-grade human neural voices.
-  3. Fallback 2: Google Text-to-Speech (gTTS).
+Text-to-Speech Module — Multi-Engine Architecture:
+  1. Sarvam AI TTS (bulbul:v1) — Sovereign Indian AI for 10 Regional Indian Languages.
+  2. Microsoft Edge Neural Speech (edge-tts) — Studio-grade global neural human voices.
+  3. Google Text-to-Speech (gTTS) — Universal fallback.
 """
 
 from __future__ import annotations
@@ -34,6 +32,20 @@ except ImportError:
     _GTTS_AVAILABLE = False
 
 
+# ── Sarvam AI Language Map (bulbul:v1) ──────────────────────────────────────
+SARVAM_LANG_MAP: dict[str, str] = {
+    "hi": "hi-IN",  # Hindi
+    "bn": "bn-IN",  # Bengali
+    "kn": "kn-IN",  # Kannada
+    "ml": "ml-IN",  # Malayalam
+    "mr": "mr-IN",  # Marathi
+    "od": "od-IN",  # Odia
+    "pa": "pa-IN",  # Punjabi
+    "ta": "ta-IN",  # Tamil
+    "te": "te-IN",  # Telugu
+    "gu": "gu-IN",  # Gujarati
+}
+
 # ── Microsoft Edge Neural Voice Map ───────────────────────────────────────────
 EDGE_VOICE_MAP_MALE: dict[str, str] = {
     "en": "en-US-ChristopherNeural",
@@ -50,15 +62,6 @@ EDGE_VOICE_MAP_MALE: dict[str, str] = {
     "it": "it-IT-DiegoNeural",
 }
 
-EDGE_VOICE_MAP_FEMALE: dict[str, str] = {
-    "en": "en-US-AvaNeural",
-    "hi": "hi-IN-SwaraNeural",
-    "fr": "fr-FR-DeniseNeural",
-    "es": "es-ES-ElviraNeural",
-    "de": "de-DE-KatjaNeural",
-    "ja": "ja-JP-NanamiNeural",
-}
-
 GTTS_LANG_MAP: dict[str, str] = {
     "en": "en", "hi": "hi", "fr": "fr", "es": "es", "de": "de",
     "ja": "ja", "zh": "zh", "ar": "ar", "pt": "pt", "ru": "ru",
@@ -66,105 +69,41 @@ GTTS_LANG_MAP: dict[str, str] = {
 }
 
 
-def _convert_to_mp3_or_wav(audio_bytes: bytes) -> str:
-    """Convert raw audio bytes into 16kHz WAV temp file for API upload."""
-    with tempfile.NamedTemporaryFile(suffix=".raw", delete=False) as tmp_in:
-        tmp_in.write(audio_bytes)
-        in_path = tmp_in.name
-
-    out_path = tempfile.mktemp(suffix=".wav")
-    cmd = ["ffmpeg", "-y", "-i", in_path, "-ar", "16000", "-ac", "1", "-f", "wav", out_path]
-    try:
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-    except Exception:
-        out_path = in_path
-    finally:
-        try: os.unlink(in_path)
-        except OSError: pass
-
-    return out_path
-
-
-def synthesize_elevenlabs_clone(
-    text: str,
-    target_lang: str,
-    speaker_audio_bytes: bytes,
-    api_key: Optional[str] = None
-) -> bytes:
+def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = None) -> bytes:
     """
-    Hyper-Realistic Zero-Shot Voice Retention via ElevenLabs Multilingual v2 API.
-    1. Uploads speaker audio sample to clone voice instantly.
-    2. Synthesises translated text in speaker's exact cloned voice.
-    3. Cleans up cloned voice ID after synthesis.
+    Synthesise Indian Regional Speech via Sarvam AI API (bulbul:v1 model).
     """
-    key = api_key or os.getenv("ELEVENLABS_API_KEY")
+    key = api_key or os.getenv("SARVAM_API_KEY")
     if not key:
-        raise ValueError("ELEVENLABS_API_KEY environment variable is missing.")
+        raise ValueError("SARVAM_API_KEY environment variable is missing.")
 
-    headers = {"xi-api-key": key}
-    ref_wav_path = _convert_to_mp3_or_wav(speaker_audio_bytes)
+    target_code = SARVAM_LANG_MAP.get(target_lang, "hi-IN")
+    headers = {
+        "api-subscription-key": key,
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "inputs": [text],
+        "target_language_code": target_code,
+        "speaker": "meera",  # High-quality female Indian voice (or 'pavithra' / 'arvind')
+        "pitch": 0,
+        "pace": 1.05,
+        "loudness": 1.5,
+        "speech_sample_rate": 22050,
+        "enable_preprocessing": True,
+        "model": "bulbul:v1",
+    }
 
-    voice_id = None
-    try:
-        # Step 1: Clone voice instantly via Instant Voice Cloning endpoint
-        print("🧬 Creating ElevenLabs Instant Voice Clone profile...")
-        with open(ref_wav_path, "rb") as f:
-            files = [("files", ("speaker_mic.wav", f, "audio/wav"))]
-            data = {
-                "name": f"LinguaMeet_Speaker_{int(os.getpid())}",
-                "description": "Instant Voice Retention for LinguaMeet Meeting",
-            }
-            clone_resp = requests.post(
-                "https://api.elevenlabs.io/v1/voices/add",
-                headers=headers,
-                data=data,
-                files=files,
-                timeout=20,
-            )
+    print(f"🇮🇳 Synthesising speech via Sarvam AI (bulbul:v1) for '{target_code}'...")
+    resp = requests.post("https://api.sarvam.ai/text-to-speech", headers=headers, json=payload, timeout=20)
+    if resp.status_code != 200:
+        raise RuntimeError(f"Sarvam AI TTS Error ({resp.status_code}): {resp.text}")
 
-        if clone_resp.status_code not in (200, 201):
-            raise RuntimeError(f"ElevenLabs Voice Clone Add Failed ({clone_resp.status_code}): {clone_resp.text}")
+    audio_base64_list = resp.json().get("audios", [])
+    if not audio_base64_list:
+        raise RuntimeError("Sarvam AI returned empty audio payload.")
 
-        voice_id = clone_resp.json().get("voice_id")
-        print(f"✅ ElevenLabs Voice Profile Created: {voice_id}")
-
-        # Step 2: Generate translated speech using ElevenLabs Multilingual v2
-        print(f"🎙️ Synthesising '{target_lang}' translated speech in ElevenLabs cloned voice...")
-        tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
-        tts_payload = {
-            "text": text,
-            "model_id": "eleven_multilingual_v2",
-            "voice_settings": {
-                "stability": 0.50,
-                "similarity_boost": 0.85,
-                "style": 0.0,
-                "use_speaker_boost": True
-            }
-        }
-        gen_resp = requests.post(
-            tts_url,
-            headers={**headers, "Content-Type": "application/json"},
-            json=tts_payload,
-            timeout=30,
-        )
-
-        if gen_resp.status_code != 200:
-            raise RuntimeError(f"ElevenLabs TTS Generation Failed ({gen_resp.status_code}): {gen_resp.text}")
-
-        return gen_resp.content
-
-    finally:
-        # Cleanup temporary audio file
-        try: os.unlink(ref_wav_path)
-        except OSError: pass
-
-        # Step 3: Delete temporary voice profile to keep ElevenLabs account clean
-        if voice_id:
-            try:
-                requests.delete(f"https://api.elevenlabs.io/v1/voices/{voice_id}", headers=headers, timeout=10)
-                print(f"🗑️ ElevenLabs temporary voice profile {voice_id} deleted cleanly.")
-            except Exception:
-                pass
+    return base64.b64decode(audio_base64_list[0])
 
 
 async def _edge_tts_async(text: str, voice: str) -> bytes:
@@ -177,13 +116,12 @@ async def _edge_tts_async(text: str, voice: str) -> bytes:
     return mp3_bytes
 
 
-def synthesize_edge_tts(text: str, target_lang: str, gender: str = "male") -> bytes:
+def synthesize_edge_tts(text: str, target_lang: str) -> bytes:
     """Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS."""
     if not _EDGE_TTS_AVAILABLE:
         raise RuntimeError("edge-tts not installed.")
 
-    voice_map = EDGE_VOICE_MAP_MALE if gender.lower() == "male" else EDGE_VOICE_MAP_FEMALE
-    voice = voice_map.get(target_lang, "en-US-ChristopherNeural")
+    voice = EDGE_VOICE_MAP_MALE.get(target_lang, "en-US-ChristopherNeural")
 
     try:
         loop = asyncio.get_event_loop()
@@ -214,38 +152,37 @@ def synthesize_speech(
     target_lang: str,
     speaker_audio_bytes: Optional[bytes] = None,
     return_base64: bool = True,
-    gender: str = "male",
 ) -> dict:
     """
     Public Speech Synthesis Entry Point.
-    1. Tries ElevenLabs Hyper-Realistic Voice Cloning if ELEVENLABS_API_KEY is present & USE_XTTS=true.
-    2. Fallback 1: Microsoft Edge Neural Speech (edge-tts) for studio human voices.
-    3. Fallback 2: Google Text-to-Speech (gTTS).
+    1. Primary Indian Speech: Sarvam AI (bulbul:v1) if SARVAM_API_KEY is present & target is Indian lang.
+    2. Primary Global Speech: Microsoft Edge Neural Speech (edge-tts).
+    3. Fallback: Google Text-to-Speech (gTTS).
     """
-    use_cloning = os.getenv("USE_XTTS", "false").strip().lower() == "true"
-    eleven_key = os.getenv("ELEVENLABS_API_KEY")
+    sarvam_key = os.getenv("SARVAM_API_KEY")
+    use_sarvam = os.getenv("USE_SARVAM", "false").strip().lower() == "true" or (sarvam_key and target_lang in SARVAM_LANG_MAP)
 
     raw: Optional[bytes] = None
     engine_name = "unknown"
     mime = "audio/mp3"
 
-    # Option 1: ElevenLabs Hyper-Realistic Voice Cloning
-    if use_cloning and eleven_key and speaker_audio_bytes and len(speaker_audio_bytes) > 0:
+    # Option 1: Sarvam AI Sovereign Indian TTS
+    if use_sarvam and sarvam_key and target_lang in SARVAM_LANG_MAP:
         try:
-            raw = synthesize_elevenlabs_clone(text, target_lang, speaker_audio_bytes, api_key=eleven_key)
-            mime, engine_name = "audio/mp3", "elevenlabs_multilingual_v2_voice_clone"
+            raw = synthesize_sarvam_tts(text, target_lang, api_key=sarvam_key)
+            mime, engine_name = "audio/wav", "sarvam_ai_bulbul_v1"
         except Exception as exc:
-            print(f"⚠️ ElevenLabs Voice Cloning failed: {exc} — Fallback to Edge Neural TTS")
+            print(f"⚠️ Sarvam AI TTS failed for '{target_lang}': {exc} — Fallback to Edge Neural TTS")
 
-    # Fallback 1: Microsoft Edge Neural Speech
+    # Option 2: Microsoft Edge Neural Speech
     if raw is None and _EDGE_TTS_AVAILABLE:
         try:
-            raw = synthesize_edge_tts(text, target_lang, gender=gender)
+            raw = synthesize_edge_tts(text, target_lang)
             mime, engine_name = "audio/mp3", "edge_neural_tts"
         except Exception as exc:
             print(f"⚠️ Edge TTS failed for '{target_lang}': {exc} — Fallback to gTTS")
 
-    # Fallback 2: Google TTS
+    # Option 3: Google TTS
     if raw is None:
         raw = synthesize_gtts(text, target_lang)
         mime, engine_name = "audio/mp3", "gtts_fallback"
