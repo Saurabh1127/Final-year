@@ -112,17 +112,23 @@ def _load_xtts():
     global _xtts_model
     if _xtts_model is None:
         try:
+            import torch  # type: ignore
+            import transformers.pytorch_utils  # type: ignore
+            # Fix transformers 4.44+ compatibility for Coqui TTS
+            if not hasattr(transformers.pytorch_utils, "isin_mps_friendly"):
+                transformers.pytorch_utils.isin_mps_friendly = torch.isin
+
             from TTS.api import TTS  # type: ignore
-            import torch              # type: ignore
             device = "cuda" if torch.cuda.is_available() else "cpu"
             print(f"🎙️  Loading Coqui XTTS-v2 Voice Cloning Engine on {device.upper()} ...")
             _xtts_model = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
             print("✅ Coqui XTTS-v2 ready — Zero-Shot Voice Cloning active!")
         except ImportError:
-            print("⚠️  Coqui TTS library not installed. Run: pip install TTS>=0.22.0")
+            print("⚠️  Coqui TTS library not installed. Run: pip install coqui-tts")
         except Exception as exc:
             print(f"⚠️  XTTS-v2 load error: {exc}")
     return _xtts_model
+
 
 
 def _xtts_clone_voice(text: str, lang: str, speaker_audio_bytes: Optional[bytes] = None) -> bytes:
