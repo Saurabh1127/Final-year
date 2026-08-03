@@ -50,6 +50,7 @@ class SpeechToSpeechEngine:
         target_languages: Optional[list[str]] = None,
         source_language: Optional[str] = None,
         user_id: str = "unknown",
+        speaker_name: str = "Anonymous",
         meeting_id: str = "unknown",
         include_audio: bool = True,
     ) -> dict:
@@ -131,6 +132,7 @@ class SpeechToSpeechEngine:
             "translations":      translations,
             "audio_translations": audio_translations,
             "speaker_id":        user_id,
+            "speaker_name":      speaker_name,
             "meeting_id":        meeting_id,
             "timestamp":         time.time(),
             "latency": {

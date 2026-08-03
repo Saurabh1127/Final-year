@@ -169,6 +169,7 @@ async def process_audio(
     audio: UploadFile = File(...),  # type: ignore[assignment]
     meeting_id: str = Form(...),  # type: ignore[assignment]
     user_id: str = Form(...),  # type: ignore[assignment]
+    speaker_name: Optional[str] = Form("Anonymous"),  # type: ignore[assignment]
     source_language: Optional[str] = Form(None),  # type: ignore[assignment]
     target_languages: str = Form('["en"]'),  # type: ignore[assignment]
     include_audio: str = Form("true"),  # type: ignore[assignment]
@@ -190,6 +191,7 @@ async def process_audio(
             target_languages=targets,
             source_language=source_language,
             user_id=user_id,
+            speaker_name=speaker_name or "Anonymous",
             meeting_id=meeting_id,
             include_audio=include_audio.strip().lower() == "true",
         )

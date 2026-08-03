@@ -143,21 +143,21 @@ def synthesize_speech(
     Returns audio + explicit active engine name metadata.
     """
     sarvam_key = os.getenv("SARVAM_API_KEY")
-    use_sarvam = (sarvam_key and sarvam_key.strip() != "" and target_lang in SARVAM_LANG_MAP)
+    use_sarvam = (os.getenv("USE_SARVAM", "false").lower() == "true") and bool(sarvam_key and sarvam_key.strip() != "" and target_lang in SARVAM_LANG_MAP)
 
     raw: Optional[bytes] = None
     engine_name = "unknown"
     mime = "audio/mp3"
 
-    # Option 1: Sarvam AI Sovereign Indian TTS
+    # Option 1: Sarvam AI Sovereign Indian TTS (Only when USE_SARVAM=true)
     if use_sarvam and target_lang in SARVAM_LANG_MAP:
         try:
             raw = synthesize_sarvam_tts(text, target_lang, api_key=sarvam_key)
-            mime, engine_name = "audio/wav", "🇮🇳 Sarvam AI (bulbul:v1)"
+            mime, engine_name = "audio/wav", "🇮🇳 Sarvam AI (bulbul:v2)"
         except Exception as exc:
             print(f"⚠️ Sarvam AI TTS failed for '{target_lang}': {exc} — Fallback to Edge Neural TTS")
 
-    # Option 2: Microsoft Edge Neural Speech
+    # Option 2: Microsoft Edge Neural Speech (Default Primary Engine)
     if raw is None:
         try:
             raw = synthesize_edge_tts(text, target_lang)
