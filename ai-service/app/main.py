@@ -94,16 +94,8 @@ load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: "FastAPI"):  # type: ignore[valid-type]
-    """Eagerly load Whisper and NLLB models on boot so first request has no cold-start."""
-    print("🚀 Preloading AI models on startup...")
-    from .stt import get_model as get_whisper
-    from .translator import get_model_and_tokenizer as get_nllb
-    try:
-        get_whisper()
-        get_nllb()
-        print("✅ ALL AI MODELS (Whisper + NLLB + OpenVoice v2) LOADED AND READY ON GPU!")
-    except Exception as exc:
-        print(f"⚠️  Model preload exception: {exc}")
+    """FastAPI Lifespan manager. Lazy loads models on demand or preloads safely."""
+    print("🚀 LinguaMeet AI Service initializing...")
     yield
     print("🛑 AI Service shutting down.")
 
