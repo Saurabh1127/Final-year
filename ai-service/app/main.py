@@ -138,7 +138,7 @@ async def health_check() -> HealthResponse:
         service="linguameet-ai-service",
         whisper_model=os.getenv("WHISPER_MODEL", "small"),
         nllb_model=os.getenv("NLLB_MODEL", "facebook/nllb-200-distilled-600M"),
-        tts_engine="xtts_v2" if os.getenv("USE_XTTS", "false").lower() == "true" else "gtts",
+        tts_engine="sarvam_ai" if os.getenv("USE_SARVAM", "false").lower() == "true" else ("xtts_v2" if os.getenv("USE_XTTS", "false").lower() == "true" else "edge_tts"),
         device="cuda" if _cuda_available() else "cpu",
         voice_retention_active=os.getenv("USE_XTTS", "false").lower() == "true",
         timestamp=time.time(),
