@@ -1,6 +1,6 @@
 """
 Text-to-Speech Module — Multi-Engine Architecture:
-  1. Sarvam AI TTS (bulbul:v1) — Sovereign Indian AI for 10 Regional Indian Languages.
+  1. Sarvam AI TTS (bulbul:v2) — Sovereign Indian AI for 10 Regional Indian Languages.
   2. Microsoft Edge Neural Speech (edge-tts) — Studio-grade global neural human voices.
   3. Google Text-to-Speech (gTTS) — Universal fallback.
 """
@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import io
 import os
+import sys
 import json
 import base64
 import tempfile
@@ -32,7 +33,7 @@ except ImportError:
     _GTTS_AVAILABLE = False
 
 
-# ── Sarvam AI Language Map (bulbul:v1) ──────────────────────────────────────
+# ── Sarvam AI Language Map (bulbul:v2) ──────────────────────────────────────
 SARVAM_LANG_MAP: dict[str, str] = {
     "hi": "hi-IN",  # Hindi
     "bn": "bn-IN",  # Bengali
@@ -70,7 +71,7 @@ GTTS_LANG_MAP: dict[str, str] = {
 
 
 def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = None) -> bytes:
-    """Synthesise Indian Regional Speech via Sarvam AI API (bulbul:v1 model)."""
+    """Synthesise Indian Regional Speech via Sarvam AI API (bulbul:v2 model)."""
     raw_key = api_key or os.getenv("SARVAM_API_KEY")
     if not raw_key:
         raise ValueError("SARVAM_API_KEY environment variable is missing.")
@@ -88,7 +89,7 @@ def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = 
         "target_language_code": target_code,
         "speaker": "anushka",
         "pitch": 0,
-        "pace": 1.05,
+        "pace": 0.95,
         "loudness": 1.5,
         "speech_sample_rate": 22050,
         "enable_preprocessing": True,
@@ -107,10 +108,39 @@ def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = 
 
 
 def synthesize_edge_tts(text: str, target_lang: str) -> bytes:
-    """Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS CLI (100% reliable)."""
+    """Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS."""
     voice = EDGE_VOICE_MAP_MALE.get(target_lang, "en-US-ChristopherNeural")
+
+    # Method 1: Native Python edge_tts Communicate API
+    if _EDGE_TTS_AVAILABLE:
+        try:
+            async def _async_gen():
+                c = edge_tts.Communicate(text, voice)
+                buf = io.BytesIO()
+                async for chunk in c.stream():
+                    if chunk.get("type") == "audio":
+                        buf.write(chunk.get("data", b""))
+                return buf.getvalue()
+
+            try:
+                import nest_asyncio  # type: ignore
+                nest_asyncio.apply()
+            except Exception:
+                pass
+
+            loop = asyncio.new_event_loop()
+            try:
+                data = loop.run_until_complete(_async_gen())
+                if data and len(data) > 100:
+                    return data
+            finally:
+                loop.close()
+        except Exception as exc:
+            print(f"⚠️ Native edge_tts failed: {exc} — attempting module CLI fallback")
+
+    # Method 2: Python executable module fallback (sys.executable -m edge_tts)
     out_mp3 = tempfile.mktemp(suffix=".mp3")
-    cmd = ["edge-tts", "--voice", voice, "--text", text, "--write-media", out_mp3]
+    cmd = [sys.executable, "-m", "edge_tts", "--voice", voice, "--text", text, "--write-media", out_mp3]
     try:
         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
         with open(out_mp3, "rb") as f:
@@ -165,7 +195,7 @@ def synthesize_speech(
         except Exception as exc:
             print(f"⚠️ Edge TTS failed for '{target_lang}': {exc} — Fallback to gTTS")
 
-    # Option 3: Google TTS
+    # Option 3: Google TTS Fallback
     if raw is None:
         raw = synthesize_gtts(text, target_lang)
         mime, engine_name = "audio/mp3", "gTTS Fallback"
