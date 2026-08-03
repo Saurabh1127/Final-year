@@ -127,13 +127,8 @@ app = FastAPI(
 # for ngrok tunnels so no manual URL updates are needed on Colab.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",   # React / MERN frontend
-        "http://localhost:5173",   # Vite dev server
-        "http://localhost:5000",   # Express backend
-    ],
-    allow_origin_regex=r"https://.*\.ngrok(-free)?\.app",
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
