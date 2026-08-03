@@ -1,0 +1,384 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Summary.css — LinguaMeet AI Post-Meeting Summary Page Styles
+   Premium glassmorphism dark design to match index.css design system
+───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Page Layout ─────────────────────────────────────────────────────────── */
+.summary-page {
+  min-height: 100vh;
+  background: var(--bg-primary, #0d0f1a);
+  color: var(--text-primary, #e8eaf6);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.summary-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(13, 15, 26, 0.95);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 1rem 0;
+}
+
+.summary-header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.summary-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.summary-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #7c83f5, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.summary-room-badge {
+  background: rgba(124, 131, 245, 0.15);
+  border: 1px solid rgba(124, 131, 245, 0.35);
+  color: #a78bfa;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+.summary-alert {
+  margin: 1rem auto;
+  max-width: 1100px;
+  width: calc(100% - 3rem);
+}
+
+/* ── Loading ─────────────────────────────────────────────────────────────── */
+.summary-loading,
+.summary-generating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 2rem;
+  gap: 1.25rem;
+  color: var(--text-secondary, #9899b4);
+}
+
+.summary-generating-animation {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.generating-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #7c83f5;
+  animation: generating-bounce 1.2s infinite ease-in-out;
+}
+
+.generating-dot:nth-child(2) { animation-delay: 0.2s; }
+.generating-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes generating-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+  40% { transform: translateY(-12px); opacity: 1; }
+}
+
+/* ── Empty State ─────────────────────────────────────────────────────────── */
+.summary-empty {
+  text-align: center;
+  padding: 5rem 2rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.summary-empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.summary-empty h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary, #e8eaf6);
+  margin-bottom: 0.5rem;
+}
+
+.summary-empty p {
+  color: var(--text-secondary, #9899b4);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.summary-empty-hint {
+  color: rgba(239, 68, 68, 0.8) !important;
+  font-size: 0.875rem !important;
+  margin-top: 0.75rem;
+}
+
+/* ── Content Layout ──────────────────────────────────────────────────────── */
+.summary-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Summary Cards ───────────────────────────────────────────────────────── */
+.summary-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.summary-card:hover {
+  border-color: rgba(124, 131, 245, 0.3);
+  box-shadow: 0 0 24px rgba(124, 131, 245, 0.08);
+}
+
+.summary-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+.summary-card-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.summary-card-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary, #e8eaf6);
+  margin: 0;
+  flex: 1;
+}
+
+/* ── Executive Summary ───────────────────────────────────────────────────── */
+.summary-executive-text {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text-secondary, #9899b4);
+  border-left: 3px solid rgba(124, 131, 245, 0.6);
+  padding-left: 1rem;
+  margin: 0;
+}
+
+/* ── 2-column grid for topics + actions ──────────────────────────────────── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 700px) {
+  .summary-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Key Topics ──────────────────────────────────────────────────────────── */
+.topics-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.topic-pill {
+  background: rgba(124, 131, 245, 0.12);
+  border: 1px solid rgba(124, 131, 245, 0.3);
+  color: #a78bfa;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.topic-pill:hover {
+  background: rgba(124, 131, 245, 0.22);
+}
+
+/* ── Action Items ────────────────────────────────────────────────────────── */
+.action-progress-badge {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: #7c83f5;
+  background: rgba(124, 131, 245, 0.12);
+  border: 1px solid rgba(124, 131, 245, 0.25);
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+}
+
+.action-items-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.action-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  user-select: none;
+}
+
+.action-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(124, 131, 245, 0.3);
+}
+
+.action-item--checked {
+  background: rgba(34, 197, 94, 0.07);
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+.action-item--checked .action-text {
+  text-decoration: line-through;
+  color: rgba(152, 153, 180, 0.6);
+}
+
+.action-checkbox {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  color: #7c83f5;
+  line-height: 1.4;
+}
+
+.action-item--checked .action-checkbox { color: #22c55e; }
+
+.action-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary, #9899b4);
+  line-height: 1.5;
+}
+
+/* ── Transcript Section ──────────────────────────────────────────────────── */
+.transcript-log {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.25rem;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.transcript-log::-webkit-scrollbar { width: 4px; }
+.transcript-log::-webkit-scrollbar-thumb { background: rgba(124, 131, 245, 0.35); border-radius: 4px; }
+
+.transcript-log-entry {
+  border-left: 3px solid rgba(124, 131, 245, 0.25);
+  padding: 0.6rem 0 0.6rem 1rem;
+  transition: border-color 0.2s;
+}
+
+.transcript-log-entry:hover { border-left-color: rgba(124, 131, 245, 0.6); }
+
+.transcript-log-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.transcript-log-speaker {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #a78bfa;
+}
+
+.transcript-log-time {
+  font-size: 0.75rem;
+  color: rgba(152, 153, 180, 0.6);
+}
+
+.transcript-log-lang {
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 0.05rem 0.4rem;
+  color: var(--text-secondary, #9899b4);
+}
+
+.transcript-log-text {
+  font-size: 0.9rem;
+  color: var(--text-primary, #e8eaf6);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.transcript-log-translation {
+  font-size: 0.85rem;
+  color: rgba(152, 153, 180, 0.75);
+  margin: 0.2rem 0 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  line-height: 1.5;
+}
+
+.transcript-lang-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: rgba(124, 131, 245, 0.15);
+  color: #7c83f5;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+/* ── Spinner (small variant) ─────────────────────────────────────────────── */
+.spinner-sm {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
