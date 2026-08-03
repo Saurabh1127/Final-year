@@ -258,6 +258,7 @@ async def websocket_process_audio(websocket: WebSocket) -> None:
                 target_languages=payload.get("target_languages", ["en"]),
                 source_language=payload.get("source_language"),
                 user_id=payload.get("user_id", "unknown"),
+                speaker_name=payload.get("speaker_name", "Anonymous"),
                 meeting_id=payload.get("meeting_id", "unknown"),
                 include_audio=payload.get("include_audio", True),
             )

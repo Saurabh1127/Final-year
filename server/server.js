@@ -7,6 +7,9 @@ const setupSocket = require('./socket');
 
 // Route imports
 const authRoutes = require('./routes/auth');
+const meetingRoutes = require('./routes/meetings');
+const transcriptRoutes = require('./routes/transcriptRoutes');
+const summaryRoutes = require('./routes/summaryRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -29,8 +32,9 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-const meetingRoutes = require('./routes/meetings');
 app.use('/api/meetings', meetingRoutes);
+app.use('/api/meetings', summaryRoutes);   // POST /:meetingId/summarize, GET /:meetingId/summary
+app.use('/api/transcripts', transcriptRoutes);
 
 // Setup Socket.IO
 const io = setupSocket(server);

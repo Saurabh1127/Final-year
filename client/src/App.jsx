@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import Meeting from './pages/Meeting';
+import SummaryPage from './pages/SummaryPage';
 import ProtectedRoute from './components/Layout/ProtectedRoute';
 
 function App() {
@@ -32,6 +33,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Meeting />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/summary/:roomCode"
+              element={
+                <ProtectedRoute>
+                  <SummaryPage />
                 </ProtectedRoute>
               }
             />
