@@ -2,12 +2,12 @@ const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 const meetingHandlers = require('./meetingHandlers');
 const signalingHandlers = require('./signalingHandlers');
-const Meeting = require('../models/Meeting');
+const meetingService = require('../services/meetingService');
 
 const setupSocket = (httpServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: true,
+      origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
       methods: ['GET', 'POST'],
       credentials: true,
     },
@@ -41,15 +41,7 @@ const setupSocket = (httpServer) => {
       // Cleanup participant state on disconnect
       if (socket.roomCode && socket.userId) {
         try {
-          const meeting = await Meeting.findOne({ roomCode: socket.roomCode });
-          if (meeting) {
-            const participant = meeting.participants.find(p => p.userId.toString() === socket.userId);
-            if (participant) {
-              participant.isActive = false;
-              participant.socketId = null;
-              await meeting.save();
-            }
-          }
+          await meetingService.leaveMeeting({ roomCode: socket.roomCode, userId: socket.userId });
           socket.to(socket.roomCode).emit('participant-left', { 
             userId: socket.userId, 
             socketId: socket.id 

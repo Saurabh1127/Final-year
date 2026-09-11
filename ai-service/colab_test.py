@@ -81,8 +81,7 @@ os.environ["WHISPER_MODEL"] = "large-v3"
 # NMT Model: Meta NLLB 1.3B (200+ languages including 22 Indian scheduled languages)
 os.environ["NLLB_MODEL"]    = "facebook/nllb-200-distilled-1.3B"
 
-# Optional: Sarvam AI Sovereign Indian TTS Key (Leave empty to use Microsoft Edge Neural TTS)
-os.environ["SARVAM_API_KEY"] = "sk_up7c1rdn_zGiuPp7vz1uMyxcjbvVVJ7Fc"
+os.environ["SARVAM_API_KEY"] = os.environ.get("SARVAM_API_KEY", "")
 
 print("Environment configured:")
 print(f"  WHISPER_MODEL  = {os.environ['WHISPER_MODEL']}")

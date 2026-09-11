@@ -1,4 +1,4 @@
-const Meeting = require('../models/Meeting');
+const meetingService = require('../services/meetingService');
 
 module.exports = (io, socket) => {
   // Join a meeting room
@@ -6,30 +6,13 @@ module.exports = (io, socket) => {
     try {
       console.log(`Socket ${socket.id} joining room ${roomCode} for user ${userId}`);
       
-      const meeting = await Meeting.findOne({ roomCode, status: { $ne: 'ended' } });
-      if (!meeting) {
-        return socket.emit('error', { message: 'Meeting not found' });
-      }
-
-      // Check if participant already exists in the meeting
-      let participant = meeting.participants.find(p => p.userId.toString() === userId);
-      
-      if (participant) {
-        participant.socketId = socket.id;
-        participant.isActive = true;
-        participant.displayName = displayName || participant.displayName;
-        participant.targetLanguage = targetLanguage || participant.targetLanguage;
-      } else {
-        meeting.participants.push({
-          userId,
-          displayName,
-          targetLanguage,
-          socketId: socket.id,
-          isActive: true
-        });
-      }
-
-      await meeting.save();
+      const meeting = await meetingService.joinMeeting({
+        roomCode,
+        userId,
+        displayName,
+        targetLanguage,
+        socketId: socket.id
+      });
       
       // Join the socket room
       socket.join(roomCode);
@@ -84,15 +67,7 @@ module.exports = (io, socket) => {
       socket.roomCode = null;
       socket.userId = null;
 
-      const meeting = await Meeting.findOne({ roomCode });
-      if (meeting) {
-        const participant = meeting.participants.find(p => p.userId.toString() === userId);
-        if (participant) {
-          participant.isActive = false;
-          participant.socketId = null;
-          await meeting.save();
-        }
-      }
+      await meetingService.leaveMeeting({ roomCode, userId });
 
       socket.to(roomCode).emit('participant-left', { userId, socketId: socket.id });
     } catch (error) {

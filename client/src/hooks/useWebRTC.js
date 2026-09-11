@@ -20,9 +20,16 @@ export const useWebRTC = (localStream, userId) => {
   useEffect(() => {
     const fetchTurnCredentials = async () => {
       try {
+        const token = localStorage.getItem('token');
         const res = await fetch(
-          'https://anujx.metered.live/api/v1/turn/credentials?apiKey=3316b129175fc38cb1e9ca7b74de883411c3'
+          `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/turn/credentials`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
         );
+        if (!res.ok) throw new Error('Failed to fetch credentials');
         const iceServers = await res.json();
         console.log('📡 [WebRTC] ✅ Got TURN credentials from Metered:', iceServers.length, 'servers');
         iceConfigRef.current = { iceServers };
