@@ -1,4 +1,9 @@
 import meetingService from '../services/meetingService.js';
+import {
+  registerParticipant,
+  unregisterParticipant,
+  updateParticipantLanguage,
+} from '../translation/orchestrator.js';
 
 export default (io, socket) => {
   // Join a meeting room
@@ -20,6 +25,13 @@ export default (io, socket) => {
       // Store current room on the socket object for easy access during disconnect
       socket.roomCode = roomCode;
       socket.userId = userId;
+
+      // Register with the translation orchestrator
+      registerParticipant(roomCode, socket.id, {
+        userId,
+        speakerName: displayName,
+        targetLanguage: targetLanguage || 'en',
+      });
 
       // Broadcast to others in the room that a new participant joined
       socket.to(roomCode).emit('participant-joined', {
@@ -62,7 +74,10 @@ export default (io, socket) => {
   socket.on('leave-meeting', async ({ roomCode, userId }) => {
     try {
       console.log(`Socket ${socket.id} leaving room ${roomCode}`);
-      
+
+      // Deregister from orchestrator before leaving
+      unregisterParticipant(roomCode, socket.id);
+
       socket.leave(roomCode);
       socket.roomCode = null;
       socket.userId = null;
@@ -73,5 +88,12 @@ export default (io, socket) => {
     } catch (error) {
       console.error('Error leaving meeting:', error);
     }
+  });
+
+  // Handle mid-meeting language change
+  socket.on('update-language', ({ roomCode, targetLanguage }) => {
+    if (!roomCode || !targetLanguage) return;
+    updateParticipantLanguage(roomCode, socket.id, targetLanguage);
+    console.log(`🌐 [Meeting] ${socket.id} changed language to ${targetLanguage} in room ${roomCode}`);
   });
 };

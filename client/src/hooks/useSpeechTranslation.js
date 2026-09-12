@@ -1,62 +1,63 @@
 /**
  * useSpeechTranslation.js
  *
- * Real-time Speech-to-Speech Translation Hook with Voice Activity Detection (VAD).
+ * Phase 1 + Phase 2 refactor:
+ *   - No longer calls getUserMedia internally (eliminates double mic permission prompt).
+ *   - Accepts the existing localStream from useAudioCapture via the `stream` prop.
+ *   - Uses MediaStream.clone() so WebRTC track and VAD/recording don't interfere.
+ *   - Emits audio chunks to the Node.js server via Socket.IO ('audio-chunk') — NOT directly to Colab.
+ *   - Server orchestrator handles AI service dispatch and broadcasts 'translation-result'.
  *
- * Architecture:
- *   Browser MediaRecorder (VAD-sliced audio chunks, 2.5s–3.5s)
- *   → POST FormData → Colab FastAPI (Whisper + NLLB + Edge TTS)
- *   → Play base64 TTS audio (with audio ducking callbacks)
- *   → Save transcript to Node.js Express (POST /api/transcripts)
- *   → Update live subtitle state
- *
- * VAD Strategy (Browser-native, no external library needed):
- *   - WebRTC hardware DSP: noiseSuppression + echoCancellation + autoGainControl
- *   - Web Audio API AnalyserNode: RMS energy monitoring at 50ms intervals
- *   - Silence triggers chunk flush after 300ms of quiet (energy < threshold)
- *   - Hard max cap of 3.5s forces flush on continuous speech
- *   - Min speech floor of 1.0s ignores micro-clicks and noise bursts
+ * VAD Strategy (browser-native, no external library):
+ *   - WebRTC hardware DSP constraints applied at capture time in useAudioCapture.
+ *   - Web Audio API AnalyserNode: RMS energy monitoring at 50ms intervals.
+ *   - Silence (< threshold) for >= 300ms flushes the current chunk.
+ *   - Hard cap of 2.5s forces a flush on continuous speech (reduced from 3.5s for lower latency).
+ *   - Minimum of 1.0s speech floor ignores micro-clicks and noise bursts.
  */
 
-import { useState, useRef, useCallback } from 'react';
-import api from '../services/api';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useSocket } from '../context/SocketContext';
 
-// ── VAD Configuration ─────────────────────────────────────────────────────────
+// ── VAD Configuration ──────────────────────────────────────────────────────────
 const VAD_CONFIG = {
-  SILENCE_THRESHOLD: 0.015,   // RMS energy level below which audio is "silent"
-  SILENCE_DURATION_MS: 300,   // ms of silence required to trigger a chunk flush
-  MIN_SPEECH_MS: 1000,        // minimum recorded speech before sending (ignores noise clicks)
-  MAX_CHUNK_MS: 3500,         // hard cap: force flush if speaker hasn't paused
-  ANALYSIS_INTERVAL_MS: 50,   // how often to sample audio energy (ms)
+  SILENCE_THRESHOLD: 0.015,   // RMS energy below which audio is "silent"
+  SILENCE_DURATION_MS: 300,   // ms of silence before triggering a chunk flush
+  MIN_SPEECH_MS: 1000,        // minimum speech duration before we bother sending
+  MAX_CHUNK_MS: 2500,         // hard cap: force flush if speaker hasn't paused (reduced from 3.5s)
+  ANALYSIS_INTERVAL_MS: 50,   // how often to sample audio energy
 };
 
 const useSpeechTranslation = ({
-  meetingId,
+  stream,                       // MediaStream from useAudioCapture (localStream)
+  roomCode,
   userId,
   speakerName,
-  targetLanguages = ['en'],
+  isMuted = false,
   remoteAudioRefs = [],         // Array of refs to remote <audio>/<video> elements for ducking
-  onSubtitle,                   // (subtitle: { speakerName, originalText, translatedText, lang }) => void
-  onTranscriptEntry,            // (entry) => void — for live sidebar
+  onSubtitle,                   // (subtitle) => void — for subtitle overlay
+  onTranscriptEntry,            // (entry) => void — for live sidebar (own speech)
   enabled = false,
 }) => {
+  const { socket } = useSocket();
   const [isTranslating, setIsTranslating] = useState(false);
   const [error, setError] = useState(null);
 
-  // Refs (not state — to avoid stale closure issues in recorder callbacks)
+  // Refs
   const mediaRecorderRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const sourceNodeRef = useRef(null);
-  const chunksRef = useRef([]);            // accumulated MediaRecorder chunks
+  const clonedStreamRef = useRef(null);   // cloned stream for VAD/recording (separate from WebRTC)
+  const chunksRef = useRef([]);
   const silenceTimerRef = useRef(null);
   const speechStartTimeRef = useRef(null);
   const maxChunkTimerRef = useRef(null);
   const vadIntervalRef = useRef(null);
-  const translationStreamRef = useRef(null); // active audio element for TTS playback
-  const isFlushingRef = useRef(false);      // prevent concurrent flushes
+  const translationStreamRef = useRef(null);
+  const isFlushingRef = useRef(false);
 
-  // ── Audio Ducking Helpers ────────────────────────────────────────────────────
+  // ── Audio Ducking ────────────────────────────────────────────────────────────
   const duckRemoteAudio = useCallback(() => {
     remoteAudioRefs.forEach((ref) => {
       if (ref?.current) ref.current.volume = 0.1;
@@ -69,150 +70,72 @@ const useSpeechTranslation = ({
     });
   }, [remoteAudioRefs]);
 
-  // ── TTS Playback ─────────────────────────────────────────────────────────────
+  // ── TTS Playback (for own language preview, if server sends it back) ─────────
   const playTTSAudio = useCallback(
     (audioBase64, mimeType = 'audio/mp3') => {
       return new Promise((resolve) => {
-        // Stop any currently playing TTS
         if (translationStreamRef.current) {
           translationStreamRef.current.pause();
           translationStreamRef.current.src = '';
         }
 
-        const audio = new Audio(
-          `data:${mimeType};base64,${audioBase64}`
-        );
+        const audio = new Audio(`data:${mimeType};base64,${audioBase64}`);
         translationStreamRef.current = audio;
 
         audio.onplay = () => duckRemoteAudio();
-        audio.onended = () => {
-          restoreRemoteAudio();
-          resolve();
-        };
-        audio.onerror = () => {
-          restoreRemoteAudio();
-          resolve();
-        };
-
-        audio.play().catch(() => {
-          restoreRemoteAudio();
-          resolve();
-        });
+        audio.onended = () => { restoreRemoteAudio(); resolve(); };
+        audio.onerror = () => { restoreRemoteAudio(); resolve(); };
+        audio.play().catch(() => { restoreRemoteAudio(); resolve(); });
       });
     },
     [duckRemoteAudio, restoreRemoteAudio]
   );
 
-  // ── Send Audio Chunk to FastAPI ───────────────────────────────────────────────
-  const flushChunk = useCallback(async () => {
-    if (isFlushingRef.current || chunksRef.current.length === 0) return;
+  // ── Flush chunk: emit via Socket.IO to server orchestrator ───────────────────
+  const flushChunk = useCallback(() => {
+    if (isFlushingRef.current || chunksRef.current.length === 0 || !socket?.connected) return;
+    if (isMuted) {
+      // Don't send if the user is muted
+      chunksRef.current = [];
+      return;
+    }
+
     isFlushingRef.current = true;
 
     const blob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
     chunksRef.current = [];
 
-    // Discard tiny blobs (< 4KB) — almost certainly silence or noise
+    // Discard tiny blobs — almost certainly silence or noise (< 4KB)
     if (blob.size < 4096) {
       isFlushingRef.current = false;
       return;
     }
 
-    const formData = new FormData();
-    formData.append('audio', blob, 'chunk.webm');
-    formData.append('meeting_id', meetingId);
-    formData.append('user_id', userId);
-    formData.append('speaker_name', speakerName);
-    formData.append('target_languages', JSON.stringify(targetLanguages));
-    formData.append('include_audio', 'true');
-
-    try {
-      const aiServiceUrl = import.meta.env.VITE_AI_SERVICE_URL;
-      if (!aiServiceUrl) throw new Error('VITE_AI_SERVICE_URL is not configured.');
-
-      const response = await fetch(`${aiServiceUrl}/api/process-audio`, {
-        method: 'POST',
-        body: formData,
+    // Convert Blob to ArrayBuffer for Socket.IO binary transport
+    blob.arrayBuffer().then((buffer) => {
+      socket.emit('audio-chunk', buffer, {
+        roomCode,
+        speakerName,
+        mimeType: 'audio/webm;codecs=opus',
       });
-
-      if (!response.ok) throw new Error(`FastAPI returned ${response.status}`);
-
-      const data = await response.json();
-
-      // Guard: no transcript if nothing was transcribed / no_speech
-      if (!data.original_text || data.original_text.trim() === '') {
-        isFlushingRef.current = false;
-        return;
-      }
-
-      const { original_text, source_language, translations, audio_translations } = data;
-
-      // ── Persist transcript entry to Node.js backend ─────────────────────────
-      try {
-        await api.post('/transcripts', {
-          meetingId,
-          speakerId: userId,
-          speakerName,
-          sourceLanguage: source_language,
-          originalText: original_text,
-          translations,
-        });
-      } catch (saveErr) {
-        console.warn('⚠️ [Speech] Failed to persist transcript:', saveErr.message);
-      }
-
-      // ── Update live transcript sidebar state ─────────────────────────────────
-      if (onTranscriptEntry) {
-        onTranscriptEntry({
-          speakerId: userId,
-          speakerName,
-          originalText: original_text,
-          sourceLanguage: source_language,
-          translations,
-          timestamp: new Date(),
-        });
-      }
-
-      // ── Play TTS audio + show subtitles for each target language ─────────────
-      for (const lang of targetLanguages) {
-        const audioResult = audio_translations?.[lang];
-        const translatedText = translations?.[lang] || '';
-
-        // Show subtitle overlay
-        if (onSubtitle) {
-          onSubtitle({
-            speakerName,
-            originalText: original_text,
-            translatedText,
-            lang,
-          });
-        }
-
-        // Play translated TTS audio (with ducking)
-        if (audioResult?.audio_base64) {
-          await playTTSAudio(audioResult.audio_base64, audioResult.mime_type);
-        }
-      }
-    } catch (err) {
-      console.error('❌ [Speech] Translation pipeline error:', err.message);
-      setError(err.message);
-    } finally {
+      console.log(`📤 [Speech] Emitted audio-chunk (${(blob.size / 1024).toFixed(1)}KB) for room ${roomCode}`);
+    }).catch((err) => {
+      console.warn('⚠️ [Speech] Failed to convert blob to ArrayBuffer:', err.message);
+    }).finally(() => {
       isFlushingRef.current = false;
-    }
-  }, [
-    meetingId, userId, speakerName, targetLanguages,
-    playTTSAudio, onSubtitle, onTranscriptEntry,
-  ]);
+    });
+  }, [socket, roomCode, speakerName, isMuted]);
 
-  // ── VAD: Watch Audio Energy via Web Audio AnalyserNode ────────────────────────
+  // ── VAD: Watch Audio Energy via AnalyserNode ──────────────────────────────────
   const startVAD = useCallback(
-    (stream) => {
+    (vadStream) => {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
 
       audioContextRef.current = new AudioContext();
       analyserRef.current = audioContextRef.current.createAnalyser();
       analyserRef.current.fftSize = 512;
-      sourceNodeRef.current = audioContextRef.current.createMediaStreamSource(stream);
+      sourceNodeRef.current = audioContextRef.current.createMediaStreamSource(vadStream);
       sourceNodeRef.current.connect(analyserRef.current);
 
       const dataArray = new Float32Array(analyserRef.current.fftSize);
@@ -221,21 +144,17 @@ const useSpeechTranslation = ({
       vadIntervalRef.current = setInterval(() => {
         analyserRef.current.getFloatTimeDomainData(dataArray);
 
-        // Calculate RMS energy
         const rms = Math.sqrt(
           dataArray.reduce((sum, v) => sum + v * v, 0) / dataArray.length
         );
-
         const isSpeaking = rms > VAD_CONFIG.SILENCE_THRESHOLD;
 
         if (isSpeaking) {
           silenceDuration = 0;
           clearTimeout(silenceTimerRef.current);
 
-          // Start tracking speech start time (for min speech duration check)
           if (!speechStartTimeRef.current) {
             speechStartTimeRef.current = Date.now();
-            // Set max chunk hard cap
             maxChunkTimerRef.current = setTimeout(() => {
               if (chunksRef.current.length > 0) flushChunk();
             }, VAD_CONFIG.MAX_CHUNK_MS);
@@ -248,7 +167,6 @@ const useSpeechTranslation = ({
             speechStartTimeRef.current &&
             Date.now() - speechStartTimeRef.current >= VAD_CONFIG.MIN_SPEECH_MS
           ) {
-            // Speaker paused — flush the accumulated audio chunk
             clearTimeout(maxChunkTimerRef.current);
             speechStartTimeRef.current = null;
             silenceDuration = 0;
@@ -260,24 +178,21 @@ const useSpeechTranslation = ({
     [flushChunk]
   );
 
-  // ── Start Recording ───────────────────────────────────────────────────────────
-  const startTranslation = useCallback(async () => {
-    if (isTranslating) return;
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          noiseSuppression: true,   // Browser hardware: filter fans, AC, hiss
-          echoCancellation: true,   // Prevent speaker audio re-entering mic
-          autoGainControl: true,    // Normalize speaker volume
-          channelCount: 1,
-          sampleRate: 16000,        // Whisper optimal sample rate
-        },
-      });
+  // ── Start Recording (using cloned stream, not WebRTC stream directly) ─────────
+  const startTranslation = useCallback(() => {
+    if (isTranslating || !stream) return;
 
-      const recorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus'
-          : 'audio/webm',
+    try {
+      // Clone the stream — MediaRecorder consuming it won't disturb the WebRTC peer connection
+      const cloned = stream.clone();
+      clonedStreamRef.current = cloned;
+
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : 'audio/webm';
+
+      const recorder = new MediaRecorder(cloned, {
+        mimeType,
         audioBitsPerSecond: 32000,
       });
 
@@ -291,15 +206,15 @@ const useSpeechTranslation = ({
       recorder.start(250);
       mediaRecorderRef.current = recorder;
 
-      startVAD(stream);
+      startVAD(cloned);
       setIsTranslating(true);
       setError(null);
-      console.log('🎙️ [SpeechTranslation] Started with VAD + noise suppression.');
+      console.log('🎙️ [Speech] Started VAD on cloned stream (no double mic prompt).');
     } catch (err) {
-      console.error('❌ [SpeechTranslation] Failed to start:', err.message);
-      setError('Could not access microphone for translation.');
+      console.error('❌ [Speech] Failed to start:', err.message);
+      setError('Could not start translation recording.');
     }
-  }, [isTranslating, startVAD]);
+  }, [isTranslating, stream, startVAD]);
 
   // ── Stop Recording ────────────────────────────────────────────────────────────
   const stopTranslation = useCallback(() => {
@@ -312,7 +227,12 @@ const useSpeechTranslation = ({
 
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream?.getTracks().forEach((t) => t.stop());
+    }
+
+    // Stop cloned stream tracks (does NOT affect the WebRTC stream)
+    if (clonedStreamRef.current) {
+      clonedStreamRef.current.getTracks().forEach((t) => t.stop());
+      clonedStreamRef.current = null;
     }
 
     if (sourceNodeRef.current) sourceNodeRef.current.disconnect();
@@ -326,14 +246,26 @@ const useSpeechTranslation = ({
     restoreRemoteAudio();
     chunksRef.current = [];
     setIsTranslating(false);
-    console.log('🛑 [SpeechTranslation] Stopped.');
+    console.log('🛑 [Speech] Stopped.');
   }, [isTranslating, restoreRemoteAudio]);
+
+  // ── Restart when stream changes (e.g. tab re-focus) ──────────────────────────
+  useEffect(() => {
+    if (isTranslating && stream) {
+      // If stream reference changed (e.g. device switch), restart with new stream
+      stopTranslation();
+      setTimeout(() => startTranslation(), 100);
+    }
+  }, [stream]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     isTranslating,
     error,
     startTranslation,
     stopTranslation,
+    playTTSAudio,       // exported so useTranslationReceiver can use same ducking logic
+    duckRemoteAudio,
+    restoreRemoteAudio,
   };
 };
 

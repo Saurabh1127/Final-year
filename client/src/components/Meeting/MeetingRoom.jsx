@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useWebRTC } from '../../hooks/useWebRTC';
 import { useAudioCapture } from '../../hooks/useAudioCapture';
 import useSpeechTranslation from '../../hooks/useSpeechTranslation';
+import useTranslationReceiver from '../../hooks/useTranslationReceiver';
 import ParticipantGrid from './ParticipantGrid';
 import ControlBar from './ControlBar';
 import api from '../../services/api';
@@ -62,28 +63,36 @@ const MeetingRoom = ({ roomCode }) => {
     return () => socket.off('new-transcript', handleNewTranscript);
   }, [socket, user?.id, handleTranscriptEntry]);
 
-  // ── Speech Translation hook (VAD-powered) ───────────────────────────────────
-  const { isTranslating, startTranslation, stopTranslation } = useSpeechTranslation({
-    meetingId: roomCode,
+  // ── Speech Translation hook — sends audio-chunk to server via Socket.IO ─────
+  const { isTranslating, error: translationError, startTranslation, stopTranslation } = useSpeechTranslation({
+    stream: localStream,           // Pass the existing stream — no double getUserMedia
+    roomCode,
     userId: user?.id,
     speakerName: user?.name || 'Me',
-    targetLanguages: [user?.preferredLanguage || 'hi', 'en'].filter(
-      (l, i, arr) => arr.indexOf(l) === i  // deduplicate
-    ),
+    isMuted,
     remoteAudioRefs: remoteVideoRefs.current,
     onSubtitle: handleSubtitle,
     onTranscriptEntry: handleTranscriptEntry,
     enabled: translationEnabled,
   });
 
-  // Start/stop translation when toggle changes
+  // ── Translation Receiver hook — plays incoming TTS from server ───────────────
+  const { isReceiving } = useTranslationReceiver({
+    remoteAudioRefs: remoteVideoRefs.current,
+    onSubtitle: handleSubtitle,
+    onTranscriptEntry: handleTranscriptEntry,
+    enabled: translationEnabled,
+  });
+
+  // Start/stop translation when toggle changes (only when stream is ready)
   useEffect(() => {
+    if (!localStream) return;
     if (translationEnabled) {
       startTranslation();
     } else {
       stopTranslation();
     }
-  }, [translationEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [translationEnabled, localStream]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cleanup on unmount
   useEffect(() => {
@@ -244,7 +253,7 @@ const MeetingRoom = ({ roomCode }) => {
             onClick={() => setTranslationEnabled(prev => !prev)}
             title={translationEnabled ? 'Stop live translation' : 'Start live AI translation'}
           >
-            {isTranslating ? '🔴 Translating...' : translationEnabled ? '⏹ Stop Translation' : '🌐 Start Translation'}
+          {isTranslating ? '🔴 Sending...' : isReceiving ? '🔊 Playing...' : translationEnabled ? '⏹ Stop Translation' : '🌐 Start Translation'}
           </button>
           <button
             id="btn-toggle-transcript"

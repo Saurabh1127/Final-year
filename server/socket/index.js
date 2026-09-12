@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import meetingHandlers from './meetingHandlers.js';
 import signalingHandlers from './signalingHandlers.js';
 import meetingService from '../services/meetingService.js';
+import { handleAudioChunk, unregisterParticipant } from '../translation/orchestrator.js';
 
 const setupSocket = (httpServer) => {
   const io = new Server(httpServer, {
@@ -11,6 +12,7 @@ const setupSocket = (httpServer) => {
       methods: ['GET', 'POST'],
       credentials: true,
     },
+    maxHttpBufferSize: 2e6, // 2MB — enough for audio chunks (~50-200KB each)
   });
 
   // Socket.IO Middleware for Auth
@@ -35,12 +37,20 @@ const setupSocket = (httpServer) => {
     meetingHandlers(io, socket);
     signalingHandlers(io, socket);
 
+    // Audio-chunk handler: binary audio from speaking participant → AI service → translation-result
+    socket.on('audio-chunk', (audioBuffer, metadata) =>
+      handleAudioChunk(io, socket, audioBuffer, metadata)
+    );
+
     socket.on('disconnect', async (reason) => {
       console.log(`🔌 Socket disconnected: ${socket.id} (${reason})`);
       
       // Cleanup participant state on disconnect
       if (socket.roomCode && socket.userId) {
         try {
+          // Remove from orchestrator participant registry
+          unregisterParticipant(socket.roomCode, socket.id);
+
           await meetingService.leaveMeeting({ roomCode: socket.roomCode, userId: socket.userId });
           socket.to(socket.roomCode).emit('participant-left', { 
             userId: socket.userId, 
