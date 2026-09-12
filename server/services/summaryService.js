@@ -1,6 +1,6 @@
-const axios = require('axios');
-const Meeting = require('../models/Meeting');
-const Transcript = require('../models/Transcript');
+import axios from 'axios';
+import Meeting from '../models/Meeting.js';
+import Transcript from '../models/Transcript.js';
 
 class SummaryService {
   async generateSummary(meetingId) {
@@ -106,4 +106,4 @@ ${dialogueLog}
   }
 }
 
-module.exports = new SummaryService();
+export default new SummaryService();

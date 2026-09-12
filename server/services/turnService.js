@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 class TurnService {
   async getCredentials() {
@@ -18,4 +18,4 @@ class TurnService {
   }
 }
 
-module.exports = new TurnService();
+export default new TurnService();

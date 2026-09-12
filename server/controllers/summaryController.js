@@ -1,4 +1,4 @@
-const summaryService = require('../services/summaryService');
+import summaryService from '../services/summaryService.js';
 
 class SummaryController {
   async summarizeMeeting(req, res) {
@@ -32,4 +32,4 @@ class SummaryController {
   }
 }
 
-module.exports = new SummaryController();
+export default new SummaryController();

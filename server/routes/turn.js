@@ -1,9 +1,9 @@
-const express = require('express');
-const authMiddleware = require('../middleware/auth');
-const turnController = require('../controllers/turnController');
+import express from 'express';
+import authMiddleware from '../middleware/auth.js';
+import turnController from '../controllers/turnController.js';
 
 const router = express.Router();
 
 router.get('/credentials', authMiddleware, turnController.getCredentials);
 
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-module.exports = (io, socket) => {
+export default (io, socket) => {
   // WebRTC Signaling: Offer
   socket.on('webrtc-offer', ({ targetSocketId, offer, callerId }) => {
     console.log(`Relaying offer from ${socket.id} to ${targetSocketId}`);

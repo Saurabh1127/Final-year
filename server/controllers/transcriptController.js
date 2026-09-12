@@ -1,4 +1,4 @@
-const transcriptService = require('../services/transcriptService');
+import transcriptService from '../services/transcriptService.js';
 
 class TranscriptController {
   async createTranscript(req, res) {
@@ -62,4 +62,4 @@ class TranscriptController {
   }
 }
 
-module.exports = new TranscriptController();
+export default new TranscriptController();

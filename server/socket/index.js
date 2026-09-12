@@ -1,8 +1,8 @@
-const { Server } = require('socket.io');
-const jwt = require('jsonwebtoken');
-const meetingHandlers = require('./meetingHandlers');
-const signalingHandlers = require('./signalingHandlers');
-const meetingService = require('../services/meetingService');
+import { Server } from 'socket.io';
+import jwt from 'jsonwebtoken';
+import meetingHandlers from './meetingHandlers.js';
+import signalingHandlers from './signalingHandlers.js';
+import meetingService from '../services/meetingService.js';
 
 const setupSocket = (httpServer) => {
   const io = new Server(httpServer, {
@@ -56,4 +56,4 @@ const setupSocket = (httpServer) => {
   return io;
 };
 
-module.exports = setupSocket;
+export default setupSocket;

@@ -1,4 +1,4 @@
-const Transcript = require('../models/Transcript');
+import Transcript from '../models/Transcript.js';
 
 class TranscriptService {
   async saveTranscript({ meetingId, speakerId, speakerName, sourceLanguage, originalText, translations }, io) {
@@ -37,4 +37,4 @@ class TranscriptService {
   }
 }
 
-module.exports = new TranscriptService();
+export default new TranscriptService();

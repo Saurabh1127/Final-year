@@ -1,4 +1,4 @@
-const turnService = require('../services/turnService');
+import turnService from '../services/turnService.js';
 
 class TurnController {
   async getCredentials(req, res) {
@@ -12,4 +12,4 @@ class TurnController {
   }
 }
 
-module.exports = new TurnController();
+export default new TurnController();

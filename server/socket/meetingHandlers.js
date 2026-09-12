@@ -1,6 +1,6 @@
-const meetingService = require('../services/meetingService');
+import meetingService from '../services/meetingService.js';
 
-module.exports = (io, socket) => {
+export default (io, socket) => {
   // Join a meeting room
   socket.on('join-meeting', async ({ roomCode, userId, displayName, targetLanguage, isMuted, isVideoOff }) => {
     try {

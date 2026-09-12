@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router({ mergeParams: true });
-const authMiddleware = require('../middleware/auth');
-const summaryController = require('../controllers/summaryController');
+import authMiddleware from '../middleware/auth.js';
+import summaryController from '../controllers/summaryController.js';
 
 router.post('/:meetingId/summarize', authMiddleware, summaryController.summarizeMeeting);
 router.get('/:meetingId/summary', authMiddleware, summaryController.getSummary);
 
-module.exports = router;
+export default router;

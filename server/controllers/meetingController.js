@@ -1,4 +1,4 @@
-const meetingService = require('../services/meetingService');
+import meetingService from '../services/meetingService.js';
 
 class MeetingController {
   async createMeeting(req, res) {
@@ -43,4 +43,4 @@ class MeetingController {
   }
 }
 
-module.exports = new MeetingController();
+export default new MeetingController();

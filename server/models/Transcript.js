@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const transcriptSchema = new mongoose.Schema({
   meetingId: {
@@ -37,4 +37,4 @@ const transcriptSchema = new mongoose.Schema({
 // Compound index for efficient meeting transcript retrieval
 transcriptSchema.index({ meetingId: 1, timestamp: 1 });
 
-module.exports = mongoose.model('Transcript', transcriptSchema);
+export default mongoose.model('Transcript', transcriptSchema);

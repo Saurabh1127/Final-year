@@ -1,6 +1,7 @@
 {
   "name": "linguameet-server",
   "version": "1.0.0",
+  "type": "module",
   "description": "LinguaMeet Node.js backend — REST API + Socket.IO signaling",
   "main": "server.js",
   "scripts": {

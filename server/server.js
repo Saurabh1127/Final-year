@@ -1,18 +1,19 @@
-require('dotenv').config();
-const express = require('express');
-const http = require('http');
-const cors = require('cors');
-const connectDB = require('./config/db');
-const setupSocket = require('./socket');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
+import dotenv from 'dotenv';
+dotenv.config();
+import express from 'express';
+import http from 'http';
+import cors from 'cors';
+import connectDB from './config/db.js';
+import setupSocket from './socket/index.js';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 // Route imports
-const authRoutes = require('./routes/auth');
-const meetingRoutes = require('./routes/meetings');
-const transcriptRoutes = require('./routes/transcriptRoutes');
-const summaryRoutes = require('./routes/summaryRoutes');
-const turnRoutes = require('./routes/turn');
+import authRoutes from './routes/auth.js';
+import meetingRoutes from './routes/meetings.js';
+import transcriptRoutes from './routes/transcriptRoutes.js';
+import summaryRoutes from './routes/summaryRoutes.js';
+import turnRoutes from './routes/turn.js';
 
 const app = express();
 const server = http.createServer(app);

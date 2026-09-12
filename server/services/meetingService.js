@@ -1,4 +1,4 @@
-const Meeting = require('../models/Meeting');
+import Meeting from '../models/Meeting.js';
 
 class MeetingService {
   async createMeeting({ title, hostId, hostName, hostLanguage }) {
@@ -153,4 +153,4 @@ class MeetingService {
   }
 }
 
-module.exports = new MeetingService();
+export default new MeetingService();

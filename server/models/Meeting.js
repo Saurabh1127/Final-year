@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const crypto = require('crypto');
+import mongoose from 'mongoose';
+import crypto from 'crypto';
 
 const meetingSchema = new mongoose.Schema(
   {
@@ -76,4 +76,4 @@ meetingSchema.methods.getActiveParticipants = function () {
   return this.participants.filter((p) => p.isActive);
 };
 
-module.exports = mongoose.model('Meeting', meetingSchema);
+export default mongoose.model('Meeting', meetingSchema);

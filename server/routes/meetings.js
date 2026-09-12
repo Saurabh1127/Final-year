@@ -1,6 +1,6 @@
-const express = require('express');
-const auth = require('../middleware/auth');
-const meetingController = require('../controllers/meetingController');
+import express from 'express';
+import auth from '../middleware/auth.js';
+import meetingController from '../controllers/meetingController.js';
 
 const router = express.Router();
 
@@ -8,4 +8,4 @@ router.post('/', auth, meetingController.createMeeting);
 router.get('/:roomCode', auth, meetingController.getMeeting);
 router.patch('/:roomCode/language', auth, meetingController.updateLanguage);
 
-module.exports = router;
+export default router;
