@@ -137,6 +137,16 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
 
   const { original_text, source_language, translations, audio_translations } = result;
 
+  // DEBUG: Log the full AI response to diagnose empty transcriptions
+  console.log(`🔍 [DEBUG] AI Response for ${speakerName}:`, JSON.stringify({
+    original_text,
+    source_language,
+    translations,
+    has_audio: !!audio_translations && Object.keys(audio_translations || {}).length > 0,
+    error: result.error || null,
+    latency: result.latency || null,
+  }, null, 2));
+
   // Discard no-speech results or pipeline errors
   if (!original_text || original_text.trim() === '' || original_text === '[Pipeline Error]') {
     console.log('🔇 [Orchestrator] AI detected silence or empty transcription.');

@@ -91,36 +91,78 @@ const useSpeechTranslation = ({
     [duckRemoteAudio, restoreRemoteAudio]
   );
 
-  // ── Flush chunk: emit via Socket.IO to server orchestrator ───────────────────
+  // ── Helper: create and start a fresh MediaRecorder ─────────────────────────
+  const startNewRecorder = useCallback(() => {
+    const cloned = clonedStreamRef.current;
+    if (!cloned) return;
+
+    const recorder = new MediaRecorder(cloned);
+    recorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) {
+        chunksRef.current.push(e.data);
+      }
+    };
+    try {
+      recorder.start(250);
+    } catch {
+      recorder.start();
+      timesliceIntervalRef.current = setInterval(() => {
+        if (recorder.state === 'recording') recorder.requestData();
+      }, 250);
+    }
+    mediaRecorderRef.current = recorder;
+  }, []);
+
+  // ── Flush chunk: STOP recorder (finalises WebM headers), send, then RESTART ──
+  // WebM is a container format — it needs EBML/Segment/Track headers at the start.
+  // MediaRecorder only writes these headers when recording begins. If we just
+  // clear the chunk array without stopping, subsequent blobs are header-less and
+  // FFmpeg on the server rejects them with "EBML header parsing failed".
+  // By stopping + restarting, every flushed blob is a valid, self-contained WebM.
   const flushChunk = useCallback(() => {
-    if (isFlushingRef.current || chunksRef.current.length === 0 || !socket?.connected) return;
+    if (isFlushingRef.current || !socket?.connected) return;
+
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state !== 'recording') return;
+    if (chunksRef.current.length === 0) return;
 
     isFlushingRef.current = true;
 
-    const currentMimeType = mediaRecorderRef.current?.mimeType || 'audio/webm';
-    const blob = new Blob(chunksRef.current, { type: currentMimeType });
-    chunksRef.current = [];
+    const currentMimeType = recorder.mimeType || 'audio/webm';
 
-    // Discard tiny blobs (< 1KB)
-    if (blob.size < 1000) {
-      isFlushingRef.current = false;
-      return;
-    }
+    // Stop fires a final 'dataavailable' event, then 'stop' event.
+    // The 'onstop' handler collects all chunks (including the final one),
+    // creates a complete WebM blob, sends it, then restarts recording.
+    recorder.onstop = () => {
+      const blob = new Blob(chunksRef.current, { type: currentMimeType });
+      chunksRef.current = [];
 
-    // Convert Blob to ArrayBuffer for Socket.IO binary transport
-    blob.arrayBuffer().then((buffer) => {
-      socket.emit('audio-chunk', buffer, {
-        roomCode,
-        speakerName,
-        mimeType: currentMimeType,
+      // Restart recording immediately to capture the next utterance
+      startNewRecorder();
+
+      // Discard tiny blobs (< 1KB) — probably just silence
+      if (blob.size < 1000) {
+        isFlushingRef.current = false;
+        return;
+      }
+
+      // Convert Blob to ArrayBuffer for Socket.IO binary transport
+      blob.arrayBuffer().then((buffer) => {
+        socket.emit('audio-chunk', buffer, {
+          roomCode,
+          speakerName,
+          mimeType: currentMimeType,
+        });
+        console.log(`📤 [Speech] Emitted audio-chunk (${(blob.size / 1024).toFixed(1)}KB) for room ${roomCode}`);
+      }).catch((err) => {
+        console.warn('⚠️ [Speech] Failed to convert blob to ArrayBuffer:', err.message);
+      }).finally(() => {
+        isFlushingRef.current = false;
       });
-      console.log(`📤 [Speech] Emitted audio-chunk (${(blob.size / 1024).toFixed(1)}KB) for room ${roomCode}`);
-    }).catch((err) => {
-      console.warn('⚠️ [Speech] Failed to convert blob to ArrayBuffer:', err.message);
-    }).finally(() => {
-      isFlushingRef.current = false;
-    });
-  }, [socket, roomCode, speakerName]);
+    };
+
+    recorder.stop();
+  }, [socket, roomCode, speakerName, startNewRecorder]);
 
   // ── VAD: Watch Audio Energy via AnalyserNode ──────────────────────────────────
   const startVAD = useCallback(
@@ -192,32 +234,8 @@ const useSpeechTranslation = ({
       const cloned = stream.clone();
       clonedStreamRef.current = cloned;
 
-      // Let the browser choose its native, hardware-supported audio format automatically!
-      // This prevents "Failed to execute 'start'" crashes on Android where specific options fail.
-      const options = undefined;
-
-      const recorder = new MediaRecorder(cloned, options);
-
-      recorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) {
-          chunksRef.current.push(e.data);
-        }
-      };
-
-      try {
-        // Collect data every 250ms (fine-grained VAD slice building)
-        recorder.start(250);
-      } catch (err) {
-        console.warn('⚠️ [Speech] recorder.start(250) failed (likely iOS Safari). Falling back to manual timeslicing.');
-        recorder.start();
-        // Fallback: manually request data every 250ms to simulate timeslice
-        timesliceIntervalRef.current = setInterval(() => {
-          if (recorder.state === 'recording') {
-            recorder.requestData();
-          }
-        }, 250);
-      }
-      mediaRecorderRef.current = recorder;
+      // Start the first MediaRecorder session (with fresh WebM headers)
+      startNewRecorder();
 
       startVAD(cloned);
       setIsTranslating(true);
@@ -227,7 +245,7 @@ const useSpeechTranslation = ({
       console.error('❌ [Speech] Failed to start:', err.message);
       setError('Could not start translation recording.');
     }
-  }, [isTranslating, stream, startVAD]);
+  }, [isTranslating, stream, startVAD, startNewRecorder]);
 
   // ── Stop Recording ────────────────────────────────────────────────────────────
   const stopTranslation = useCallback(() => {
