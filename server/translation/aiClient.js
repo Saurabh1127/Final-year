@@ -8,7 +8,6 @@
 import axios from 'axios';
 import FormData from 'form-data';
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 const REQUEST_TIMEOUT_MS = 45_000; // 45s — covers Whisper cold-start on first request
 
 class AIServiceError extends Error {
@@ -50,8 +49,9 @@ export async function processAudio({
   form.append('include_audio', 'true');
 
   const makeRequest = async () => {
+    const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
     const response = await axios.post(
-      `${AI_SERVICE_URL}/api/process-audio`,
+      `${aiUrl}/api/process-audio`,
       form,
       {
         headers: {
@@ -75,10 +75,11 @@ export async function processAudio({
       try {
         return await makeRequest();
       } catch (retryErr) {
+        console.error('🔥 [AIClient] Full Retry Error:', retryErr);
         const status = retryErr.response?.status;
         const type = !retryErr.response ? 'service_down' : status >= 500 ? 'service_down' : 'unknown';
         throw new AIServiceError(
-          `AI service unavailable after retry: ${retryErr.message}`,
+          `AI service unavailable after retry: ${retryErr.message || JSON.stringify(retryErr)}`,
           type,
           status
         );
@@ -105,7 +106,8 @@ export async function processAudio({
  */
 export async function checkHealth() {
   try {
-    const res = await axios.get(`${AI_SERVICE_URL}/health`, { timeout: 5000 });
+    const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+    const res = await axios.get(`${aiUrl}/health`, { timeout: 5000 });
     return res.status === 200;
   } catch {
     return false;
