@@ -178,6 +178,7 @@ async def process_audio(
     source_language: Optional[str] = Form(None),  # type: ignore[assignment]
     target_languages: str = Form('["en"]'),  # type: ignore[assignment]
     include_audio: str = Form("true"),  # type: ignore[assignment]
+    mime_type: Optional[str] = Form(None),  # type: ignore[assignment]
 ) -> dict:
     """
     Full S2ST pipeline via HTTP multipart form upload.
@@ -190,8 +191,15 @@ async def process_audio(
     except (json.JSONDecodeError, ValueError):
         targets = ["en"]
 
+    # Resolve mime_type: prefer explicit form field, fallback to upload content_type
+    resolved_mime = mime_type or audio.content_type or "audio/webm"
+
     try:
-        return engine.process(
+        # Run the heavy synchronous pipeline in a thread so FastAPI's event loop
+        # stays free to accept concurrent requests (prevents request queue-blocking).
+        import asyncio
+        result = await asyncio.to_thread(
+            engine.process,
             audio_bytes=audio_bytes,
             target_languages=targets,
             source_language=source_language,
@@ -199,7 +207,9 @@ async def process_audio(
             speaker_name=speaker_name or "Anonymous",
             meeting_id=meeting_id,
             include_audio=include_audio.strip().lower() == "true",
+            mime_type=resolved_mime,
         )
+        return result
     except Exception as exc:
         import traceback
         traceback.print_exc()

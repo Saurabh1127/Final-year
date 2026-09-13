@@ -48,21 +48,54 @@ def get_model():
 
 
 
-def transcribe_audio(audio_bytes: bytes, source_language: str | None = None) -> dict:
+# ── MIME type → file extension mapping ────────────────────────────────────────
+MIME_EXT_MAP: dict[str, str] = {
+    "audio/webm":              ".webm",
+    "audio/webm;codecs=opus":  ".webm",
+    "audio/ogg":               ".ogg",
+    "audio/ogg;codecs=opus":   ".ogg",
+    "audio/mp4":               ".m4a",
+    "audio/mpeg":              ".mp3",
+    "audio/mp3":               ".mp3",
+    "audio/wav":               ".wav",
+    "audio/x-wav":             ".wav",
+    "audio/flac":              ".flac",
+}
+
+
+def _mime_to_ext(mime_type: str | None) -> str:
+    """Map a MIME type string to a file extension Whisper/FFmpeg can decode."""
+    if not mime_type:
+        return ".webm"  # Browser default is WebM/Opus
+    # Normalise: strip whitespace, lowercase
+    key = mime_type.strip().lower().split(";")[0].strip()
+    # Try exact match first, then base type
+    return MIME_EXT_MAP.get(mime_type.strip().lower(),
+           MIME_EXT_MAP.get(key, ".webm"))
+
+
+def transcribe_audio(
+    audio_bytes: bytes,
+    source_language: str | None = None,
+    mime_type: str | None = None,
+) -> dict:
     """
     Transcribe raw audio bytes → text using Whisper-small.
 
     Args:
         audio_bytes:     Raw audio (WAV / WebM / MP3 / OGG).
         source_language: ISO 639-1 hint, e.g. "en". None = auto-detect.
+        mime_type:       MIME type of the audio (e.g. "audio/webm;codecs=opus").
+                         Used to pick the correct temp file extension so FFmpeg
+                         decodes the format correctly.
 
     Returns:
         {"text": str, "language": str, "segments": list}
     """
     model = get_model()
 
-    # Whisper needs a file path, not bytes — write to a temp file
-    suffix = ".wav"
+    # Use the correct file extension so FFmpeg auto-detects the codec properly
+    suffix = _mime_to_ext(mime_type)
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp.write(audio_bytes)
         tmp_path = tmp.name

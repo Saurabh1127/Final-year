@@ -8,7 +8,7 @@
 import axios from 'axios';
 import FormData from 'form-data';
 
-const REQUEST_TIMEOUT_MS = 45_000; // 45s — covers Whisper cold-start on first request
+const REQUEST_TIMEOUT_MS = 30_000; // 30s — models are preloaded, no cold-start needed
 
 class AIServiceError extends Error {
   constructor(message, type, statusCode) {
@@ -40,16 +40,23 @@ export async function processAudio({
   speakerName,
   targetLanguages = [],
 }) {
-  const form = new FormData();
-  form.append('audio', audioBuffer, { filename: fileName, contentType: mimeType });
-  form.append('meeting_id', meetingId);
-  form.append('user_id', userId);
-  form.append('speaker_name', speakerName);
-  form.append('target_languages', JSON.stringify(targetLanguages));
-  form.append('include_audio', 'true');
+  // Build a FRESH FormData for each attempt — streams are consumed after one POST,
+  // so reusing the same FormData on retry would send an empty body.
+  const buildForm = () => {
+    const form = new FormData();
+    form.append('audio', audioBuffer, { filename: fileName, contentType: mimeType });
+    form.append('meeting_id', meetingId);
+    form.append('user_id', userId);
+    form.append('speaker_name', speakerName);
+    form.append('target_languages', JSON.stringify(targetLanguages));
+    form.append('include_audio', 'true');
+    form.append('mime_type', mimeType);
+    return form;
+  };
 
   const makeRequest = async () => {
     const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+    const form = buildForm();
     const response = await axios.post(
       `${aiUrl}/api/process-audio`,
       form,
@@ -75,11 +82,11 @@ export async function processAudio({
       try {
         return await makeRequest();
       } catch (retryErr) {
-        console.error('🔥 [AIClient] Full Retry Error:', retryErr);
+        console.error('🔥 [AIClient] Full Retry Error:', retryErr.message);
         const status = retryErr.response?.status;
         const type = !retryErr.response ? 'service_down' : status >= 500 ? 'service_down' : 'unknown';
         throw new AIServiceError(
-          `AI service unavailable after retry: ${retryErr.message || JSON.stringify(retryErr)}`,
+          `AI service unavailable after retry: ${retryErr.message}`,
           type,
           status
         );

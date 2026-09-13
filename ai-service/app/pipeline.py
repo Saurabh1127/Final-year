@@ -53,6 +53,7 @@ class SpeechToSpeechEngine:
         speaker_name: str = "Anonymous",
         meeting_id: str = "unknown",
         include_audio: bool = True,
+        mime_type: Optional[str] = None,
     ) -> dict:
         """
         Run the full S2ST pipeline on raw audio bytes.
@@ -81,7 +82,7 @@ class SpeechToSpeechEngine:
         # ── Step 1: ASR — Audio → Text (Whisper-small) ────────────────────────
         t0 = time.time()
         hint = source_language if source_language and source_language not in ("", "auto") else None
-        transcription = transcribe_audio(audio_bytes, source_language=hint)
+        transcription = transcribe_audio(audio_bytes, source_language=hint, mime_type=mime_type)
         detected_lang: str = transcription["language"]
         original_text: str = transcription["text"]
         asr_s = round(time.time() - t0, 3)
