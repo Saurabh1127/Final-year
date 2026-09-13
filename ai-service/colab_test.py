@@ -49,26 +49,11 @@ else:
 # ───────────────────────────────────────────────────────────────────
 # CELL 3 — Install all dependencies (AI, Web & TTS Engines)
 # ───────────────────────────────────────────────────────────────────
-!pip install \
-    fastapi==0.111.0 \
-    uvicorn[standard]==0.30.1 \
-    pydantic==2.7.4 \
-    python-dotenv==1.0.1 \
-    python-multipart==0.0.9 \
-    websockets==12.0 \
-    faster-whisper \
-    transformers==4.44.2 \
-    sentencepiece==0.2.0 \
-    protobuf==5.27.2 \
-    accelerate \
-    "numpy<2" \
-    scipy \
-    gTTS==2.5.1 \
-    edge-tts==6.1.12 \
-    nest_asyncio \
-    requests \
-    psutil \
-    pyngrok
+# Server and web dependencies
+!pip install -q fastapi uvicorn[standard] python-multipart websockets python-dotenv pyngrok
+
+# AI, Translation, and TTS dependencies
+!pip install -q faster-whisper transformers accelerate sentencepiece nest_asyncio gTTS edge-tts
 
 print("✅ All packages installed cleanly.")
 
