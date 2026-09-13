@@ -111,40 +111,20 @@ def synthesize_edge_tts(text: str, target_lang: str) -> bytes:
     """Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS."""
     voice = EDGE_VOICE_MAP_MALE.get(target_lang, "en-US-ChristopherNeural")
 
-    # Method 1: Native Python edge_tts Communicate API
-    if _EDGE_TTS_AVAILABLE:
-        try:
-            async def _async_gen():
-                c = edge_tts.Communicate(text, voice)
-                buf = io.BytesIO()
-                async for chunk in c.stream():
-                    if chunk.get("type") == "audio":
-                        buf.write(chunk.get("data", b""))
-                return buf.getvalue()
-
-            try:
-                import nest_asyncio  # type: ignore
-                nest_asyncio.apply()
-            except Exception:
-                pass
-
-            loop = asyncio.new_event_loop()
-            try:
-                data = loop.run_until_complete(_async_gen())
-                if data and len(data) > 100:
-                    return data
-            finally:
-                loop.close()
-        except Exception as exc:
-            print(f"⚠️ Native edge_tts failed: {exc} — attempting module CLI fallback")
-
-    # Method 2: Python executable module fallback (sys.executable -m edge_tts)
+    # We use the Python executable module fallback (sys.executable -m edge_tts)
+    # because using native asyncio loop.run_until_complete inside a FastAPI threadpool
+    # frequently hangs and deadlocks the server.
     out_mp3 = tempfile.mktemp(suffix=".mp3")
     cmd = [sys.executable, "-m", "edge_tts", "--voice", voice, "--text", text, "--write-media", out_mp3]
     try:
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        # Add a strict 15 second timeout so it never hangs indefinitely
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True, timeout=15)
         with open(out_mp3, "rb") as f:
             return f.read()
+    except subprocess.TimeoutExpired:
+        print(f"⚠️ edge_tts timed out after 15 seconds for {target_lang}")
+        raise RuntimeError("TTS generation timed out")
+
     finally:
         try: os.unlink(out_mp3)
         except OSError: pass
