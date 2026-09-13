@@ -112,8 +112,20 @@ import gc; gc.collect()
 # ───────────────────────────────────────────────────────────────────
 # CELL 7 — Start FastAPI server + expose via ngrok tunnel
 # ───────────────────────────────────────────────────────────────────
-import subprocess, time
+import subprocess, time, os, getpass
 from pyngrok import ngrok
+
+# Ngrok now requires an authtoken for all free accounts.
+token = os.environ.get("NGROK_AUTHTOKEN")
+if not token:
+    print("🔑 Please enter your ngrok Authtoken.")
+    print("   (Get it for free at: https://dashboard.ngrok.com/get-started/your-authtoken)")
+    token = getpass.getpass("Ngrok Authtoken: ")
+
+if token.strip():
+    ngrok.set_auth_token(token.strip())
+else:
+    print("❌ No token provided. Ngrok tunnel will likely fail.")
 
 server = subprocess.Popen(
     ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"],
@@ -125,17 +137,21 @@ server = subprocess.Popen(
 print("⏳ Starting FastAPI server on Colab T4 GPU...")
 time.sleep(6)
 
-tunnel     = ngrok.connect(8000)
-public_url = tunnel.public_url
+try:
+    tunnel     = ngrok.connect(8000)
+    public_url = tunnel.public_url
 
-print("\n" + "═"*65)
-print("🌐  LINGUAMEET AI SERVICE IS LIVE & EXPOSED TO REACT FRONTE N D!")
-print("═"*65)
-print(f"\n  FastAPI Public URL → {public_url}")
-print(f"  Interactive Docs   → {public_url}/docs")
-print(f"  Health Check Status→ {public_url}/health")
-print(f"  WebSocket URL      → {public_url.replace('https','wss')}/ws/process-audio")
-print("═"*65)
+    print("\n" + "═"*65)
+    print("🌐  LINGUAMEET AI SERVICE IS LIVE & EXPOSED TO REACT FRONTE N D!")
+    print("═"*65)
+    print(f"\n  FastAPI Public URL → {public_url}")
+    print(f"  Interactive Docs   → {public_url}/docs")
+    print(f"  Health Check Status→ {public_url}/health")
+    print(f"  WebSocket URL      → {public_url.replace('https','wss')}/ws/process-audio")
+    print("═"*65)
+except Exception as e:
+    print("\n❌ Failed to start ngrok tunnel. Make sure your authtoken is correct.")
+    print(str(e))
 
 
 # ───────────────────────────────────────────────────────────────────
