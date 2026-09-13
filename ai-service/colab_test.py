@@ -120,7 +120,7 @@ token = os.environ.get("NGROK_AUTHTOKEN")
 if not token:
     print("🔑 Please enter your ngrok Authtoken.")
     print("   (Get it for free at: https://dashboard.ngrok.com/get-started/your-authtoken)")
-    token = getpass.getpass("Ngrok Authtoken: ")
+    token = input("Ngrok Authtoken (paste here and press Enter): ")
 
 if token.strip():
     ngrok.set_auth_token(token.strip())
