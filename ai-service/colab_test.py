@@ -53,7 +53,8 @@ else:
     python-dotenv==1.0.1 \
     python-multipart==0.0.9 \
     websockets==12.0 \
-    openai-whisper==20240930 \
+    faster-whisper \
+    torch \
     torchaudio \
     transformers==4.44.2 \
     sentencepiece==0.2.0 \
@@ -65,6 +66,7 @@ else:
     edge-tts==6.1.12 \
     nest_asyncio \
     requests \
+    psutil \
     pyngrok
 
 print("✅ All packages installed cleanly.")
@@ -75,10 +77,11 @@ print("✅ All packages installed cleanly.")
 # ───────────────────────────────────────────────────────────────────
 import os
 
-# ASR (STT) Model: "small" (0.12s) or "large-v3" (SOTA 1.55B precision)
-os.environ["WHISPER_MODEL"] = "large-v3"
+# ASR (STT) Model: faster-whisper uses CTranslate2 for 4-5x speedup
+# Options: "tiny", "base", "small" (recommended), "medium", "large-v3"
+os.environ["WHISPER_MODEL"] = "small"
 
-# NMT Model: Meta NLLB 1.3B (200+ languages including 22 Indian scheduled languages)
+# NMT Model: Meta NLLB 1.3B (200+ languages including Indian languages)
 os.environ["NLLB_MODEL"]    = "facebook/nllb-200-distilled-1.3B"
 
 os.environ["SARVAM_API_KEY"] = os.environ.get("SARVAM_API_KEY", "")
@@ -90,29 +93,34 @@ print(f"  SARVAM_API_KEY = {'CONFIGURED' if os.environ.get('SARVAM_API_KEY') els
 
 
 # ───────────────────────────────────────────────────────────────────
-# CELL 5 — Pre-download Whisper model weights
+# CELL 5 — Pre-download faster-whisper model weights (cache only)
 # ───────────────────────────────────────────────────────────────────
-import whisper
-model_name = os.environ.get("WHISPER_MODEL", "large-v3")
-print(f"⬇️  Loading Whisper '{model_name}' weights...")
-m = whisper.load_model(model_name)
-print(f"✅ Whisper '{model_name}' loaded successfully.")
-del m
+# Only downloads to disk cache — does NOT load into RAM/VRAM.
+# The FastAPI server loads it on startup via the lifespan handler.
+from faster_whisper import WhisperModel
+model_name = os.environ.get("WHISPER_MODEL", "small")
+print(f"⬇️  Downloading faster-whisper '{model_name}' to cache...")
+_fw = WhisperModel(model_name, device="cpu", compute_type="int8")
+print(f"✅ faster-whisper '{model_name}' cached.")
+del _fw
 import torch; torch.cuda.empty_cache()
+import gc; gc.collect()
 
 
 # ───────────────────────────────────────────────────────────────────
-# CELL 6 — Pre-download NLLB model weights
+# CELL 6 — Pre-download NLLB model weights (cache only)
 # ───────────────────────────────────────────────────────────────────
+# Only downloads to HuggingFace cache — does NOT load into RAM.
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 nllb_name = os.environ.get("NLLB_MODEL", "facebook/nllb-200-distilled-1.3B")
-print(f"⬇️  Loading NLLB '{nllb_name}' weights...")
-tokenizer = AutoTokenizer.from_pretrained(nllb_name)
-model     = AutoModelForSeq2SeqLM.from_pretrained(nllb_name)
-print(f"✅ NLLB '{nllb_name}' loaded successfully.")
-del tokenizer, model
+print(f"⬇️  Downloading NLLB '{nllb_name}' to cache...")
+_tok = AutoTokenizer.from_pretrained(nllb_name)
+_mod = AutoModelForSeq2SeqLM.from_pretrained(nllb_name, torch_dtype=torch.float16)
+print(f"✅ NLLB '{nllb_name}' cached.")
+del _tok, _mod
 torch.cuda.empty_cache()
+import gc; gc.collect()
 
 
 # ───────────────────────────────────────────────────────────────────

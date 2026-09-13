@@ -49,6 +49,7 @@ SARVAM_LANG_MAP: dict[str, str] = {
 
 # ── Microsoft Edge Neural Voice Map ───────────────────────────────────────────
 EDGE_VOICE_MAP_MALE: dict[str, str] = {
+    # ── Tier 1 (Fully tested) ──
     "en": "en-US-ChristopherNeural",
     "hi": "hi-IN-MadhurNeural",
     "fr": "fr-FR-HenriNeural",
@@ -61,12 +62,35 @@ EDGE_VOICE_MAP_MALE: dict[str, str] = {
     "ru": "ru-RU-DmitryNeural",
     "ko": "ko-KR-InJoonNeural",
     "it": "it-IT-DiegoNeural",
+    
+    # ── Tier 2 (Indian Regional) ──
+    "ta": "ta-IN-ValluvarNeural",
+    "te": "te-IN-MohanNeural",
+    "mr": "mr-IN-ManoharNeural",
+    "bn": "bn-IN-BashkarNeural",
+    "ur": "ur-IN-SalmanNeural",
+    "gu": "gu-IN-NiranjanNeural",
+    "kn": "kn-IN-GaganNeural",
+    "ml": "ml-IN-MidhunNeural",
+    "pa": "pa-IN-OjasNeural",
+    
+    # ── Tier 3 (International) ──
+    "nl": "nl-NL-MaartenNeural",
+    "tr": "tr-TR-AhmetNeural",
+    "pl": "pl-PL-MarekNeural",
+    "uk": "uk-UA-OstapNeural",
+    "vi": "vi-VN-NamMinhNeural",
+    "sw": "sw-KE-RafikiNeural",
+    "th": "th-TH-NiwatNeural",
 }
 
 GTTS_LANG_MAP: dict[str, str] = {
     "en": "en", "hi": "hi", "fr": "fr", "es": "es", "de": "de",
     "ja": "ja", "zh": "zh", "ar": "ar", "pt": "pt", "ru": "ru",
     "ko": "ko", "it": "it", "nl": "nl", "tr": "tr", "vi": "vi",
+    "ta": "ta", "te": "te", "mr": "mr", "bn": "bn", "ur": "ur",
+    "gu": "gu", "kn": "kn", "ml": "ml", "pl": "pl", "uk": "uk",
+    "sw": "sw", "th": "th",
 }
 
 
@@ -111,23 +135,42 @@ def synthesize_edge_tts(text: str, target_lang: str) -> bytes:
     """Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS."""
     voice = EDGE_VOICE_MAP_MALE.get(target_lang, "en-US-ChristopherNeural")
 
-    # We use the Python executable module fallback (sys.executable -m edge_tts)
-    # because using native asyncio loop.run_until_complete inside a FastAPI threadpool
-    # frequently hangs and deadlocks the server.
-    out_mp3 = tempfile.mktemp(suffix=".mp3")
-    cmd = [sys.executable, "-m", "edge_tts", "--voice", voice, "--text", text, "--write-media", out_mp3]
-    try:
-        # Add a strict 15 second timeout so it never hangs indefinitely
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True, timeout=15)
-        with open(out_mp3, "rb") as f:
-            return f.read()
-    except subprocess.TimeoutExpired:
-        print(f"⚠️ edge_tts timed out after 15 seconds for {target_lang}")
-        raise RuntimeError("TTS generation timed out")
+    import asyncio
+    
+    # We use a new event loop in a background thread because we might already be running
+    # in an asyncio executor thread pool, and edge_tts requires a running loop.
+    def _run_edge_tts():
+        async def _async_synthesize():
+            try:
+                # Add strict timeout to communicate
+                communicate = edge_tts.Communicate(text, voice)
+                audio_data = b""
+                async for chunk in communicate.stream():
+                    if chunk["type"] == "audio":
+                        audio_data += chunk["data"]
+                return audio_data
+            except Exception as e:
+                print(f"⚠️ edge_tts error for {target_lang}: {e}")
+                raise
 
-    finally:
-        try: os.unlink(out_mp3)
-        except OSError: pass
+        loop = asyncio.new_event_loop()
+        try:
+            return loop.run_until_complete(asyncio.wait_for(_async_synthesize(), timeout=15.0))
+        except asyncio.TimeoutError:
+            print(f"⚠️ edge_tts timed out after 15 seconds for {target_lang}")
+            raise RuntimeError("TTS generation timed out")
+        finally:
+            loop.close()
+
+    # If we are in the main thread with a running loop, run in executor.
+    # Otherwise (we're already in a worker thread), just run it.
+    try:
+        asyncio.get_running_loop()
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            return executor.submit(_run_edge_tts).result()
+    except RuntimeError:
+        return _run_edge_tts()
 
 
 def synthesize_gtts(text: str, target_lang: str) -> bytes:

@@ -8,7 +8,7 @@
 import axios from 'axios';
 import FormData from 'form-data';
 
-const REQUEST_TIMEOUT_MS = 30_000; // 30s — models are preloaded, no cold-start needed
+const REQUEST_TIMEOUT_MS = 15_000; // 15s — enforced low-latency pipeline
 
 class AIServiceError extends Error {
   constructor(message, type, statusCode) {

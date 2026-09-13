@@ -112,7 +112,7 @@ def translate_text(text: str, src: str, tgt: str) -> str:
 
     forced_bos = tokenizer.convert_tokens_to_ids(get_nllb_code(tgt))
 
-    with torch.no_grad():
+    with torch.inference_mode():
         tokens = model.generate(
             **inputs,
             forced_bos_token_id=forced_bos,
@@ -126,12 +126,22 @@ def translate_text(text: str, src: str, tgt: str) -> str:
 
 
 def translate_to_multiple(text: str, src: str, targets: list[str]) -> dict[str, str]:
-    """Translate text to multiple target languages. Returns {lang: translated_text}."""
+    """Translate text to multiple target languages in parallel. Returns {lang: translated_text}."""
     out: dict[str, str] = {}
-    for lang in targets:
+    if not targets:
+        return out
+        
+    import concurrent.futures
+    
+    def _translate(lang: str) -> tuple[str, str]:
         try:
-            out[lang] = translate_text(text, src, lang)
+            return lang, translate_text(text, src, lang)
         except Exception as exc:
             print(f"⚠️  Translation to '{lang}' failed: {exc}")
-            out[lang] = f"[Translation error for '{lang}']"
+            return lang, f"[Translation error for '{lang}']"
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(targets), 8)) as executor:
+        for lang, translated in executor.map(_translate, targets):
+            out[lang] = translated
+            
     return out

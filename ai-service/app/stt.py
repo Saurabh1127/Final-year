@@ -1,6 +1,6 @@
 """
 Speech-to-Text Module
-Uses OpenAI Whisper-small for transcription + auto language detection.
+Uses faster-whisper (CTranslate2) for 4x faster transcription + auto language detection.
 Auto-selects CUDA (Colab T4 / RTX 3050) or CPU (Ryzen 7 5800H).
 """
 
@@ -11,7 +11,7 @@ import tempfile
 
 # Third-party — not installed locally; installed on Colab. Linter suppressed.
 try:
-    import whisper  # type: ignore
+    from faster_whisper import WhisperModel  # type: ignore
     import torch    # type: ignore
     _DEPS_AVAILABLE = True
 except ImportError:
@@ -21,14 +21,14 @@ except ImportError:
 _model = None
 
 
-def _get_device() -> str:
+def _get_device_and_compute() -> tuple[str, str]:
     if not _DEPS_AVAILABLE:
-        return "cpu"
+        return "cpu", "int8"
     if torch.cuda.is_available():
-        print(f"🎮 GPU detected: {torch.cuda.get_device_name(0)} — Whisper on CUDA.")
-        return "cuda"
-    print("💻 No GPU found — Whisper on CPU (Ryzen 7 5800H).")
-    return "cpu"
+        print(f"🎮 GPU detected: {torch.cuda.get_device_name(0)} — faster-whisper on CUDA (INT8).")
+        return "cuda", "int8_float16" # compute_type="int8_float16" gives best performance on T4
+    print("💻 No GPU found — faster-whisper on CPU (INT8).")
+    return "cpu", "int8"
 
 
 def get_model():
@@ -36,16 +36,14 @@ def get_model():
     global _model
     if _model is None:
         if not _DEPS_AVAILABLE:
-            raise RuntimeError("openai-whisper and torch are not installed. Run on Colab.")
+            raise RuntimeError("faster-whisper and torch are not installed. Run on Colab.")
         name = os.getenv("WHISPER_MODEL", "small")
-        device = _get_device()
-        print(f"🔊 Loading Whisper '{name}' on {device.upper()} ...")
-        # Whisper automatically manages FP16 precision inside model.transcribe(..., fp16=True)
-        _model = whisper.load_model(name, device=device)
-        params_m = sum(p.numel() for p in _model.parameters()) / 1e6
-        print(f"✅ Whisper '{name}' ready ({params_m:.0f}M params).")
+        device, compute_type = _get_device_and_compute()
+        print(f"🔊 Loading faster-whisper '{name}' on {device.upper()} ...")
+        
+        _model = WhisperModel(name, device=device, compute_type=compute_type)
+        print(f"✅ faster-whisper '{name}' ready.")
     return _model
-
 
 
 # ── MIME type → file extension mapping ────────────────────────────────────────
@@ -80,7 +78,7 @@ def transcribe_audio(
     mime_type: str | None = None,
 ) -> dict:
     """
-    Transcribe raw audio bytes → text using Whisper-small.
+    Transcribe raw audio bytes → text using faster-whisper.
 
     Args:
         audio_bytes:     Raw audio (WAV / WebM / MP3 / OGG).
@@ -105,13 +103,15 @@ def transcribe_audio(
         if source_language and source_language.lower() not in ("", "auto"):
             opts["language"] = source_language
 
-        use_fp16 = _DEPS_AVAILABLE and torch.cuda.is_available()
-        result = model.transcribe(tmp_path, fp16=use_fp16, **opts)
+        segments, info = model.transcribe(tmp_path, beam_size=5, **opts)
+        
+        # faster-whisper returns a generator for segments, we must iterate to actually transcribe
+        text = " ".join([segment.text for segment in segments]).strip()
 
         return {
-            "text":     result.get("text", "").strip(),
-            "language": result.get("language", "unknown"),
-            "segments": result.get("segments", []),
+            "text":     text,
+            "language": info.language,
+            "segments": [], # we omit segment details for now to save memory
         }
     finally:
         try:

@@ -20,10 +20,10 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useSocket } from '../context/SocketContext';
 
 const VAD_CONFIG = {
-  SILENCE_THRESHOLD: 0.003,   // RMS energy below which audio is "silent" (Lowered to detect very quiet voices)
+  SILENCE_THRESHOLD: 0.003,   // RMS energy below which audio is "silent"
   SILENCE_DURATION_MS: 300,   // ms of silence before triggering a chunk flush
-  MIN_SPEECH_MS: 200,         // minimum speech duration before we bother sending (allows short phrases)
-  MAX_CHUNK_MS: 2000,         // hard cap: force flush if speaker hasn't paused (reduced for lower latency)
+  MIN_SPEECH_MS: 300,         // minimum speech duration (increased to ignore 200ms clicks)
+  MAX_CHUNK_MS: 1500,         // hard cap: force flush if speaker hasn't paused (reduced to 1.5s for faster translation)
   ANALYSIS_INTERVAL_MS: 50,   // how often to sample audio energy
 };
 

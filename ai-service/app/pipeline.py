@@ -1,6 +1,6 @@
 """
 Unified Speech-to-Speech Pipeline Engine
-Combines: Whisper-small (ASR) → NLLB-200-600M (NMT) → gTTS / XTTS-v2 (TTS)
+Combines: Whisper (ASR) → NLLB-200 (NMT) → Edge TTS (TTS)
 
 Single public entry point:
     from app.pipeline import engine
@@ -9,6 +9,7 @@ Single public entry point:
 
 from __future__ import annotations
 
+import os
 import time
 from typing import Optional
 
@@ -18,6 +19,22 @@ try:
     _TORCH_AVAILABLE = True
 except ImportError:
     _TORCH_AVAILABLE = False
+
+
+def log_gpu_stats(stage: str = "") -> None:
+    """Print GPU VRAM and system RAM usage for diagnostics."""
+    prefix = f"📊 [{stage}]" if stage else "📊"
+    if _TORCH_AVAILABLE and torch.cuda.is_available():
+        alloc = torch.cuda.memory_allocated() / 1e9
+        reserved = torch.cuda.memory_reserved() / 1e9
+        total = torch.cuda.get_device_properties(0).total_memory / 1e9
+        print(f"{prefix} VRAM: {alloc:.2f}GB alloc / {reserved:.2f}GB reserved / {total:.1f}GB total")
+    try:
+        import psutil  # type: ignore
+        rss = psutil.Process().memory_info().rss / 1e9
+        print(f"{prefix} System RAM: {rss:.2f}GB")
+    except ImportError:
+        pass
 
 from .stt import transcribe_audio
 from .translator import translate_to_multiple
@@ -87,6 +104,7 @@ class SpeechToSpeechEngine:
         original_text: str = transcription["text"]
         asr_s = round(time.time() - t0, 3)
         print(f"📝 STT [{asr_s}s] [{detected_lang.upper()}]: {original_text[:80]}")
+        log_gpu_stats("after-STT")
 
         # Return early if nothing was transcribed
         if not original_text:
@@ -97,6 +115,7 @@ class SpeechToSpeechEngine:
         translations = translate_to_multiple(original_text, detected_lang, target_languages)
         nmt_s = round(time.time() - t0, 3)
         print(f"🌐 NMT [{nmt_s}s]: translated to {list(translations.keys())}")
+        log_gpu_stats("after-NMT")
 
         # ── Step 3: TTS — Translated Text → Audio (gTTS / XTTS-v2) ──────────
         audio_translations: dict = {}
@@ -104,28 +123,39 @@ class SpeechToSpeechEngine:
 
         if include_audio:
             t0 = time.time()
-            for lang, translated_text in translations.items():
-                if translated_text and not translated_text.startswith("[Translation error"):
-                    try:
-                        tts_result = synthesize_speech(
-                            text=translated_text,
-                            target_lang=lang,
-                            speaker_audio_bytes=audio_bytes,
-                            return_base64=True,
-                        )
-                        audio_translations[lang] = {
-                            "audio_base64": tts_result["audio_base64"],
-                            "mime_type":    tts_result["mime_type"],
-                            "engine":       tts_result["engine"],
-                        }
-                    except Exception as exc:
-                        print(f"⚠️  TTS failed for '{lang}': {exc}")
-                        audio_translations[lang] = None
+            import concurrent.futures
+            
+            def _synthesize(lang_and_text: tuple[str, str]) -> tuple[str, Optional[dict]]:
+                lang, translated_text = lang_and_text
+                if not translated_text or translated_text.startswith("[Translation error"):
+                    return lang, None
+                try:
+                    tts_result = synthesize_speech(
+                        text=translated_text,
+                        target_lang=lang,
+                        speaker_audio_bytes=audio_bytes,
+                        return_base64=True,
+                    )
+                    return lang, {
+                        "audio_base64": tts_result["audio_base64"],
+                        "mime_type":    tts_result["mime_type"],
+                        "engine":       tts_result["engine"],
+                    }
+                except Exception as exc:
+                    print(f"⚠️  TTS failed for '{lang}': {exc}")
+                    return lang, None
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(translations), 8)) as executor:
+                for lang, res in executor.map(_synthesize, translations.items()):
+                    if res:
+                        audio_translations[lang] = res
+                        
             tts_s = round(time.time() - t0, 3)
             print(f"🔈 TTS [{tts_s}s]: synthesised for {list(audio_translations.keys())}")
 
         total_s = round(time.time() - t_start, 3)
         print(f"⚡ Pipeline done [{total_s}s] | STT:{asr_s}s NMT:{nmt_s}s TTS:{tts_s}s")
+        log_gpu_stats("pipeline-done")
 
         return {
             "original_text":     original_text,
