@@ -103,7 +103,15 @@ def transcribe_audio(
         if source_language and source_language.lower() not in ("", "auto"):
             opts["language"] = source_language
 
-        segments, info = model.transcribe(tmp_path, beam_size=5, **opts)
+        # condition_on_previous_text=False prevents getting stuck in hallucination loops
+        # vad_filter=True completely eliminates "Thank you" / "Subscribe" hallucinations on silence
+        segments, info = model.transcribe(
+            tmp_path, 
+            beam_size=5, 
+            vad_filter=True, 
+            condition_on_previous_text=False, 
+            **opts
+        )
         
         # faster-whisper returns a generator for segments, we must iterate to actually transcribe
         text = " ".join([segment.text for segment in segments]).strip()
