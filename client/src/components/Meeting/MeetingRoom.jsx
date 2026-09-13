@@ -156,6 +156,28 @@ const MeetingRoom = ({ roomCode }) => {
     setJoinedRoom(true);
   }, [meeting, socket, connected, localStream, roomCode, user, targetLanguage, isMuted, isVideoOff]);
 
+  // 2b. Re-join room after socket reconnects (e.g. server restart)
+  useEffect(() => {
+    if (!socket || !meeting || !localStream) return;
+
+    const handleReconnect = () => {
+      console.log('🔄 [Meeting] Socket reconnected — re-joining room:', roomCode);
+      joinedRef.current = false; // Reset so join effect can fire again
+      socket.emit('join-meeting', {
+        roomCode,
+        userId: user.id,
+        displayName: user.name,
+        targetLanguage: targetLanguage || 'hi',
+        isMuted,
+        isVideoOff
+      });
+      joinedRef.current = true;
+    };
+
+    socket.on('connect', handleReconnect);
+    return () => socket.off('connect', handleReconnect);
+  }, [socket, meeting, localStream, roomCode, user, targetLanguage, isMuted, isVideoOff]);
+
   const handleLanguageChange = (newLang) => {
     setTargetLanguage(newLang);
     if (socket && connected && joinedRef.current) {
@@ -173,6 +195,7 @@ const MeetingRoom = ({ roomCode }) => {
       }
     };
   }, [socket, roomCode, user?.id]);
+
 
   // 4. Broadcast mute/video changes to other participants
   useEffect(() => {
