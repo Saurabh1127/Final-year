@@ -46,7 +46,7 @@ else:
 # ───────────────────────────────────────────────────────────────────
 # CELL 3 — Install all dependencies (AI, Web & TTS Engines)
 # ───────────────────────────────────────────────────────────────────
-!pip install -q \
+!pip install \
     fastapi==0.111.0 \
     uvicorn[standard]==0.30.1 \
     pydantic==2.7.4 \
@@ -54,8 +54,6 @@ else:
     python-multipart==0.0.9 \
     websockets==12.0 \
     faster-whisper \
-    torch \
-    torchaudio \
     transformers==4.44.2 \
     sentencepiece==0.2.0 \
     protobuf==5.27.2 \
