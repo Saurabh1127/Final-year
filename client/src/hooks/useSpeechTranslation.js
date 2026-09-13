@@ -192,14 +192,9 @@ const useSpeechTranslation = ({
       const cloned = stream.clone();
       clonedStreamRef.current = cloned;
 
-      let options = undefined;
-      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-        options = { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 32000 };
-      } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-        options = { mimeType: 'audio/webm', audioBitsPerSecond: 32000 };
-      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-        options = { mimeType: 'audio/mp4', audioBitsPerSecond: 32000 };
-      }
+      // Let the browser choose its native, hardware-supported audio format automatically!
+      // This prevents "Failed to execute 'start'" crashes on Android where specific options fail.
+      const options = undefined;
 
       const recorder = new MediaRecorder(cloned, options);
 
