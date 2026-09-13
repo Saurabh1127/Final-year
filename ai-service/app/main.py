@@ -94,10 +94,28 @@ load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: "FastAPI"):  # type: ignore[valid-type]
-    """FastAPI Lifespan manager. Lazy loads models on demand or preloads safely."""
-    print("🚀 LinguaMeet AI Service initializing...")
+    """
+    FastAPI Lifespan Context Manager.
+    Used for preloading heavy ML models into GPU memory before accepting requests.
+    """
+    print("🚀 Initialising AI Service Pipeline...")
+    
+    # 1. Preload Whisper STT
+    from .stt import get_model as get_stt_model
+    try:
+        get_stt_model()
+    except Exception as e:
+        print(f"⚠️ STT preload failed: {e}")
+
+    # 2. Preload NLLB-200 NMT
+    from .translator import get_model_and_tokenizer
+    try:
+        get_model_and_tokenizer()
+    except Exception as e:
+        print(f"⚠️ NMT preload failed: {e}")
+        
     yield
-    print("🛑 AI Service shutting down.")
+    print("🛑 Shutting down AI service...")
 
 
 
