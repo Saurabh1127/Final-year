@@ -53,6 +53,7 @@ const useSpeechTranslation = ({
   const speechStartTimeRef = useRef(null);
   const maxChunkTimerRef = useRef(null);
   const vadIntervalRef = useRef(null);
+  const timesliceIntervalRef = useRef(null);
   const translationStreamRef = useRef(null);
   const isFlushingRef = useRef(false);
 
@@ -208,8 +209,19 @@ const useSpeechTranslation = ({
         }
       };
 
-      // Collect data every 250ms (fine-grained VAD slice building)
-      recorder.start(250);
+      try {
+        // Collect data every 250ms (fine-grained VAD slice building)
+        recorder.start(250);
+      } catch (err) {
+        console.warn('⚠️ [Speech] recorder.start(250) failed (likely iOS Safari). Falling back to manual timeslicing.');
+        recorder.start();
+        // Fallback: manually request data every 250ms to simulate timeslice
+        timesliceIntervalRef.current = setInterval(() => {
+          if (recorder.state === 'recording') {
+            recorder.requestData();
+          }
+        }, 250);
+      }
       mediaRecorderRef.current = recorder;
 
       startVAD(cloned);
@@ -227,6 +239,7 @@ const useSpeechTranslation = ({
     if (!isTranslating) return;
 
     clearInterval(vadIntervalRef.current);
+    clearInterval(timesliceIntervalRef.current);
     clearTimeout(silenceTimerRef.current);
     clearTimeout(maxChunkTimerRef.current);
     speechStartTimeRef.current = null;
