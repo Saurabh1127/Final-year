@@ -8,6 +8,7 @@ import useSpeechTranslation from '../../hooks/useSpeechTranslation';
 import useTranslationReceiver from '../../hooks/useTranslationReceiver';
 import ParticipantGrid from './ParticipantGrid';
 import ControlBar from './ControlBar';
+import LanguageSelector from './LanguageSelector';
 import api from '../../services/api';
 
 const MeetingRoom = ({ roomCode }) => {
@@ -22,6 +23,7 @@ const MeetingRoom = ({ roomCode }) => {
 
   // ── Translation feature states ──────────────────────────────────────────────
   const [translationEnabled, setTranslationEnabled] = useState(false);
+  const [targetLanguage, setTargetLanguage] = useState(user?.preferredLanguage || 'hi');
   const [subtitle, setSubtitle] = useState(null);        // { speakerName, originalText, translatedText, lang }
   const [transcriptLog, setTranscriptLog] = useState([]); // Live sidebar entries
   const [showTranscript, setShowTranscript] = useState(false);
@@ -51,17 +53,24 @@ const MeetingRoom = ({ roomCode }) => {
     setTranscriptLog((prev) => [entry, ...prev].slice(0, 200)); // keep last 200 entries
   }, []);
 
-  // ── Socket.IO: receive transcripts from other participants ───────────────────
+  // ── Socket.IO: receive transcripts from meeting ──────────────────────────────
   useEffect(() => {
     if (!socket) return;
     const handleNewTranscript = (entry) => {
-      if (entry.speakerId !== user?.id) {
-        handleTranscriptEntry(entry);
-      }
+      handleTranscriptEntry(entry);
     };
+    const handleSpeakerSubtitle = (sub) => {
+      handleSubtitle(sub);
+    };
+
     socket.on('new-transcript', handleNewTranscript);
-    return () => socket.off('new-transcript', handleNewTranscript);
-  }, [socket, user?.id, handleTranscriptEntry]);
+    socket.on('speaker-subtitle', handleSpeakerSubtitle);
+
+    return () => {
+      socket.off('new-transcript', handleNewTranscript);
+      socket.off('speaker-subtitle', handleSpeakerSubtitle);
+    };
+  }, [socket, handleTranscriptEntry, handleSubtitle]);
 
   // ── Speech Translation hook — sends audio-chunk to server via Socket.IO ─────
   const { isTranslating, error: translationError, startTranslation, stopTranslation } = useSpeechTranslation({
@@ -139,13 +148,20 @@ const MeetingRoom = ({ roomCode }) => {
       roomCode,
       userId: user.id,
       displayName: user.name,
-      targetLanguage: user.preferredLanguage || 'en',
+      targetLanguage: targetLanguage || 'hi',
       isMuted,
       isVideoOff
     });
     joinedRef.current = true;
     setJoinedRoom(true);
-  }, [meeting, socket, connected, localStream, roomCode, user, isMuted, isVideoOff]);
+  }, [meeting, socket, connected, localStream, roomCode, user, targetLanguage, isMuted, isVideoOff]);
+
+  const handleLanguageChange = (newLang) => {
+    setTargetLanguage(newLang);
+    if (socket && connected && joinedRef.current) {
+      socket.emit('update-language', { roomCode, targetLanguage: newLang });
+    }
+  };
 
   // 3. Leave room on unmount
   useEffect(() => {
@@ -232,7 +248,7 @@ const MeetingRoom = ({ roomCode }) => {
   const localParticipant = {
     userId: user.id,
     displayName: user.name,
-    targetLanguage: user.preferredLanguage || 'en',
+    targetLanguage: targetLanguage || 'hi',
     isMuted,
     isVideoOff
   };
@@ -247,6 +263,11 @@ const MeetingRoom = ({ roomCode }) => {
 
         {/* Translation & Transcript Toggles */}
         <div className="meeting-header-actions">
+          <LanguageSelector
+            currentLanguage={targetLanguage}
+            onChange={handleLanguageChange}
+            disabled={isTranslating}
+          />
           <button
             id="btn-toggle-translation"
             className={`btn btn-sm ${translationEnabled ? 'btn-danger' : 'btn-primary'}`}

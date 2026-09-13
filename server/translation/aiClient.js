@@ -54,7 +54,10 @@ export async function processAudio({
       `${AI_SERVICE_URL}/api/process-audio`,
       form,
       {
-        headers: form.getHeaders(),
+        headers: {
+          ...form.getHeaders(),
+          'ngrok-skip-browser-warning': 'true',
+        },
         timeout: REQUEST_TIMEOUT_MS,
         maxContentLength: Infinity,
         maxBodyLength: Infinity,

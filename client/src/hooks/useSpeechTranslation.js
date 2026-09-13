@@ -19,11 +19,10 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useSocket } from '../context/SocketContext';
 
-// ── VAD Configuration ──────────────────────────────────────────────────────────
 const VAD_CONFIG = {
-  SILENCE_THRESHOLD: 0.015,   // RMS energy below which audio is "silent"
+  SILENCE_THRESHOLD: 0.012,   // RMS energy below which audio is "silent"
   SILENCE_DURATION_MS: 300,   // ms of silence before triggering a chunk flush
-  MIN_SPEECH_MS: 1000,        // minimum speech duration before we bother sending
+  MIN_SPEECH_MS: 500,         // minimum speech duration before we bother sending (allows short phrases)
   MAX_CHUNK_MS: 2500,         // hard cap: force flush if speaker hasn't paused (reduced from 3.5s)
   ANALYSIS_INTERVAL_MS: 50,   // how often to sample audio energy
 };
@@ -105,8 +104,8 @@ const useSpeechTranslation = ({
     const blob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
     chunksRef.current = [];
 
-    // Discard tiny blobs — almost certainly silence or noise (< 4KB)
-    if (blob.size < 4096) {
+    // Discard tiny blobs (< 1KB)
+    if (blob.size < 1000) {
       isFlushingRef.current = false;
       return;
     }

@@ -78,22 +78,26 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
     return;
   }
 
-  // Skip tiny blobs — almost certainly noise or silence (< 4KB)
-  if (audioBuffer.length < 4096) return;
+  // Skip tiny blobs (< 1000 bytes)
+  if (audioBuffer.length < 1000) return;
 
   const room = roomParticipants.get(roomCode);
-  if (!room || room.size < 2) {
-    // No other participants to translate for — skip
+  if (!room || room.size === 0) {
+    console.log(`⚠️ [Orchestrator] Audio chunk dropped: room ${roomCode} has no registered participants.`);
     return;
   }
 
-  // Collect unique target languages needed by OTHER participants in the room
+  const isSoloTest = room.size === 1;
+
+  // Collect unique target languages needed by participants in the room
   const targetLanguageSet = new Set();
   const languageToReceivers = new Map(); // lang → [ socketId ]
 
   for (const [sid, participant] of room.entries()) {
-    if (sid === socket.id) continue; // skip the speaker themselves
-    const lang = participant.targetLanguage || 'en';
+    // In multi-person meetings, don't send TTS audio back to the speaker (prevents audio echo/feedback)
+    // BUT in solo test mode (1 person in room), send it to the speaker so they can hear & verify translation!
+    if (!isSoloTest && sid === socket.id) continue;
+    const lang = participant.targetLanguage || (isSoloTest ? 'hi' : 'en');
     targetLanguageSet.add(lang);
     if (!languageToReceivers.has(lang)) languageToReceivers.set(lang, []);
     languageToReceivers.get(lang).push(sid);
@@ -104,7 +108,7 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
   const targetLanguages = [...targetLanguageSet];
 
   console.log(
-    `🎙️ [Orchestrator] Room ${roomCode}: ${speakerName} → translating to [${targetLanguages.join(', ')}]`
+    `🎙️ [Orchestrator] Room ${roomCode} (${room.size} participant${room.size > 1 ? 's' : ''}): ${speakerName} speaking → translating to [${targetLanguages.join(', ')}]`
   );
 
   let result;
@@ -126,8 +130,14 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
 
   const { original_text, source_language, translations, audio_translations } = result;
 
-  // Discard no-speech results
-  if (!original_text || original_text.trim() === '') return;
+  // Discard no-speech results or pipeline errors
+  if (!original_text || original_text.trim() === '' || original_text === '[Pipeline Error]') {
+    console.log('🔇 [Orchestrator] AI detected silence or empty transcription.');
+    return;
+  }
+
+  console.log(`🤖 [Orchestrator] Recognized (${source_language}): "${original_text}"`);
+  console.log(`🌐 [Orchestrator] Translations:`, translations);
 
   const timestamp = new Date();
 
@@ -141,18 +151,28 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
       originalText: original_text,
       translations,
     });
-    // Broadcast new-transcript to ALL participants (for sidebar)
-    io.to(roomCode).emit('new-transcript', {
-      speakerId,
-      speakerName,
-      originalText: original_text,
-      sourceLanguage: source_language,
-      translations,
-      timestamp,
-    });
   } catch (saveErr) {
     console.warn('⚠️ [Orchestrator] Failed to persist transcript:', saveErr.message);
   }
+
+  // Broadcast new-transcript to ALL participants in the room (including the speaker!)
+  io.to(roomCode).emit('new-transcript', {
+    speakerId,
+    speakerName,
+    originalText: original_text,
+    sourceLanguage: source_language,
+    translations,
+    timestamp,
+  });
+
+  // Also send subtitle feedback to the speaker so they can see what they said
+  const firstTargetLang = targetLanguages[0];
+  socket.emit('speaker-subtitle', {
+    speakerName: 'You',
+    originalText: original_text,
+    translatedText: translations?.[firstTargetLang] || original_text,
+    lang: firstTargetLang,
+  });
 
   // ── Emit translation-result per language to only the relevant receivers ──────
   for (const [lang, receiverSocketIds] of languageToReceivers.entries()) {
@@ -177,6 +197,6 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
   }
 
   console.log(
-    `✅ [Orchestrator] Sent translation to ${[...languageToReceivers.values()].flat().length} socket(s) in room ${roomCode}`
+    `✅ [Orchestrator] Sent translation to ${[...languageToReceivers.values()].flat().length} listener(s)`
   );
 }

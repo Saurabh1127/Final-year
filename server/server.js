@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config(); // Load latest .env including Colab AI_SERVICE_URL
 import express from 'express';
 import http from 'http';
 import cors from 'cors';

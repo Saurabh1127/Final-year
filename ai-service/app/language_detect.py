@@ -10,7 +10,6 @@ def is_supported_language(lang_code: str) -> bool:
     """Check if a language code is supported."""
     return lang_code in LANG_CODE_MAP
 
-
 def get_language_name(lang_code: str) -> str:
     """Get human-readable language name from ISO 639-1 code."""
     return SUPPORTED_LANGUAGES.get(lang_code, f"Unknown ({lang_code})")
