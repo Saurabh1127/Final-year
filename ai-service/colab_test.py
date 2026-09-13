@@ -127,10 +127,12 @@ if token.strip():
 else:
     print("❌ No token provided. Ngrok tunnel will likely fail.")
 
+# Write logs to a file to prevent stdout pipe buffer from filling up and freezing the server
+log_file = open(f"{REPO_DIR}/ai-service/server.log", "w")
 server = subprocess.Popen(
     ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"],
     cwd=f"{REPO_DIR}/ai-service",
-    stdout=subprocess.PIPE,
+    stdout=log_file,
     stderr=subprocess.STDOUT,
 )
 
