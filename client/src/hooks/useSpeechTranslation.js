@@ -20,9 +20,9 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useSocket } from '../context/SocketContext';
 
 const VAD_CONFIG = {
-  SILENCE_THRESHOLD: 0.012,   // RMS energy below which audio is "silent"
+  SILENCE_THRESHOLD: 0.003,   // RMS energy below which audio is "silent" (Lowered to detect very quiet voices)
   SILENCE_DURATION_MS: 300,   // ms of silence before triggering a chunk flush
-  MIN_SPEECH_MS: 500,         // minimum speech duration before we bother sending (allows short phrases)
+  MIN_SPEECH_MS: 200,         // minimum speech duration before we bother sending (allows short phrases)
   MAX_CHUNK_MS: 2500,         // hard cap: force flush if speaker hasn't paused (reduced from 3.5s)
   ANALYSIS_INTERVAL_MS: 50,   // how often to sample audio energy
 };
@@ -93,15 +93,11 @@ const useSpeechTranslation = ({
   // ── Flush chunk: emit via Socket.IO to server orchestrator ───────────────────
   const flushChunk = useCallback(() => {
     if (isFlushingRef.current || chunksRef.current.length === 0 || !socket?.connected) return;
-    if (isMuted) {
-      // Don't send if the user is muted
-      chunksRef.current = [];
-      return;
-    }
 
     isFlushingRef.current = true;
 
-    const blob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
+    const currentMimeType = mediaRecorderRef.current?.mimeType || 'audio/webm';
+    const blob = new Blob(chunksRef.current, { type: currentMimeType });
     chunksRef.current = [];
 
     // Discard tiny blobs (< 1KB)
@@ -115,7 +111,7 @@ const useSpeechTranslation = ({
       socket.emit('audio-chunk', buffer, {
         roomCode,
         speakerName,
-        mimeType: 'audio/webm;codecs=opus',
+        mimeType: currentMimeType,
       });
       console.log(`📤 [Speech] Emitted audio-chunk (${(blob.size / 1024).toFixed(1)}KB) for room ${roomCode}`);
     }).catch((err) => {
@@ -123,7 +119,7 @@ const useSpeechTranslation = ({
     }).finally(() => {
       isFlushingRef.current = false;
     });
-  }, [socket, roomCode, speakerName, isMuted]);
+  }, [socket, roomCode, speakerName]);
 
   // ── VAD: Watch Audio Energy via AnalyserNode ──────────────────────────────────
   const startVAD = useCallback(
@@ -132,6 +128,12 @@ const useSpeechTranslation = ({
       if (!AudioContext) return;
 
       audioContextRef.current = new AudioContext();
+      
+      // Fix for iOS Safari & Chrome autoplay policy: AudioContext starts suspended
+      if (audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
+      }
+
       analyserRef.current = audioContextRef.current.createAnalyser();
       analyserRef.current.fftSize = 512;
       sourceNodeRef.current = audioContextRef.current.createMediaStreamSource(vadStream);
@@ -151,9 +153,11 @@ const useSpeechTranslation = ({
         if (isSpeaking) {
           silenceDuration = 0;
           clearTimeout(silenceTimerRef.current);
+          console.debug(`🔊 [VAD] Speaking detected (RMS: ${rms.toFixed(4)})`);
 
           if (!speechStartTimeRef.current) {
             speechStartTimeRef.current = Date.now();
+            console.log('🎤 [VAD] Speech START');
             maxChunkTimerRef.current = setTimeout(() => {
               if (chunksRef.current.length > 0) flushChunk();
             }, VAD_CONFIG.MAX_CHUNK_MS);
@@ -167,6 +171,7 @@ const useSpeechTranslation = ({
             Date.now() - speechStartTimeRef.current >= VAD_CONFIG.MIN_SPEECH_MS
           ) {
             clearTimeout(maxChunkTimerRef.current);
+            console.log('🔇 [VAD] Silence detected — flushing chunk');
             speechStartTimeRef.current = null;
             silenceDuration = 0;
             flushChunk();
@@ -186,14 +191,16 @@ const useSpeechTranslation = ({
       const cloned = stream.clone();
       clonedStreamRef.current = cloned;
 
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : 'audio/webm';
+      let options = undefined;
+      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+        options = { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 32000 };
+      } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+        options = { mimeType: 'audio/webm', audioBitsPerSecond: 32000 };
+      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+        options = { mimeType: 'audio/mp4', audioBitsPerSecond: 32000 };
+      }
 
-      const recorder = new MediaRecorder(cloned, {
-        mimeType,
-        audioBitsPerSecond: 32000,
-      });
+      const recorder = new MediaRecorder(cloned, options);
 
       recorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) {

@@ -8,9 +8,9 @@ import { handleAudioChunk, unregisterParticipant } from '../translation/orchestr
 const setupSocket = (httpServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+      origin: '*',   // Allow any origin — required for ngrok + cross-device testing
       methods: ['GET', 'POST'],
-      credentials: true,
+      credentials: false,
     },
     maxHttpBufferSize: 2e6, // 2MB — enough for audio chunks (~50-200KB each)
   });

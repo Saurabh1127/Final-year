@@ -21,8 +21,8 @@ const server = http.createServer(app);
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
-  credentials: true,
+  origin: '*',   // Allow any origin — required for ngrok + cross-device testing
+  credentials: false,
 }));
 app.use(express.json({ limit: '10mb' }));
 

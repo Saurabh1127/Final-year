@@ -78,8 +78,15 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
     return;
   }
 
-  // Skip tiny blobs (< 1000 bytes)
-  if (audioBuffer.length < 1000) return;
+  // Socket.IO delivers binary as ArrayBuffer — convert to Node.js Buffer for FormData compatibility
+  const nodeBuffer = Buffer.isBuffer(audioBuffer) ? audioBuffer : Buffer.from(audioBuffer);
+
+  // Skip tiny blobs (< 1000 bytes) — use byteLength, NOT .length (ArrayBuffer has no .length)
+  console.log(`🎤 [Orchestrator] Received chunk from ${speakerName} in room ${roomCode} (${nodeBuffer.byteLength} bytes)`);
+  if (nodeBuffer.byteLength < 1000) {
+    console.log(`🔇 [Orchestrator] Chunk too small (${nodeBuffer.byteLength}b), skipping.`);
+    return;
+  }
 
   const room = roomParticipants.get(roomCode);
   if (!room || room.size === 0) {
@@ -114,7 +121,7 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
   let result;
   try {
     result = await processAudio({
-      audioBuffer,
+      audioBuffer: nodeBuffer,
       fileName: 'chunk.webm',
       mimeType,
       meetingId: roomCode,

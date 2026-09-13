@@ -9,7 +9,7 @@ import axios from 'axios';
 import FormData from 'form-data';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-const REQUEST_TIMEOUT_MS = 20_000; // 20s — covers Whisper cold-start
+const REQUEST_TIMEOUT_MS = 45_000; // 45s — covers Whisper cold-start on first request
 
 class AIServiceError extends Error {
   constructor(message, type, statusCode) {
