@@ -25,6 +25,9 @@ else:
 # ───────────────────────────────────────────────────────────────────
 import os, shutil
 
+# Move out of the directory before deleting it (fixes getcwd error on 2nd run)
+os.chdir('/content')
+
 GITHUB_REPO = "https://github.com/Saurabh1127/Final-year.git"
 REPO_DIR    = "/content/Final-year"
 
