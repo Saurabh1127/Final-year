@@ -10,7 +10,21 @@ export const getSocket = () => {
   if (!socket) {
     socket = io(SOCKET_URL, {
       autoConnect: false,
-      transports: ['websocket', 'polling'],
+
+      // ── Transport: websocket only (skip polling upgrade dance) ──────
+      // Using both ['websocket', 'polling'] causes an extra HTTP round-trip
+      // for the upgrade. Over ngrok this adds latency and can drop the connection.
+      transports: ['websocket'],
+
+      // ── Reconnection strategy (like Zoom/Meet) ─────────────────────
+      reconnection: true,
+      reconnectionAttempts: 20,         // Try up to 20 times before giving up
+      reconnectionDelay: 1000,          // Start with 1s delay
+      reconnectionDelayMax: 10000,      // Cap at 10s between retries
+      randomizationFactor: 0.5,         // Randomize to avoid thundering herd
+
+      // ── Timeout: must match server pingTimeout ─────────────────────
+      timeout: 60000,                   // Wait 60s for connection before failing
     });
   }
   return socket;

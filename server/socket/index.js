@@ -13,6 +13,21 @@ const setupSocket = (httpServer) => {
       credentials: false,
     },
     maxHttpBufferSize: 2e6, // 2MB — enough for audio chunks (~50-200KB each)
+
+    // ── Stable connection settings (like Zoom/Meet) ──────────────────
+    // Default (20s ping interval, 5s timeout) is too aggressive for ngrok tunnels
+    // carrying large audio binary payloads. Increase so audio processing doesn't
+    // starve the heartbeat and cause false disconnections.
+    pingInterval: 25000,   // Send keepalive ping every 25s
+    pingTimeout: 60000,    // Wait 60s for pong before declaring disconnect
+    upgradeTimeout: 30000, // Give websocket upgrade more time over ngrok
+
+    // Connection state recovery: auto-restore missed events after brief drops
+    // without the client needing a full re-join flow
+    connectionStateRecovery: {
+      maxDisconnectionDuration: 2 * 60 * 1000, // Recover drops up to 2 mins
+      skipMiddlewares: true,
+    },
   });
 
   // Socket.IO Middleware for Auth
