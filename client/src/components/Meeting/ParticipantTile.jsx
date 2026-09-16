@@ -15,12 +15,15 @@ const ParticipantTile = ({ participant, stream, isLocal }) => {
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
+      // iOS Safari requires explicit play() call for WebRTC streams sometimes
+      videoRef.current.play().catch(e => console.warn('Video play blocked by browser:', e));
     }
   }, [stream]);
 
   useEffect(() => {
     if (audioRef.current && stream) {
       audioRef.current.srcObject = stream;
+      audioRef.current.play().catch(e => console.warn('Audio play blocked by browser:', e));
     }
   }, [stream]);
 
