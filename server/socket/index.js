@@ -46,7 +46,7 @@ const setupSocket = (httpServer) => {
   });
 
   io.on('connection', (socket) => {
-    console.log(`🔌 Socket connected: ${socket.id} (User: ${socket.user.userId})`);
+    console.log(`🔌 Socket connected: ${socket.id} (User: ${socket.user?.userId || 'recovered'})`);
 
     // Register handlers
     meetingHandlers(io, socket);
