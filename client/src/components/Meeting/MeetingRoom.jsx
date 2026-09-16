@@ -157,26 +157,37 @@ const MeetingRoom = ({ roomCode }) => {
   }, [meeting, socket, connected, localStream, roomCode, user, targetLanguage, isMuted, isVideoOff]);
 
   // 2b. Re-join room after socket reconnects (e.g. server restart)
+  // IMPORTANT: use refs for all values read inside handleReconnect so this
+  // effect only runs once (on mount). Putting state like isMuted/isVideoOff
+  // in the dep array causes the listener to be torn down + re-created on every
+  // mute toggle, which sometimes fires 'connect' twice and causes a disconnect loop.
+  const reconnectValuesRef = useRef({ roomCode, user, targetLanguage, isMuted, isVideoOff });
   useEffect(() => {
-    if (!socket || !meeting || !localStream) return;
+    reconnectValuesRef.current = { roomCode, user, targetLanguage, isMuted, isVideoOff };
+  }, [roomCode, user, targetLanguage, isMuted, isVideoOff]);
+
+  useEffect(() => {
+    if (!socket) return;
 
     const handleReconnect = () => {
-      console.log('🔄 [Meeting] Socket reconnected — re-joining room:', roomCode);
-      joinedRef.current = false; // Reset so join effect can fire again
+      if (!meeting || !localStream) return;
+      const { roomCode: rc, user: u, targetLanguage: tl, isMuted: im, isVideoOff: iv } = reconnectValuesRef.current;
+      console.log('🔄 [Meeting] Socket reconnected — re-joining room:', rc);
+      joinedRef.current = false;
       socket.emit('join-meeting', {
-        roomCode,
-        userId: user.id,
-        displayName: user.name,
-        targetLanguage: targetLanguage || 'hi',
-        isMuted,
-        isVideoOff
+        roomCode: rc,
+        userId: u.id,
+        displayName: u.name,
+        targetLanguage: tl || 'hi',
+        isMuted: im,
+        isVideoOff: iv,
       });
       joinedRef.current = true;
     };
 
     socket.on('connect', handleReconnect);
     return () => socket.off('connect', handleReconnect);
-  }, [socket, meeting, localStream, roomCode, user, targetLanguage, isMuted, isVideoOff]);
+  }, [socket]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLanguageChange = (newLang) => {
     setTargetLanguage(newLang);
