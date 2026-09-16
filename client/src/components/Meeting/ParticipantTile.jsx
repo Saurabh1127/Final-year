@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useAudioVolume } from '../../hooks/useAudioVolume';
 
 const ParticipantTile = ({ participant, stream, isLocal }) => {
@@ -6,19 +6,21 @@ const ParticipantTile = ({ participant, stream, isLocal }) => {
   const isSpeaking = useAudioVolume(stream);
   const actuallySpeaking = isSpeaking && !participant.isMuted;
 
-  // Use a callback ref for the video element.
-  // This guarantees that when React mounts the <video> element (after it was hidden),
-  // the stream is instantly attached to it.
-  const setVideoRef = useCallback((node) => {
-    if (node && stream) {
-      node.srcObject = stream;
+  const videoRef = useRef(null);
+  const audioRef = useRef(null);
+
+  // Always re-attach stream to video/audio elements whenever the stream changes.
+  // Using useEffect is more reliable than callback refs because callback refs only
+  // fire when the element mounts/unmounts, not when the stream prop changes later.
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
     }
   }, [stream]);
 
-  // Use a callback ref for the audio element as well, since it's also conditionally rendered.
-  const setAudioRef = useCallback((node) => {
-    if (node && stream) {
-      node.srcObject = stream;
+  useEffect(() => {
+    if (audioRef.current && stream) {
+      audioRef.current.srcObject = stream;
     }
   }, [stream]);
 
@@ -28,7 +30,7 @@ const ParticipantTile = ({ participant, stream, isLocal }) => {
     <div className={`participant-tile ${isLocal ? 'local-tile' : ''} ${actuallySpeaking ? 'speaking' : ''}`}>
       {hasVideo ? (
         <video 
-          ref={setVideoRef} 
+          ref={videoRef} 
           autoPlay 
           playsInline 
           muted={isLocal} 
@@ -42,11 +44,9 @@ const ParticipantTile = ({ participant, stream, isLocal }) => {
         </div>
       )}
       
-      {/* Always render a hidden audio element for remote participants to ensure audio plays
-          even when video is off. The video tag also plays audio, so this is only needed 
-          when video is not rendering. */}
+      {/* Always render hidden audio for remote participants so audio plays even when video is off */}
       {!hasVideo && !isLocal && (
-        <audio ref={setAudioRef} autoPlay playsInline style={{ display: 'none' }} />
+        <audio ref={audioRef} autoPlay playsInline style={{ display: 'none' }} />
       )}
 
       <div className="participant-info">
