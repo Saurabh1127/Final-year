@@ -23,7 +23,7 @@ const VAD_CONFIG = {
   SILENCE_THRESHOLD: 0.003,   // RMS energy below which audio is "silent"
   SILENCE_DURATION_MS: 300,   // ms of silence before triggering a chunk flush
   MIN_SPEECH_MS: 300,         // minimum speech duration (increased to ignore 200ms clicks)
-  MAX_CHUNK_MS: 1500,         // hard cap: force flush if speaker hasn't paused (reduced to 1.5s for faster translation)
+  MAX_CHUNK_MS: 1000,         // hard cap: force flush if speaker hasn't paused (reduced to 1s for faster translation, safe with server-side hallucination filters)
   ANALYSIS_INTERVAL_MS: 50,   // how often to sample audio energy
 };
 

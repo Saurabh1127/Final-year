@@ -1,15 +1,10 @@
 import React from 'react';
 
-const POPULAR_LANGUAGES = [
+// All languages supported by the AI service (NLLB-200 NMT + Edge TTS)
+// Organized: Indian languages first (Tier 1), then global languages
+const SUPPORTED_LANGUAGES = [
+  // ── Indian Languages (Tier 1 — full pipeline + Sarvam AI TTS) ──
   { code: 'hi', label: '🇮🇳 Hindi' },
-  { code: 'en', label: '🇺🇸 English' },
-  { code: 'fr', label: '🇫🇷 French' },
-  { code: 'es', label: '🇪🇸 Spanish' },
-  { code: 'de', label: '🇩🇪 German' },
-  { code: 'ja', label: '🇯🇵 Japanese' },
-  { code: 'zh', label: '🇨🇳 Chinese' },
-  { code: 'ar', label: '🇸🇦 Arabic' },
-  { code: 'ru', label: '🇷🇺 Russian' },
   { code: 'ta', label: '🇮🇳 Tamil' },
   { code: 'te', label: '🇮🇳 Telugu' },
   { code: 'mr', label: '🇮🇳 Marathi' },
@@ -19,6 +14,25 @@ const POPULAR_LANGUAGES = [
   { code: 'ml', label: '🇮🇳 Malayalam' },
   { code: 'pa', label: '🇮🇳 Punjabi' },
   { code: 'ur', label: '🇵🇰 Urdu' },
+  // ── Global Languages ──
+  { code: 'en', label: '🇺🇸 English' },
+  { code: 'fr', label: '🇫🇷 French' },
+  { code: 'es', label: '🇪🇸 Spanish' },
+  { code: 'de', label: '🇩🇪 German' },
+  { code: 'ja', label: '🇯🇵 Japanese' },
+  { code: 'zh', label: '🇨🇳 Chinese' },
+  { code: 'ko', label: '🇰🇷 Korean' },
+  { code: 'ar', label: '🇸🇦 Arabic' },
+  { code: 'ru', label: '🇷🇺 Russian' },
+  { code: 'pt', label: '🇧🇷 Portuguese' },
+  { code: 'it', label: '🇮🇹 Italian' },
+  { code: 'nl', label: '🇳🇱 Dutch' },
+  { code: 'tr', label: '🇹🇷 Turkish' },
+  { code: 'pl', label: '🇵🇱 Polish' },
+  { code: 'uk', label: '🇺🇦 Ukrainian' },
+  { code: 'vi', label: '🇻🇳 Vietnamese' },
+  { code: 'th', label: '🇹🇭 Thai' },
+  { code: 'sw', label: '🇰🇪 Swahili' },
 ];
 
 export default function LanguageSelector({ currentLanguage, onChange, disabled }) {
@@ -43,7 +57,7 @@ export default function LanguageSelector({ currentLanguage, onChange, disabled }
           outline: 'none',
         }}
       >
-        {POPULAR_LANGUAGES.map((lang) => (
+        {SUPPORTED_LANGUAGES.map((lang) => (
           <option key={lang.code} value={lang.code}>
             {lang.label}
           </option>

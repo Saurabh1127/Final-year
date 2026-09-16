@@ -29,6 +29,24 @@ import transcriptService from '../services/transcriptService.js';
  */
 const roomParticipants = new Map();
 
+/**
+ * Per-room, per-speaker monotonic sequence counter.
+ * Structure: Map<roomCode, Map<speakerId, number>>
+ * Ensures translation-result events arrive in order on the client.
+ */
+const sequenceCounters = new Map();
+
+function getNextSequence(roomCode, speakerId) {
+  if (!sequenceCounters.has(roomCode)) {
+    sequenceCounters.set(roomCode, new Map());
+  }
+  const roomCounters = sequenceCounters.get(roomCode);
+  const current = roomCounters.get(speakerId) || 0;
+  const next = current + 1;
+  roomCounters.set(speakerId, next);
+  return next;
+}
+
 // ── Participant Registry (called by meetingHandlers.js) ───────────────────────
 
 /** Register or update a participant when they join / change language. */
@@ -48,6 +66,7 @@ export function unregisterParticipant(roomCode, socketId) {
     roomParticipants.get(roomCode).delete(socketId);
     if (roomParticipants.get(roomCode).size === 0) {
       roomParticipants.delete(roomCode);
+      sequenceCounters.delete(roomCode); // Clean up sequence counters
     }
   }
 }
@@ -83,8 +102,8 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
 
   // Skip tiny blobs (< 1000 bytes) — use byteLength, NOT .length (ArrayBuffer has no .length)
   console.log(`🎤 [Orchestrator] Received chunk from ${speakerName} in room ${roomCode} (${nodeBuffer.byteLength} bytes)`);
-  if (nodeBuffer.byteLength < 1000) {
-    console.log(`🔇 [Orchestrator] Chunk too small (${nodeBuffer.byteLength}b), skipping.`);
+  if (nodeBuffer.byteLength < 2000) {
+    console.log(`🔇 [Orchestrator] Chunk too small (${nodeBuffer.byteLength}b < 2000), skipping.`);
     return;
   }
 
@@ -157,6 +176,7 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
   console.log(`🌐 [Orchestrator] Translations:`, translations);
 
   const timestamp = new Date();
+  const sequenceNumber = getNextSequence(roomCode, speakerId);
 
   // ── Persist transcript entry to MongoDB ─────────────────────────────────────
   try {
@@ -180,6 +200,7 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
     sourceLanguage: source_language,
     translations,
     timestamp,
+    sequenceNumber,
   });
 
   // Also send subtitle feedback to the speaker so they can see what they said
@@ -206,6 +227,7 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
       mimeType: audioResult?.mime_type || 'audio/mp3',
       lang,
       timestamp,
+      sequenceNumber,
     };
 
     for (const receiverSid of receiverSocketIds) {

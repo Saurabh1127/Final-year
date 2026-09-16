@@ -102,12 +102,49 @@ class SpeechToSpeechEngine:
         transcription = transcribe_audio(audio_bytes, source_language=hint, mime_type=mime_type)
         detected_lang: str = transcription["language"]
         original_text: str = transcription["text"]
+        no_speech_prob: float = transcription.get("no_speech_prob", 0.0)
+        avg_logprob: float = transcription.get("avg_logprob", 0.0)
+        lang_prob: float = transcription.get("language_probability", 1.0)
         asr_s = round(time.time() - t0, 3)
-        print(f"📝 STT [{asr_s}s] [{detected_lang.upper()}]: {original_text[:80]}")
+        print(f"📝 STT [{asr_s}s] [{detected_lang.upper()}]: {original_text[:80]}"
+              f"  | no_speech={no_speech_prob:.3f} logprob={avg_logprob:.3f} lang_prob={lang_prob:.3f}")
         log_gpu_stats("after-STT")
 
-        # Return early if nothing was transcribed
+        # ── Hallucination Filters ─────────────────────────────────────────────
+        # Filter 1: Return early if nothing was transcribed
         if not original_text:
+            return self._empty_response(user_id, meeting_id, detected_lang, target_languages)
+
+        # Filter 2: High no-speech probability → likely silence/noise
+        if no_speech_prob > 0.6:
+            print(f"🔇 [Filter] Rejected: no_speech_prob={no_speech_prob:.3f} > 0.6")
+            return self._empty_response(user_id, meeting_id, detected_lang, target_languages)
+
+        # Filter 3: Low average log-probability → garbage/hallucination
+        if avg_logprob < -1.0:
+            print(f"🔇 [Filter] Rejected: avg_logprob={avg_logprob:.3f} < -1.0")
+            return self._empty_response(user_id, meeting_id, detected_lang, target_languages)
+
+        # Filter 4: Uncertain language detection
+        if lang_prob < 0.5:
+            print(f"🔇 [Filter] Rejected: language_probability={lang_prob:.3f} < 0.5")
+            return self._empty_response(user_id, meeting_id, detected_lang, target_languages)
+
+        # Filter 5: Text too short to be meaningful
+        if len(original_text.strip()) < 3:
+            print(f"🔇 [Filter] Rejected: text too short ({len(original_text.strip())} chars)")
+            return self._empty_response(user_id, meeting_id, detected_lang, target_languages)
+
+        # Filter 6: Common Whisper hallucination patterns
+        hallucination_patterns = [
+            "thank you", "thanks for watching", "subscribe",
+            "like and subscribe", "please subscribe", "see you next time",
+            "bye bye", "you", "the end", "music",
+            "applause", "laughter", "silence",
+        ]
+        text_lower = original_text.strip().lower()
+        if text_lower in hallucination_patterns:
+            print(f"🔇 [Filter] Rejected: hallucination pattern match '{text_lower}'")
             return self._empty_response(user_id, meeting_id, detected_lang, target_languages)
 
         # ── Step 2: NMT — Text → Translations (NLLB-200-600M) ────────────────

@@ -65,10 +65,12 @@ import os
 
 # ASR (STT) Model: faster-whisper uses CTranslate2 for 4-5x speedup
 # Options: "tiny", "base", "small" (recommended), "medium", "large-v3"
-os.environ["WHISPER_MODEL"] = "large-v3"
+# Note: "large-v3" uses ~4GB VRAM and is very slow. "small" uses ~500MB and is fast.
+os.environ["WHISPER_MODEL"] = "small"
 
-# NMT Model: Meta NLLB 1.3B (200+ languages including Indian languages)
-os.environ["NLLB_MODEL"]    = "facebook/nllb-200-distilled-1.3B"
+# NMT Model: Meta NLLB 1.3B or 600M (200+ languages including Indian languages)
+# Note: "1.3B" uses ~2.6GB VRAM. "600M" uses ~1.2GB VRAM. Use 600M to avoid Colab crashes.
+os.environ["NLLB_MODEL"]    = "facebook/nllb-200-distilled-600M"
 
 os.environ["SARVAM_API_KEY"] = os.environ.get("SARVAM_API_KEY", "")
 

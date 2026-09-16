@@ -11,8 +11,8 @@ numpy<2
 scipy
 nest_asyncio
 
-# ── ASR: OpenAI Whisper (small / large-v3) ───────────────────────────────────
-openai-whisper==20240930
+# ── ASR: faster-whisper (CTranslate2, 4-5x faster than OpenAI Whisper) ────
+faster-whisper>=1.0.0
 torch
 torchaudio
 

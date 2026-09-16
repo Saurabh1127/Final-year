@@ -27,6 +27,7 @@ const useTranslationReceiver = ({
   const audioQueueRef = useRef([]);       // Queued translation-result payloads
   const isPlayingRef = useRef(false);     // Prevent concurrent playback
   const currentAudioRef = useRef(null);   // Currently playing Audio element
+  const lastPlayedSeqRef = useRef({});    // { speakerId: lastSequenceNumber } — for ordering
   const [isReceiving, setIsReceiving] = useState(false);
 
   // ── Audio Ducking ────────────────────────────────────────────────────────────
@@ -47,7 +48,18 @@ const useTranslationReceiver = ({
     if (isPlayingRef.current || audioQueueRef.current.length === 0) return;
 
     const item = audioQueueRef.current.shift();
-    const { audioBase64, mimeType, speakerName, originalText, translatedText, lang, timestamp } = item;
+    const { audioBase64, mimeType, speakerName, originalText, translatedText, lang, timestamp, speakerId, sequenceNumber } = item;
+
+    // Discard stale items: if we've already played a higher sequence for this speaker, skip
+    if (sequenceNumber && speakerId) {
+      const lastPlayed = lastPlayedSeqRef.current[speakerId] || 0;
+      if (sequenceNumber < lastPlayed) {
+        console.warn(`⏭️ [TranslationReceiver] Discarding stale item (seq ${sequenceNumber} < ${lastPlayed}) for ${speakerId}`);
+        playNext(); // Try the next item
+        return;
+      }
+      lastPlayedSeqRef.current[speakerId] = sequenceNumber;
+    }
 
     // Show subtitle first (regardless of whether audio plays)
     if (onSubtitle) {

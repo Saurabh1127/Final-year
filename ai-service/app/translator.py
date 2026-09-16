@@ -7,6 +7,7 @@ Auto-selects CUDA or CPU; FP16 on GPU for speed.
 from __future__ import annotations
 
 import os
+import threading
 
 # Third-party — installed on Colab. Linter suppressed via try/except.
 try:
@@ -19,6 +20,7 @@ except ImportError:
 # Singleton instances
 _model = None
 _tokenizer = None
+_translate_lock = threading.Lock()  # Prevents race condition on tokenizer.src_lang
 
 # ── NLLB BCP-47 language code map (ISO 639-1 → NLLB) ────────────────────────
 LANG_CODE_MAP: dict[str, str] = {
@@ -42,6 +44,7 @@ SUPPORTED_LANGUAGES: dict[str, str] = {
     "kn": "Kannada",    "ml": "Malayalam",  "pa": "Punjabi",
     "nl": "Dutch",      "tr": "Turkish",    "pl": "Polish",
     "uk": "Ukrainian",  "vi": "Vietnamese", "sw": "Swahili",
+    "th": "Thai",
 }
 
 
@@ -101,47 +104,50 @@ def translate_text(text: str, src: str, tgt: str) -> str:
     model, tokenizer = get_model_and_tokenizer()
     device = next(model.parameters()).device
 
-    tokenizer.src_lang = get_nllb_code(src)
-    inputs = tokenizer(
-        text,
-        return_tensors="pt",
-        padding=True,
-        truncation=True,
-        max_length=512,
-    ).to(device)
+    # Lock around tokenizer.src_lang + tokenize + generate to prevent
+    # race conditions when translate_to_multiple calls this concurrently.
+    # tokenizer.src_lang is global mutable state on the singleton tokenizer.
+    with _translate_lock:
+        tokenizer.src_lang = get_nllb_code(src)
+        inputs = tokenizer(
+            text,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=512,
+        ).to(device)
 
-    forced_bos = tokenizer.convert_tokens_to_ids(get_nllb_code(tgt))
+        forced_bos = tokenizer.convert_tokens_to_ids(get_nllb_code(tgt))
 
-    with torch.inference_mode():
-        tokens = model.generate(
-            **inputs,
-            forced_bos_token_id=forced_bos,
-            max_new_tokens=512,
-            num_beams=1,
-            do_sample=False,
-        )
+        with torch.inference_mode():
+            tokens = model.generate(
+                **inputs,
+                forced_bos_token_id=forced_bos,
+                max_new_tokens=512,
+                num_beams=1,
+                do_sample=False,
+            )
 
-
-    return tokenizer.batch_decode(tokens, skip_special_tokens=True)[0]
+        return tokenizer.batch_decode(tokens, skip_special_tokens=True)[0]
 
 
 def translate_to_multiple(text: str, src: str, targets: list[str]) -> dict[str, str]:
-    """Translate text to multiple target languages in parallel. Returns {lang: translated_text}."""
+    """Translate text to multiple target languages sequentially (thread-safe).
+    
+    Uses sequential execution instead of ThreadPoolExecutor because the NLLB model
+    and tokenizer are shared singletons — parallel execution races on tokenizer.src_lang
+    and serializes at the CUDA level anyway. Sequential is simpler and equally fast.
+    """
     out: dict[str, str] = {}
     if not targets:
         return out
-        
-    import concurrent.futures
-    
-    def _translate(lang: str) -> tuple[str, str]:
+
+    for lang in targets:
         try:
-            return lang, translate_text(text, src, lang)
+            out[lang] = translate_text(text, src, lang)
         except Exception as exc:
             print(f"⚠️  Translation to '{lang}' failed: {exc}")
-            return lang, f"[Translation error for '{lang}']"
+            out[lang] = f"[Translation error for '{lang}']"
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(targets), 8)) as executor:
-        for lang, translated in executor.map(_translate, targets):
-            out[lang] = translated
-            
     return out
+

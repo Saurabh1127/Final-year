@@ -88,7 +88,14 @@ def transcribe_audio(
                          decodes the format correctly.
 
     Returns:
-        {"text": str, "language": str, "segments": list}
+        {
+            "text": str,
+            "language": str,
+            "language_probability": float,
+            "no_speech_prob": float,      # avg across segments; >0.6 = likely silence
+            "avg_logprob": float,         # avg across segments; <-1.0 = low confidence
+            "segments": list
+        }
     """
     model = get_model()
 
@@ -103,26 +110,40 @@ def transcribe_audio(
         if source_language and source_language.lower() not in ("", "auto"):
             opts["language"] = source_language
 
+        # beam_size=1 (greedy) gives ~2x speedup over beam_size=5 with minimal quality loss
         # condition_on_previous_text=False prevents getting stuck in hallucination loops
         # vad_filter=True completely eliminates "Thank you" / "Subscribe" hallucinations on silence
         segments, info = model.transcribe(
             tmp_path, 
-            beam_size=5, 
+            beam_size=1, 
             vad_filter=True, 
             condition_on_previous_text=False, 
             **opts
         )
         
         # faster-whisper returns a generator for segments, we must iterate to actually transcribe
-        text = " ".join([segment.text for segment in segments]).strip()
+        segment_list = list(segments)
+        text = " ".join([seg.text for seg in segment_list]).strip()
+
+        # Compute average confidence metrics across all segments
+        if segment_list:
+            avg_no_speech = sum(seg.no_speech_prob for seg in segment_list) / len(segment_list)
+            avg_logprob = sum(seg.avg_logprob for seg in segment_list) / len(segment_list)
+        else:
+            avg_no_speech = 1.0  # No segments = no speech
+            avg_logprob = -2.0   # Low confidence
 
         return {
-            "text":     text,
-            "language": info.language,
-            "segments": [], # we omit segment details for now to save memory
+            "text":                 text,
+            "language":             info.language,
+            "language_probability": round(info.language_probability, 4),
+            "no_speech_prob":       round(avg_no_speech, 4),
+            "avg_logprob":          round(avg_logprob, 4),
+            "segments":             [],  # we omit segment details for now to save memory
         }
     finally:
         try:
             os.unlink(tmp_path)
         except OSError:
             pass
+
