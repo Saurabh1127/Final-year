@@ -65,7 +65,7 @@ import os
 
 # ASR (STT) Model: faster-whisper uses CTranslate2 for 4-5x speedup
 # Options: "tiny", "base", "small" (recommended), "medium", "large-v3"
-os.environ["WHISPER_MODEL"] = "small"
+os.environ["WHISPER_MODEL"] = "large-v3"
 
 # NMT Model: Meta NLLB 1.3B (200+ languages including Indian languages)
 os.environ["NLLB_MODEL"]    = "facebook/nllb-200-distilled-1.3B"
