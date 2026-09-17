@@ -111,6 +111,25 @@ const MeetingRoom = ({ roomCode }) => {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Page Visibility (Tab Switching) Recovery ─────────────────────────────────
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('👀 [Meeting] Tab became visible. Checking connection...');
+        if (socket && !socket.connected) {
+          console.log('🔄 [Meeting] Socket disconnected in background. Forcing reconnect...');
+          socket.connect();
+        } else if (socket && connected) {
+          // Send a status update to ensure the server knows we're active
+          socket.emit('toggle-media', { roomCode, userId: user?.id, isMuted, isVideoOff });
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [socket, connected, roomCode, user, isMuted, isVideoOff]);
+
   // Echo test
   useEffect(() => {
     if (echoAudioRef.current && localStream && isEchoTestActive) {
