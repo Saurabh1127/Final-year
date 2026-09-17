@@ -131,6 +131,26 @@ def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = 
     return base64.b64decode(audio_base64_list[0])
 
 
+async def stream_edge_tts(text: str, target_lang: str):
+    """
+    Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS.
+    Yields audio chunks directly as they are streamed.
+    """
+    if not _EDGE_TTS_AVAILABLE:
+        raise RuntimeError("edge_tts not installed.")
+        
+    voice = EDGE_VOICE_MAP_MALE.get(target_lang, "en-US-ChristopherNeural")
+    
+    try:
+        communicate = edge_tts.Communicate(text, voice)
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                yield chunk["data"]
+    except Exception as e:
+        print(f"⚠️ edge_tts stream error for {target_lang}: {e}")
+        raise
+
+
 def synthesize_edge_tts(text: str, target_lang: str) -> bytes:
     """Synthesise studio-grade natural human speech via Microsoft Edge Neural TTS."""
     voice = EDGE_VOICE_MAP_MALE.get(target_lang, "en-US-ChristopherNeural")

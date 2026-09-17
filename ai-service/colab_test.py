@@ -96,19 +96,30 @@ import gc; gc.collect()
 
 
 # ───────────────────────────────────────────────────────────────────
-# CELL 6 — Pre-download NLLB model weights (cache only)
+# CELL 6 — Convert NLLB model to CTranslate2 INT8 format
 # ───────────────────────────────────────────────────────────────────
-# Only downloads to HuggingFace cache — does NOT load into RAM.
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+import os
+import subprocess
 
-nllb_name = os.environ.get("NLLB_MODEL", "facebook/nllb-200-distilled-1.3B")
-print(f"⬇️  Downloading NLLB '{nllb_name}' to cache...")
-_tok = AutoTokenizer.from_pretrained(nllb_name)
-_mod = AutoModelForSeq2SeqLM.from_pretrained(nllb_name, torch_dtype=torch.float16)
-print(f"✅ NLLB '{nllb_name}' cached.")
-del _tok, _mod
-torch.cuda.empty_cache()
-import gc; gc.collect()
+nllb_name = os.environ.get("NLLB_MODEL", "facebook/nllb-200-distilled-600M")
+output_dir = nllb_name.split("/")[-1] + "-int8"
+
+print(f"⬇️  Downloading and converting NLLB '{nllb_name}' to CTranslate2 INT8 format...")
+if not os.path.exists(output_dir):
+    subprocess.run([
+        "ct2-transformers-converter",
+        "--model", nllb_name,
+        "--output_dir", output_dir,
+        "--quantization", "int8",
+        "--force"
+    ], check=True)
+    print(f"✅ NLLB '{nllb_name}' converted and saved to {output_dir}/")
+else:
+    print(f"✅ NLLB converted model already exists in {output_dir}/")
+
+# Update env var to point to the converted model directory for the API
+os.environ["NLLB_MODEL"] = output_dir
+print(f"  NLLB_MODEL is now set to: {os.environ['NLLB_MODEL']}")
 
 
 # ───────────────────────────────────────────────────────────────────

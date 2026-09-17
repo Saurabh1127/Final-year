@@ -117,6 +117,11 @@ def transcribe_audio(
             tmp_path, 
             beam_size=1, 
             vad_filter=True, 
+            vad_parameters=dict(
+                threshold=0.5,
+                min_speech_duration_ms=250,
+                min_silence_duration_ms=500
+            ),
             condition_on_previous_text=False, 
             **opts
         )

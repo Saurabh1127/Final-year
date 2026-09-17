@@ -20,11 +20,11 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useSocket } from '../context/SocketContext';
 
 const VAD_CONFIG = {
-  SILENCE_THRESHOLD: 0.003,   // RMS energy below which audio is "silent"
-  SILENCE_DURATION_MS: 300,   // ms of silence before triggering a chunk flush
-  MIN_SPEECH_MS: 300,         // minimum speech duration (increased to ignore 200ms clicks)
-  MAX_CHUNK_MS: 1000,         // hard cap: force flush if speaker hasn't paused (reduced to 1s for faster translation, safe with server-side hallucination filters)
-  ANALYSIS_INTERVAL_MS: 50,   // how often to sample audio energy
+  SILENCE_THRESHOLD: 0.01,    // Increased from 0.003 to ignore fan noise
+  SILENCE_DURATION_MS: 400,   // Increased from 300 to wait longer before flushing
+  MIN_SPEECH_MS: 500,         // Increased from 300 to ignore short clicks
+  MAX_CHUNK_MS: 2500,         // Increased from 1000 to give Whisper more context
+  ANALYSIS_INTERVAL_MS: 50,
 };
 
 const useSpeechTranslation = ({
@@ -56,6 +56,7 @@ const useSpeechTranslation = ({
   const timesliceIntervalRef = useRef(null);
   const translationStreamRef = useRef(null);
   const isFlushingRef = useRef(false);
+  const chunkStartTimeRef = useRef(null);
 
   // ── Audio Ducking ────────────────────────────────────────────────────────────
   const duckRemoteAudio = useCallback(() => {
@@ -96,6 +97,7 @@ const useSpeechTranslation = ({
     const cloned = clonedStreamRef.current;
     if (!cloned) return;
 
+    chunkStartTimeRef.current = Date.now();
     const recorder = new MediaRecorder(cloned);
     recorder.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) {
@@ -120,15 +122,14 @@ const useSpeechTranslation = ({
   // FFmpeg on the server rejects them with "EBML header parsing failed".
   // By stopping + restarting, every flushed blob is a valid, self-contained WebM.
   const flushChunk = useCallback(() => {
-    if (isFlushingRef.current || !socket?.connected) return;
+    if (!socket?.connected) return;
 
     const recorder = mediaRecorderRef.current;
     if (!recorder || recorder.state !== 'recording') return;
     if (chunksRef.current.length === 0) return;
 
-    isFlushingRef.current = true;
-
     const currentMimeType = recorder.mimeType || 'audio/webm';
+    const flushTime = Date.now();
 
     // Stop fires a final 'dataavailable' event, then 'stop' event.
     // The 'onstop' handler collects all chunks (including the final one),
@@ -142,7 +143,6 @@ const useSpeechTranslation = ({
 
       // Discard tiny blobs (< 1KB) — probably just silence
       if (blob.size < 1000) {
-        isFlushingRef.current = false;
         return;
       }
 
@@ -152,12 +152,12 @@ const useSpeechTranslation = ({
           roomCode,
           speakerName,
           mimeType: currentMimeType,
+          captureStartTime: chunkStartTimeRef.current || flushTime,
+          flushTime: flushTime,
         });
         console.log(`📤 [Speech] Emitted audio-chunk (${(blob.size / 1024).toFixed(1)}KB) for room ${roomCode}`);
       }).catch((err) => {
         console.warn('⚠️ [Speech] Failed to convert blob to ArrayBuffer:', err.message);
-      }).finally(() => {
-        isFlushingRef.current = false;
       });
     };
 

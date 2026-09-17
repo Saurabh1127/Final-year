@@ -280,7 +280,8 @@ async def websocket_process_audio(websocket: WebSocket) -> None:
                 await websocket.send_json({"error": "Invalid base64 audio data."})
                 continue
 
-            result = engine.process(
+            # Stream results back to the client
+            async for chunk in engine.process_stream(
                 audio_bytes=audio_bytes,
                 target_languages=payload.get("target_languages", ["en"]),
                 source_language=payload.get("source_language"),
@@ -288,9 +289,8 @@ async def websocket_process_audio(websocket: WebSocket) -> None:
                 speaker_name=payload.get("speaker_name", "Anonymous"),
                 meeting_id=payload.get("meeting_id", "unknown"),
                 include_audio=payload.get("include_audio", True),
-            )
-
-            await websocket.send_json(result)
+            ):
+                await websocket.send_json(chunk)
 
     except WebSocketDisconnect:
         print(f"🔌 WebSocket disconnected: {websocket.client}")

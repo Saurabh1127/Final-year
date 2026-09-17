@@ -1,26 +1,25 @@
 """
 Neural Machine Translation Module
-Uses Meta NLLB-200-distilled-600M for 200+ language translation.
-Auto-selects CUDA or CPU; FP16 on GPU for speed.
+Uses Meta NLLB-200-distilled-600M converted to CTranslate2 INT8 format.
+Provides 2-4x speedup over HuggingFace Transformers and supports batching.
 """
 
 from __future__ import annotations
 
 import os
-import threading
 
 # Third-party — installed on Colab. Linter suppressed via try/except.
 try:
-    from transformers import AutoModelForSeq2SeqLM, AutoTokenizer  # type: ignore
-    import torch  # type: ignore
+    from transformers import AutoTokenizer  # type: ignore
+    import ctranslate2 # type: ignore
+    import torch # type: ignore
     _DEPS_AVAILABLE = True
 except ImportError:
     _DEPS_AVAILABLE = False
 
 # Singleton instances
-_model = None
+_translator = None
 _tokenizer = None
-_translate_lock = threading.Lock()  # Prevents race condition on tokenizer.src_lang
 
 # ── NLLB BCP-47 language code map (ISO 639-1 → NLLB) ────────────────────────
 LANG_CODE_MAP: dict[str, str] = {
@@ -52,31 +51,33 @@ def _get_device() -> str:
     if not _DEPS_AVAILABLE:
         return "cpu"
     if torch.cuda.is_available():
-        print(f"🎮 GPU detected: {torch.cuda.get_device_name(0)} — NLLB on CUDA.")
+        print(f"🎮 GPU detected: {torch.cuda.get_device_name(0)} — NLLB (CTranslate2) on CUDA.")
         return "cuda"
-    print("💻 No GPU — NLLB on CPU.")
+    print("💻 No GPU — NLLB (CTranslate2) on CPU.")
     return "cpu"
 
 
-def get_model_and_tokenizer():
-    """Load NLLB model + tokenizer once and cache them (singleton)."""
-    global _model, _tokenizer
-    if _model is None or _tokenizer is None:
+def get_translator_and_tokenizer():
+    """Load CTranslate2 NLLB model + tokenizer once and cache them (singleton)."""
+    global _translator, _tokenizer
+    if _translator is None or _tokenizer is None:
         if not _DEPS_AVAILABLE:
-            raise RuntimeError("transformers and torch are not installed. Run on Colab.")
-        name = os.getenv("NLLB_MODEL", "facebook/nllb-200-distilled-600M")
+            raise RuntimeError("ctranslate2, transformers and torch are not installed. Run on Colab.")
+        
+        model_path = os.getenv("NLLB_MODEL", "nllb-200-distilled-600M-int8")
         device = _get_device()
-        print(f"🌐 Loading NLLB '{name}' on {device.upper()} ...")
-        _tokenizer = AutoTokenizer.from_pretrained(name)
-        if device == "cuda":
-            _model = AutoModelForSeq2SeqLM.from_pretrained(name, torch_dtype=torch.float16).to(device)
-            print("⚡ NLLB FP16 on GPU enabled.")
-        else:
-            _model = AutoModelForSeq2SeqLM.from_pretrained(name).to(device)
-        params_m = sum(p.numel() for p in _model.parameters()) / 1e6
-        print(f"✅ NLLB '{name}' ready ({params_m:.0f}M params).")
-    return _model, _tokenizer
-
+        print(f"🌐 Loading CTranslate2 NLLB '{model_path}' on {device.upper()} ...")
+        
+        # Ensure tokenizer loads from the same directory (where converter copied it) or fallback to HF hub
+        try:
+            _tokenizer = AutoTokenizer.from_pretrained(model_path)
+        except Exception:
+            _tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-200-distilled-600M")
+            
+        compute_type = "int8_float16" if device == "cuda" else "int8"
+        _translator = ctranslate2.Translator(model_path, device=device, compute_type=compute_type)
+        print(f"✅ NLLB (CTranslate2) ready.")
+    return _translator, _tokenizer
 
 
 def get_nllb_code(iso: str) -> str:
@@ -86,68 +87,67 @@ def get_nllb_code(iso: str) -> str:
 
 def translate_text(text: str, src: str, tgt: str) -> str:
     """
-    Translate text from src language to tgt language using NLLB-200.
-
-    Args:
-        text: Text to translate.
-        src:  ISO 639-1 source language code (e.g. "en").
-        tgt:  ISO 639-1 target language code (e.g. "hi").
-
-    Returns:
-        Translated text string.
+    Translate text from src language to tgt language using NLLB CTranslate2.
     """
     if not text or not text.strip():
         return ""
     if src == tgt:
         return text  # No-op
 
-    model, tokenizer = get_model_and_tokenizer()
-    device = next(model.parameters()).device
+    translator, tokenizer = get_translator_and_tokenizer()
 
-    # Lock around tokenizer.src_lang + tokenize + generate to prevent
-    # race conditions when translate_to_multiple calls this concurrently.
-    # tokenizer.src_lang is global mutable state on the singleton tokenizer.
-    with _translate_lock:
-        tokenizer.src_lang = get_nllb_code(src)
-        inputs = tokenizer(
-            text,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=512,
-        ).to(device)
-
-        forced_bos = tokenizer.convert_tokens_to_ids(get_nllb_code(tgt))
-
-        with torch.inference_mode():
-            tokens = model.generate(
-                **inputs,
-                forced_bos_token_id=forced_bos,
-                max_new_tokens=512,
-                num_beams=1,
-                do_sample=False,
-            )
-
-        return tokenizer.batch_decode(tokens, skip_special_tokens=True)[0]
+    tokenizer.src_lang = get_nllb_code(src)
+    source = tokenizer.convert_ids_to_tokens(tokenizer.encode(text))
+    target_prefix = [get_nllb_code(tgt)]
+    
+    results = translator.translate_batch([source], target_prefix=[target_prefix])
+    
+    target = results[0].hypotheses[0][1:] # skip the forced bos prefix
+    return tokenizer.decode(tokenizer.convert_tokens_to_ids(target))
 
 
 def translate_to_multiple(text: str, src: str, targets: list[str]) -> dict[str, str]:
-    """Translate text to multiple target languages sequentially (thread-safe).
-    
-    Uses sequential execution instead of ThreadPoolExecutor because the NLLB model
-    and tokenizer are shared singletons — parallel execution races on tokenizer.src_lang
-    and serializes at the CUDA level anyway. Sequential is simpler and equally fast.
+    """
+    Translate text to multiple target languages using CTranslate2 batching.
+    This provides a massive speedup by processing all languages in a single GPU pass.
     """
     out: dict[str, str] = {}
     if not targets:
         return out
+    if not text or not text.strip():
+        for lang in targets:
+            out[lang] = ""
+        return out
 
-    for lang in targets:
-        try:
-            out[lang] = translate_text(text, src, lang)
-        except Exception as exc:
-            print(f"⚠️  Translation to '{lang}' failed: {exc}")
-            out[lang] = f"[Translation error for '{lang}']"
+    # Filter out target = src
+    valid_targets = [tgt for tgt in targets if tgt != src]
+    for tgt in targets:
+        if tgt == src:
+            out[tgt] = text
+            
+    if not valid_targets:
+        return out
+
+    translator, tokenizer = get_translator_and_tokenizer()
+    
+    try:
+        tokenizer.src_lang = get_nllb_code(src)
+        source = tokenizer.convert_ids_to_tokens(tokenizer.encode(text))
+        
+        # Batching: duplicate the source for each target language
+        source_batch = [source] * len(valid_targets)
+        target_prefixes = [[get_nllb_code(tgt)] for tgt in valid_targets]
+        
+        results = translator.translate_batch(source_batch, target_prefix=target_prefixes)
+        
+        for i, tgt in enumerate(valid_targets):
+            target_tokens = results[i].hypotheses[0][1:] # skip prefix
+            out[tgt] = tokenizer.decode(tokenizer.convert_tokens_to_ids(target_tokens))
+            
+    except Exception as exc:
+        print(f"⚠️  Batch translation failed: {exc}")
+        for tgt in valid_targets:
+            out[tgt] = f"[Translation error for '{tgt}']"
 
     return out
 

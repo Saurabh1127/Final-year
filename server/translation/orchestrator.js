@@ -84,12 +84,9 @@ export function updateParticipantLanguage(roomCode, socketId, targetLanguage) {
 
 // ── Audio Chunk Handler ───────────────────────────────────────────────────────
 
-/**
- * Handle an incoming audio chunk from a participant.
- * Registered in socket/index.js as:  socket.on('audio-chunk', handleAudioChunk.bind(null, io, socket))
- */
 export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
-  const { roomCode, speakerName, mimeType = 'audio/webm;codecs=opus' } = metadata || {};
+  const serverReceiveTime = Date.now();
+  const { roomCode, speakerName, mimeType = 'audio/webm;codecs=opus', captureStartTime, flushTime } = metadata || {};
   const speakerId = socket.user?.userId;
 
   if (!roomCode || !speakerId || !audioBuffer) {
@@ -133,109 +130,120 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
 
   const targetLanguages = [...targetLanguageSet];
 
-  console.log(
-    `🎙️ [Orchestrator] Room ${roomCode} (${room.size} participant${room.size > 1 ? 's' : ''}): ${speakerName} speaking → translating to [${targetLanguages.join(', ')}]`
-  );
-
-  let result;
-  try {
-    result = await processAudio({
-      audioBuffer: nodeBuffer,
-      fileName: 'chunk.webm',
-      mimeType,
-      meetingId: roomCode,
-      userId: speakerId,
-      speakerName,
-      targetLanguages,
-    });
-  } catch (err) {
-    console.error(`❌ [Orchestrator] AI service error: ${err.message}`);
-    socket.emit('translation-error', { message: 'Translation service temporarily unavailable.' });
-    return;
-  }
-
-  const { original_text, source_language, translations, audio_translations } = result;
-
-  // DEBUG: Log the full AI response to diagnose empty transcriptions
-  console.log(`🔍 [DEBUG] AI Response for ${speakerName}:`, JSON.stringify({
-    original_text,
-    source_language,
-    translations,
-    has_audio: !!audio_translations && Object.keys(audio_translations || {}).length > 0,
-    error: result.error || null,
-    latency: result.latency || null,
-  }, null, 2));
-
-  // Discard no-speech results or pipeline errors
-  if (!original_text || original_text.trim() === '' || original_text === '[Pipeline Error]') {
-    console.log('🔇 [Orchestrator] AI detected silence or empty transcription.');
-    return;
-  }
-
-  console.log(`🤖 [Orchestrator] Recognized (${source_language}): "${original_text}"`);
-  console.log(`🌐 [Orchestrator] Translations:`, translations);
+  const emitter = processAudio({
+    audioBuffer: nodeBuffer,
+    fileName: 'chunk.webm',
+    mimeType,
+    meetingId: roomCode,
+    userId: speakerId,
+    speakerName,
+    targetLanguages,
+  });
 
   const timestamp = new Date();
   const sequenceNumber = getNextSequence(roomCode, speakerId);
+  let textResult = null;
 
-  // ── Persist transcript entry to MongoDB ─────────────────────────────────────
-  try {
-    await transcriptService.saveTranscript({
-      meetingId: roomCode,
+  emitter.on('text', async (msg) => {
+    const { original_text, source_language, translations } = msg;
+    textResult = msg;
+    
+    // Discard no-speech results
+    if (!original_text || original_text.trim() === '' || original_text === '[Pipeline Error]') {
+      console.log('🔇 [Orchestrator] AI detected silence or empty transcription.');
+      return;
+    }
+
+    console.log(`🤖 [Orchestrator] Recognized (${source_language}): "${original_text}"`);
+    console.log(`🌐 [Orchestrator] Translations:`, translations);
+
+    const serverAiReturnTime = Date.now();
+
+    // ── Persist transcript entry to MongoDB ─────────────────────────────────────
+    try {
+      await transcriptService.saveTranscript({
+        meetingId: roomCode,
+        speakerId,
+        speakerName,
+        sourceLanguage: source_language,
+        originalText: original_text,
+        translations,
+      });
+    } catch (saveErr) {
+      console.warn('⚠️ [Orchestrator] Failed to persist transcript:', saveErr.message);
+    }
+
+    // Broadcast new-transcript to ALL participants
+    io.to(roomCode).emit('new-transcript', {
       speakerId,
       speakerName,
-      sourceLanguage: source_language,
       originalText: original_text,
+      sourceLanguage: source_language,
       translations,
-    });
-  } catch (saveErr) {
-    console.warn('⚠️ [Orchestrator] Failed to persist transcript:', saveErr.message);
-  }
-
-  // Broadcast new-transcript to ALL participants in the room (including the speaker!)
-  io.to(roomCode).emit('new-transcript', {
-    speakerId,
-    speakerName,
-    originalText: original_text,
-    sourceLanguage: source_language,
-    translations,
-    timestamp,
-    sequenceNumber,
-  });
-
-  // Also send subtitle feedback to the speaker so they can see what they said
-  const firstTargetLang = targetLanguages[0];
-  socket.emit('speaker-subtitle', {
-    speakerName: 'You',
-    originalText: original_text,
-    translatedText: translations?.[firstTargetLang] || original_text,
-    lang: firstTargetLang,
-  });
-
-  // ── Emit translation-result per language to only the relevant receivers ──────
-  for (const [lang, receiverSocketIds] of languageToReceivers.entries()) {
-    const audioResult = audio_translations?.[lang];
-    const translatedText = translations?.[lang] || '';
-
-    const payload = {
-      speakerId,
-      speakerName,
-      originalText: original_text,
-      sourceLanguage: source_language,
-      translatedText,
-      audioBase64: audioResult?.audio_base64 || null,
-      mimeType: audioResult?.mime_type || 'audio/mp3',
-      lang,
       timestamp,
       sequenceNumber,
-    };
+      timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null } // Latency comes in 'done'
+    });
 
-    for (const receiverSid of receiverSocketIds) {
-      io.to(receiverSid).emit('translation-result', payload);
+    // Also send subtitle feedback to the speaker
+    const firstTargetLang = targetLanguages[0];
+    socket.emit('speaker-subtitle', {
+      speakerName: 'You',
+      originalText: original_text,
+      translatedText: translations?.[firstTargetLang] || original_text,
+      lang: firstTargetLang,
+      timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null }
+    });
+
+    // ── Emit translation-result (Text) per language ──────
+    for (const [lang, receiverSocketIds] of languageToReceivers.entries()) {
+      const translatedText = translations?.[lang] || '';
+      const textPayload = {
+        speakerId,
+        speakerName,
+        originalText: original_text,
+        sourceLanguage: source_language,
+        translatedText,
+        lang,
+        timestamp,
+        sequenceNumber,
+        timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null }
+      };
+
+      for (const receiverSid of receiverSocketIds) {
+        io.to(receiverSid).emit('translation-result', textPayload);
+      }
     }
-  }
+  });
 
-  console.log(
-    `✅ [Orchestrator] Sent translation to ${[...languageToReceivers.values()].flat().length} listener(s)`
-  );
+  emitter.on('audio_chunk', (msg) => {
+    const { lang, mime_type, audio_base64 } = msg;
+    
+    // Only send if receivers exist for this lang
+    const receiverSocketIds = languageToReceivers.get(lang);
+    if (!receiverSocketIds || receiverSocketIds.length === 0) return;
+
+    if (audio_base64) {
+      const audioBuffer = Buffer.from(audio_base64, 'base64');
+      const audioMetadata = {
+        speakerId,
+        sequenceNumber,
+        lang,
+        mimeType: mime_type || 'audio/mp3',
+      };
+      for (const receiverSid of receiverSocketIds) {
+        io.to(receiverSid).emit('translation-audio', audioBuffer, audioMetadata);
+      }
+    }
+  });
+
+  emitter.on('done', (latency) => {
+    console.log(`✅ [Orchestrator] Stream complete. Metrics:`, latency);
+    // Latency can be appended or logged here
+  });
+
+  emitter.on('error', (err) => {
+    console.error(`❌ [Orchestrator] AI service streaming error: ${err.message}`);
+    socket.emit('translation-error', { message: 'Translation service streaming interrupted.' });
+  });
 }

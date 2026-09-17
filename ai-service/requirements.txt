@@ -16,7 +16,8 @@ faster-whisper>=1.0.0
 torch
 torchaudio
 
-# ── NMT: Meta NLLB-200 (Hugging Face Transformers) ────────────────────────────
+# ── NMT: Meta NLLB-200 (CTranslate2 for fast INT8 inference) ─────────────────
+ctranslate2
 transformers==4.44.2
 sentencepiece==0.2.0
 protobuf==5.27.2

@@ -1,37 +1,30 @@
 /**
  * aiClient.js
  *
- * HTTP client wrapper for the FastAPI AI microservice.
- * Handles multipart form POSTs with timeout, 1 retry on 5xx, and structured errors.
+ * WebSocket client wrapper for the FastAPI AI microservice.
+ * Connects to the streaming endpoint to receive TTS chunks in real-time.
  */
 
 import axios from 'axios';
-import FormData from 'form-data';
+import WebSocket from 'ws';
+import { EventEmitter } from 'events';
 
-const REQUEST_TIMEOUT_MS = 30_000; // 30s — allows Colab T4 GPU enough time to process NMT & TTS
+const REQUEST_TIMEOUT_MS = 30_000;
 
 class AIServiceError extends Error {
   constructor(message, type, statusCode) {
     super(message);
     this.name = 'AIServiceError';
-    this.type = type;       // 'service_down' | 'bad_audio' | 'rate_limit' | 'unknown'
+    this.type = type;
     this.statusCode = statusCode;
   }
 }
 
 /**
- * Send an audio buffer to the AI service for Speech-to-Speech Translation.
- *
- * @param {Buffer} audioBuffer   - Raw audio bytes (WebM/Opus)
- * @param {string} fileName      - Filename hint for the form field (e.g. 'chunk.webm')
- * @param {string} mimeType      - MIME type of audio buffer
- * @param {string} meetingId
- * @param {string} userId
- * @param {string} speakerName
- * @param {string[]} targetLanguages - NLLB language codes (e.g. ['hi', 'en'])
- * @returns {Promise<Object>}    - { original_text, source_language, translations, audio_translations, latency }
+ * Send an audio buffer to the AI service for Speech-to-Speech Translation via WebSockets.
+ * Returns an EventEmitter that emits: 'text', 'audio_chunk', 'done', 'error'.
  */
-export async function processAudio({
+export function processAudio({
   audioBuffer,
   fileName = 'chunk.webm',
   mimeType = 'audio/webm;codecs=opus',
@@ -40,71 +33,81 @@ export async function processAudio({
   speakerName,
   targetLanguages = [],
 }) {
-  // Build a FRESH FormData for each attempt — streams are consumed after one POST,
-  // so reusing the same FormData on retry would send an empty body.
-  const buildForm = () => {
-    const form = new FormData();
-    form.append('audio', audioBuffer, { filename: fileName, contentType: mimeType });
-    form.append('meeting_id', meetingId);
-    form.append('user_id', userId);
-    form.append('speaker_name', speakerName);
-    form.append('target_languages', JSON.stringify(targetLanguages));
-    form.append('include_audio', 'true');
-    form.append('mime_type', mimeType);
-    return form;
-  };
+  const emitter = new EventEmitter();
+  
+  // Use a timeout to abort if the connection hangs
+  const timeoutId = setTimeout(() => {
+    emitter.emit('error', new AIServiceError('WebSocket connection timed out', 'service_down', 504));
+    if (ws) ws.close();
+  }, REQUEST_TIMEOUT_MS);
 
-  const makeRequest = async () => {
-    const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-    const form = buildForm();
-    const response = await axios.post(
-      `${aiUrl}/api/process-audio`,
-      form,
-      {
-        headers: {
-          ...form.getHeaders(),
-          'ngrok-skip-browser-warning': 'true',
-        },
-        timeout: REQUEST_TIMEOUT_MS,
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      }
-    );
-    return response.data;
-  };
-
+  const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+  const wsUrl = aiUrl.replace('http://', 'ws://').replace('https://', 'wss://') + '/ws/process-audio';
+  
+  let ws;
   try {
-    return await makeRequest();
+    ws = new WebSocket(wsUrl);
   } catch (err) {
-    // One retry on 5xx or network timeouts
-    if (!err.response || err.response.status >= 500) {
-      console.warn('⚠️ [AIClient] First attempt failed, retrying once…', err.message);
-      try {
-        return await makeRequest();
-      } catch (retryErr) {
-        console.error('🔥 [AIClient] Full Retry Error:', retryErr.message);
-        const status = retryErr.response?.status;
-        const type = !retryErr.response ? 'service_down' : status >= 500 ? 'service_down' : 'unknown';
-        throw new AIServiceError(
-          `AI service unavailable after retry: ${retryErr.message}`,
-          type,
-          status
-        );
-      }
-    }
-
-    const status = err.response?.status;
-    let type = 'unknown';
-    if (status === 400) type = 'bad_audio';
-    if (status === 429) type = 'rate_limit';
-    if (status >= 500) type = 'service_down';
-
-    throw new AIServiceError(
-      `AI service error (${status}): ${err.response?.data?.detail || err.message}`,
-      type,
-      status
-    );
+    clearTimeout(timeoutId);
+    setTimeout(() => emitter.emit('error', new AIServiceError('Failed to initialize WebSocket', 'service_down', 500)), 0);
+    return emitter;
   }
+
+  ws.on('open', () => {
+    // Send the JSON payload
+    const payload = {
+      audio_base64: audioBuffer.toString('base64'),
+      meeting_id: meetingId,
+      user_id: userId,
+      speaker_name: speakerName,
+      source_language: "auto",
+      target_languages: targetLanguages,
+      include_audio: true,
+      mime_type: mimeType
+    };
+    ws.send(JSON.stringify(payload));
+  });
+
+  ws.on('message', (data) => {
+    try {
+      const msg = JSON.parse(data.toString());
+      if (msg.error) {
+        clearTimeout(timeoutId);
+        emitter.emit('error', new AIServiceError(msg.error, 'unknown', 500));
+        ws.close();
+        return;
+      }
+
+      if (msg.type === 'text') {
+        emitter.emit('text', msg);
+      } else if (msg.type === 'audio_chunk') {
+        emitter.emit('audio_chunk', msg);
+      } else if (msg.type === 'done') {
+        clearTimeout(timeoutId);
+        emitter.emit('done', msg.latency);
+        ws.close();
+      } else if (msg.original_text) {
+        // Fallback for legacy format if process() was somehow called
+        emitter.emit('text', msg);
+        clearTimeout(timeoutId);
+        emitter.emit('done', msg.latency);
+        ws.close();
+      }
+    } catch (err) {
+      console.warn('⚠️ [AIClient] Error parsing WS message:', err);
+    }
+  });
+
+  ws.on('error', (err) => {
+    clearTimeout(timeoutId);
+    emitter.emit('error', new AIServiceError(`WebSocket error: ${err.message}`, 'service_down', 500));
+  });
+
+  ws.on('close', () => {
+    clearTimeout(timeoutId);
+  });
+
+  return emitter;
 }
 
 /**
