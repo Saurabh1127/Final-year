@@ -146,6 +146,16 @@ def transcribe_audio(
             "avg_logprob":          round(avg_logprob, 4),
             "segments":             [],  # we omit segment details for now to save memory
         }
+    except Exception as exc:
+        print(f"⚠️ [STT] Audio decoding error: {exc}. Treating as silence.")
+        return {
+            "text":                 "",
+            "language":             "en",
+            "language_probability": 0.0,
+            "no_speech_prob":       1.0,
+            "avg_logprob":          -5.0,
+            "segments":             [],
+        }
     finally:
         try:
             os.unlink(tmp_path)

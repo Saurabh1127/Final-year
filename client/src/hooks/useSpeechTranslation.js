@@ -102,11 +102,6 @@ const useSpeechTranslation = ({
     recorder.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) {
         chunksRef.current.push(e.data);
-        // Pre-roll pruning: when user is not speaking, keep at most 2 slices (~500ms pre-roll)
-        // to prevent accumulating massive megabyte-sized buffers of dead silence
-        if (!speechStartTimeRef.current && chunksRef.current.length > 2) {
-          chunksRef.current.shift();
-        }
       }
     };
     try {
@@ -226,6 +221,16 @@ const useSpeechTranslation = ({
             speechStartTimeRef.current = null;
             silenceDuration = 0;
             flushChunk();
+          } else if (!speechStartTimeRef.current && chunksRef.current.length > 8) {
+            // Silence cycling: keep memory bounded while keeping EBML headers intact
+            const rec = mediaRecorderRef.current;
+            if (rec && rec.state === 'recording') {
+              rec.onstop = () => {
+                chunksRef.current = [];
+                startNewRecorder();
+              };
+              rec.stop();
+            }
           }
         }
       }, VAD_CONFIG.ANALYSIS_INTERVAL_MS);
