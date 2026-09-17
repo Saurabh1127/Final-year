@@ -143,9 +143,20 @@ async def stream_edge_tts(text: str, target_lang: str):
     
     try:
         communicate = edge_tts.Communicate(text, voice)
+        buffer = b""
         async for chunk in communicate.stream():
             if chunk["type"] == "audio":
-                yield chunk["data"]
+                buffer += chunk["data"]
+                # Buffer 48KB of audio (approx 1 second) before yielding to prevent 
+                # micro-stuttering in HTML5 Audio Blob queues on the client browser.
+                if len(buffer) >= 48 * 1024:
+                    yield buffer
+                    buffer = b""
+        
+        # Flush the remaining buffer
+        if buffer:
+            yield buffer
+            
     except Exception as e:
         print(f"⚠️ edge_tts stream error for {target_lang}: {e}")
         raise
