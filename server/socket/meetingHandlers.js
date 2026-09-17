@@ -96,4 +96,16 @@ export default (io, socket) => {
     updateParticipantLanguage(roomCode, socket.id, targetLanguage);
     console.log(`🌐 [Meeting] ${socket.id} changed language to ${targetLanguage} in room ${roomCode}`);
   });
+
+  // Handle mid-meeting display name rename
+  socket.on('rename-participant', ({ roomCode, userId, newDisplayName }) => {
+    if (!roomCode || !userId || !newDisplayName?.trim()) return;
+    const trimmedName = newDisplayName.trim().slice(0, 50); // cap at 50 chars
+    console.log(`✏️ [Meeting] ${userId} renamed to "${trimmedName}" in room ${roomCode}`);
+    // Broadcast to all OTHER participants in the room
+    socket.to(roomCode).emit('participant-renamed', {
+      userId,
+      newDisplayName: trimmedName,
+    });
+  });
 };

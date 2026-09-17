@@ -56,6 +56,76 @@
   font-family: monospace;
 }
 
+/* ─── Copy Link (Feature 1) ─── */
+.meeting-code-copyable {
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+}
+
+.meeting-code-copyable:hover {
+  background: var(--color-bg-elevated);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.copy-toast {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(129, 201, 149, 0.3);
+  white-space: nowrap;
+}
+
+/* ─── Participant Count Badge (Feature 5) ─── */
+.participant-count-badge {
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Network Indicator (Feature 6) ─── */
+.network-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.network-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.network-good .network-dot {
+  background: var(--color-success);
+  box-shadow: 0 0 6px var(--color-success);
+}
+
+.network-bad .network-dot {
+  background: var(--color-danger);
+  box-shadow: 0 0 6px var(--color-danger);
+  animation: pulse 1.5s ease infinite;
+}
+
+.network-bad {
+  color: var(--color-danger);
+}
+
 /* ─── Main Content & Grid ─── */
 .meeting-content {
   flex: 1;
@@ -63,6 +133,8 @@
   padding: var(--space-4);
   padding-bottom: 80px; /* Space for control bar */
   padding-top: 80px; /* Space for header */
+  overflow: hidden;
+  position: relative;
 }
 
 .participant-grid {
@@ -127,6 +199,7 @@
   position: absolute;
   bottom: var(--space-3);
   left: var(--space-3);
+  right: var(--space-3);
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -140,6 +213,40 @@
   font-size: var(--text-sm);
   color: var(--color-text-primary);
   font-weight: 500;
+}
+
+/* ─── Rename Feature (Feature 7) ─── */
+.participant-name-editable {
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.participant-name-editable:hover {
+  color: var(--color-accent);
+}
+
+.rename-icon {
+  font-size: 0.7rem;
+  margin-left: 4px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.participant-name-editable:hover .rename-icon {
+  opacity: 1;
+}
+
+.rename-input {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--color-accent);
+  border-radius: 4px;
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--text-sm);
+  padding: 2px 8px;
+  outline: none;
+  width: 140px;
+  max-width: 60%;
 }
 
 .participant-lang-badge {
@@ -219,6 +326,25 @@
 .leave-btn {
   width: 60px;
   border-radius: 30px;
+}
+
+/* ─── Meeting Timer (Feature 4) ─── */
+.meeting-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  user-select: none;
+}
+
+.timer-text {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  color: var(--color-text-primary);
+  min-width: 70px;
 }
 
 .meeting-error {
@@ -301,13 +427,6 @@
 }
 
 /* ─── Transcript Sidebar ─── */
-.meeting-content {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-}
-
 .transcript-sidebar {
   width: 320px;
   min-width: 260px;
@@ -464,3 +583,241 @@
   background: rgba(239, 68, 68, 0.25);
 }
 
+/* ═══════════════════════════════════════════
+   LEAVE CONFIRMATION MODAL (Feature 2)
+   ═══════════════════════════════════════════ */
+
+.leave-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leave-modal {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.leave-modal h3 {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.leave-modal p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
+  line-height: 1.5;
+}
+
+.leave-modal-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+.leave-modal-actions .btn {
+  min-width: 120px;
+}
+
+/* ═══════════════════════════════════════════
+   PRE-JOIN LOBBY SCREEN (Feature 3)
+   ═══════════════════════════════════════════ */
+
+.prejoin-screen {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(66, 133, 244, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(196, 164, 255, 0.04) 0%, transparent 50%),
+    var(--color-bg-primary);
+  padding: var(--space-4);
+}
+
+.prejoin-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  max-width: 520px;
+  width: 100%;
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-lg);
+}
+
+.prejoin-header {
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.prejoin-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.prejoin-header h2 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.prejoin-room-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.prejoin-room-code {
+  font-family: monospace;
+  color: var(--color-accent);
+  background: var(--color-accent-bg);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* Video preview */
+.prejoin-video-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-bg-surface);
+  margin-bottom: var(--space-6);
+  border: 2px solid var(--color-border);
+}
+
+.prejoin-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.prejoin-avatar-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.prejoin-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--color-bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.prejoin-camera-off-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.prejoin-media-status {
+  position: absolute;
+  bottom: var(--space-3);
+  left: var(--space-3);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.prejoin-status-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(8px);
+}
+
+.prejoin-status-muted {
+  background: rgba(242, 139, 130, 0.2);
+  color: var(--color-danger);
+  border: 1px solid rgba(242, 139, 130, 0.3);
+}
+
+.prejoin-status-cam-off {
+  background: rgba(253, 214, 99, 0.15);
+  color: var(--color-warning);
+  border: 1px solid rgba(253, 214, 99, 0.25);
+}
+
+/* Controls row */
+.prejoin-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+/* Action buttons */
+.prejoin-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.prejoin-join-btn {
+  width: 100%;
+  font-size: var(--text-base);
+}
+
+.prejoin-back-btn {
+  font-size: var(--text-sm);
+}
+
+/* ─── Loading spinner ─── */
+.app-loading {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

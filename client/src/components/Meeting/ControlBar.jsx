@@ -1,11 +1,35 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
 
 const ControlBar = ({ isMuted, toggleMute, isVideoOff, toggleVideo, isEchoTestActive, toggleEchoTest, onLeave }) => {
+  // ── Meeting Timer ──────────────────────────────────────────────────────────
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setElapsed(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  const formatTime = (totalSeconds) => {
+    const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+    const s = String(totalSeconds % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  };
+
   return (
     <div className="control-bar">
       <div className="control-left">
-        {/* Placeholder for future left controls like time or info */}
+        {/* Meeting Timer */}
+        <div className="meeting-timer" id="meeting-timer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span className="timer-text">{formatTime(elapsed)}</span>
+        </div>
       </div>
       
       <div className="control-center">
@@ -13,6 +37,7 @@ const ControlBar = ({ isMuted, toggleMute, isVideoOff, toggleVideo, isEchoTestAc
           className={`btn-icon control-btn ${isMuted ? 'muted' : 'active'}`}
           onClick={toggleMute}
           title={isMuted ? "Unmute" : "Mute"}
+          id="btn-toggle-mic"
         >
           {isMuted ? (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="24" height="24">
@@ -36,6 +61,7 @@ const ControlBar = ({ isMuted, toggleMute, isVideoOff, toggleVideo, isEchoTestAc
           className={`btn-icon control-btn ${isVideoOff ? 'muted' : 'active'}`}
           onClick={toggleVideo}
           title={isVideoOff ? "Turn on camera" : "Turn off camera"}
+          id="btn-toggle-camera"
         >
           {isVideoOff ? (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="24" height="24">
@@ -55,6 +81,7 @@ const ControlBar = ({ isMuted, toggleMute, isVideoOff, toggleVideo, isEchoTestAc
           onClick={toggleEchoTest}
           title={isEchoTestActive ? "Stop Mic Test" : "Test Mic (Echo)"}
           style={{ background: isEchoTestActive ? 'var(--color-accent)' : '' }}
+          id="btn-echo-test"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="24" height="24">
             <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
@@ -62,21 +89,21 @@ const ControlBar = ({ isMuted, toggleMute, isVideoOff, toggleVideo, isEchoTestAc
           </svg>
         </button>
 
+        {/* End Call — red phone hang-up icon */}
         <button 
           className="btn-icon control-btn btn-danger leave-btn"
           onClick={onLeave}
-          title="Leave Call"
+          title="End Call"
+          id="btn-end-call"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="24" height="24">
-            <path d="M10.59 13.41c.41.39.41 1.03 0 1.42-.39.39-1.03.39-1.42 0a5.003 5.003 0 0 1 0-7.07c.39-.39 1.03-.39 1.42 0 .39.39.39 1.03 0 1.42-1.37 1.37-1.37 3.58 0 4.95z"></path>
-            <path d="M13.41 13.41c-.41.39-.41 1.03 0 1.42.39.39 1.03.39 1.42 0a5.003 5.003 0 0 0 0-7.07c-.39-.39-1.03-.39-1.42 0-.39.39-.39 1.03 0 1.42 1.37 1.37 1.37 3.58 0 4.95z"></path>
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="24" height="24" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 16.92C23 16.92 20.18 14 12 14C3.82 14 1 16.92 1 16.92L3.77 19.69C3.77 19.69 4.5 20 5.23 19.69L8 17.54C8 17.54 8.5 17 8.5 16V14.5C8.5 14.5 10 14 12 14C14 14 15.5 14.5 15.5 14.5V16C15.5 17 16 17.54 16 17.54L18.77 19.69C19.5 20 20.23 19.69 20.23 19.69L23 16.92Z"></path>
           </svg>
         </button>
       </div>
 
       <div className="control-right">
-        {/* Placeholder for Subtitle / Language controls */}
+        {/* Placeholder for future right controls */}
       </div>
     </div>
   );

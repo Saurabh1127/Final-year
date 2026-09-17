@@ -9,6 +9,7 @@ import useTranslationReceiver from '../../hooks/useTranslationReceiver';
 import ParticipantGrid from './ParticipantGrid';
 import ControlBar from './ControlBar';
 import LanguageSelector from './LanguageSelector';
+import PreJoinScreen from './PreJoinScreen';
 import api from '../../services/api';
 
 const MeetingRoom = ({ roomCode }) => {
@@ -21,6 +22,12 @@ const MeetingRoom = ({ roomCode }) => {
   const [joinedRoom, setJoinedRoom] = useState(false);
   const [isEchoTestActive, setIsEchoTestActive] = useState(false);
 
+  // ── Pre-join lobby state ──────────────────────────────────────────────────
+  const [hasJoinedLobby, setHasJoinedLobby] = useState(false);
+
+  // ── Local display name (supports rename) ─────────────────────────────────
+  const [displayName, setDisplayName] = useState(user?.name || 'Guest');
+
   // ── Translation feature states ──────────────────────────────────────────────
   const [translationEnabled, setTranslationEnabled] = useState(false);
   const [targetLanguage, setTargetLanguage] = useState(user?.preferredLanguage || 'hi');
@@ -28,6 +35,13 @@ const MeetingRoom = ({ roomCode }) => {
   const [transcriptLog, setTranscriptLog] = useState([]); // Live sidebar entries
   const [showTranscript, setShowTranscript] = useState(false);
   const subtitleTimeoutRef = useRef(null);
+
+  // ── Copy-link toast state ─────────────────────────────────────────────────
+  const [copyToast, setCopyToast] = useState(false);
+  const copyToastTimeout = useRef(null);
+
+  // ── Leave confirmation modal ──────────────────────────────────────────────
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   // Remote <video> elements tracked by WebRTC for audio ducking
   const remoteVideoRefs = useRef([]);                    // populated via ParticipantGrid refs
@@ -38,8 +52,11 @@ const MeetingRoom = ({ roomCode }) => {
   // Audio/Video capture
   const { localStream, startCapture, stopCapture, isMuted, toggleMute, isVideoOff, toggleVideo, error: mediaError } = useAudioCapture();
   
-  // WebRTC — only pass localStream once it's ready
-  const { remoteStreams, removePeerConnection } = useWebRTC(localStream, user?.id);
+  // WebRTC — only pass localStream once it's ready AND user has joined from lobby
+  const { remoteStreams, removePeerConnection } = useWebRTC(
+    hasJoinedLobby ? localStream : null,
+    user?.id
+  );
 
   // ── Subtitle callback: show for 4 seconds then fade ─────────────────────────
   const handleSubtitle = useCallback((sub) => {
@@ -77,7 +94,7 @@ const MeetingRoom = ({ roomCode }) => {
     stream: localStream,           // Pass the existing stream — no double getUserMedia
     roomCode,
     userId: user?.id,
-    speakerName: user?.name || 'Me',
+    speakerName: displayName,
     isMuted,
     remoteAudioRefs: remoteVideoRefs.current,
     onSubtitle: handleSubtitle,
@@ -95,23 +112,24 @@ const MeetingRoom = ({ roomCode }) => {
 
   // Start/stop translation when toggle changes (only when stream is ready)
   useEffect(() => {
-    if (!localStream) return;
+    if (!localStream || !hasJoinedLobby) return;
     if (translationEnabled) {
       startTranslation();
     } else {
       stopTranslation();
     }
-  }, [translationEnabled, localStream]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [translationEnabled, localStream, hasJoinedLobby]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopTranslation();
       clearTimeout(subtitleTimeoutRef.current);
+      clearTimeout(copyToastTimeout.current);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Page Visibility (Tab Switching) Recovery ─────────────────────────────────
+  // ── Page Visibility (Tab Switching) Recovery (from upstream) ──────────────────
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -158,45 +176,45 @@ const MeetingRoom = ({ roomCode }) => {
     };
   }, [roomCode, startCapture, stopCapture]);
 
-  // 2. Join the socket room ONLY after we have meeting data + local media
+  // 2. Join the socket room ONLY after user has left the lobby
   useEffect(() => {
-    if (!meeting || !socket || !connected || !localStream || joinedRef.current) return;
+    if (!meeting || !socket || !connected || !localStream || joinedRef.current || !hasJoinedLobby) return;
 
     console.log('🚀 [Meeting] Joining room:', roomCode);
     socket.emit('join-meeting', {
       roomCode,
       userId: user.id,
-      displayName: user.name,
+      displayName: displayName,
       targetLanguage: targetLanguage || 'hi',
       isMuted,
       isVideoOff
     });
     joinedRef.current = true;
     setJoinedRoom(true);
-  }, [meeting, socket, connected, localStream, roomCode, user, targetLanguage, isMuted, isVideoOff]);
+  }, [meeting, socket, connected, localStream, roomCode, user, targetLanguage, isMuted, isVideoOff, hasJoinedLobby, displayName]);
 
   // 2b. Re-join room after socket reconnects (e.g. server restart)
   // IMPORTANT: use refs for all values read inside handleReconnect so this
   // effect only runs once (on mount). Putting state like isMuted/isVideoOff
   // in the dep array causes the listener to be torn down + re-created on every
   // mute toggle, which sometimes fires 'connect' twice and causes a disconnect loop.
-  const reconnectValuesRef = useRef({ roomCode, user, targetLanguage, isMuted, isVideoOff });
+  const reconnectValuesRef = useRef({ roomCode, user, displayName, targetLanguage, isMuted, isVideoOff });
   useEffect(() => {
-    reconnectValuesRef.current = { roomCode, user, targetLanguage, isMuted, isVideoOff };
-  }, [roomCode, user, targetLanguage, isMuted, isVideoOff]);
+    reconnectValuesRef.current = { roomCode, user, displayName, targetLanguage, isMuted, isVideoOff };
+  }, [roomCode, user, displayName, targetLanguage, isMuted, isVideoOff]);
 
   useEffect(() => {
     if (!socket) return;
 
     const handleReconnect = () => {
       if (!meeting || !localStream) return;
-      const { roomCode: rc, user: u, targetLanguage: tl, isMuted: im, isVideoOff: iv } = reconnectValuesRef.current;
+      const { roomCode: rc, user: u, displayName: dn, targetLanguage: tl, isMuted: im, isVideoOff: iv } = reconnectValuesRef.current;
       console.log('🔄 [Meeting] Socket reconnected — re-joining room:', rc);
       joinedRef.current = false;
       socket.emit('join-meeting', {
         roomCode: rc,
         userId: u.id,
-        displayName: u.name,
+        displayName: dn,
         targetLanguage: tl || 'hi',
         isMuted: im,
         isVideoOff: iv,
@@ -263,23 +281,73 @@ const MeetingRoom = ({ roomCode }) => {
       ));
     };
 
+    // ── Handle remote participant rename ────────────────────────────────────
+    const handleParticipantRenamed = ({ userId: renamedUserId, newDisplayName }) => {
+      console.log(`✏️ [Meeting] ${renamedUserId} renamed to "${newDisplayName}"`);
+      setParticipants(prev => prev.map(p =>
+        p.userId === renamedUserId ? { ...p, displayName: newDisplayName } : p
+      ));
+    };
+
     socket.on('meeting-joined', handleMeetingJoined);
     socket.on('participant-joined', handleParticipantJoined);
     socket.on('participant-left', handleParticipantLeft);
     socket.on('participant-media-changed', handleMediaChanged);
+    socket.on('participant-renamed', handleParticipantRenamed);
 
     return () => {
       socket.off('meeting-joined', handleMeetingJoined);
       socket.off('participant-joined', handleParticipantJoined);
       socket.off('participant-left', handleParticipantLeft);
       socket.off('participant-media-changed', handleMediaChanged);
+      socket.off('participant-renamed', handleParticipantRenamed);
     };
   }, [socket, user, removePeerConnection]);
 
-  const handleLeave = () => {
+  // ── Feature: Copy meeting link ────────────────────────────────────────────
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}/meeting/${roomCode}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopyToast(true);
+      clearTimeout(copyToastTimeout.current);
+      copyToastTimeout.current = setTimeout(() => setCopyToast(false), 2000);
+    }).catch(() => {
+      // Fallback for older browsers
+      const input = document.createElement('input');
+      input.value = url;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+      setCopyToast(true);
+      clearTimeout(copyToastTimeout.current);
+      copyToastTimeout.current = setTimeout(() => setCopyToast(false), 2000);
+    });
+  };
+
+  // ── Feature: End call with confirmation ───────────────────────────────────
+  const handleLeaveClick = () => {
+    setShowLeaveModal(true);
+  };
+
+  const handleLeaveConfirm = () => {
+    setShowLeaveModal(false);
     navigate(`/summary/${roomCode}`);
   };
 
+  const handleLeaveCancel = () => {
+    setShowLeaveModal(false);
+  };
+
+  // ── Feature: Rename self ──────────────────────────────────────────────────
+  const handleRename = (newName) => {
+    setDisplayName(newName);
+    if (socket && connected && joinedRef.current) {
+      socket.emit('rename-participant', { roomCode, userId: user?.id, newDisplayName: newName });
+    }
+  };
+
+  // ── Error states ──────────────────────────────────────────────────────────
   if (error || mediaError) {
     return (
       <div className="meeting-error">
@@ -298,20 +366,66 @@ const MeetingRoom = ({ roomCode }) => {
     );
   }
 
+  // ── Pre-join lobby ────────────────────────────────────────────────────────
+  if (!hasJoinedLobby) {
+    return (
+      <PreJoinScreen
+        roomCode={roomCode}
+        userName={displayName}
+        localStream={localStream}
+        isMuted={isMuted}
+        isVideoOff={isVideoOff}
+        toggleMute={toggleMute}
+        toggleVideo={toggleVideo}
+        onJoin={() => setHasJoinedLobby(true)}
+      />
+    );
+  }
+
+  // ── Main meeting room ─────────────────────────────────────────────────────
   const localParticipant = {
     userId: user.id,
-    displayName: user.name,
+    displayName: displayName,
     targetLanguage: targetLanguage || 'hi',
     isMuted,
     isVideoOff
   };
+
+  const participantCount = 1 + participants.length; // self + remotes
 
   return (
     <div className="meeting-room">
       <div className="meeting-header">
         <div className="meeting-info">
           <h2>{meeting.title}</h2>
-          <span className="meeting-code-badge">{roomCode}</span>
+
+          {/* ── Room code + Copy Link ─────────────────────────────────────── */}
+          <span
+            className="meeting-code-badge meeting-code-copyable"
+            onClick={handleCopyLink}
+            title="Click to copy meeting link"
+            id="btn-copy-link"
+          >
+            {roomCode}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14" style={{ marginLeft: '6px', verticalAlign: 'middle' }}>
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </span>
+          {copyToast && (
+            <span className="copy-toast animate-fade-in" id="copy-toast">✓ Copied!</span>
+          )}
+
+          {/* ── Participant Count ─────────────────────────────────────────── */}
+          <span className="participant-count-badge" id="participant-count">
+            👥 {participantCount}
+          </span>
+
+          {/* ── Network Indicator ─────────────────────────────────────────── */}
+          <span className={`network-indicator ${connected ? 'network-good' : 'network-bad'}`} id="network-indicator">
+            <span className="network-dot"></span>
+            {connected ? '' : 'Reconnecting…'}
+          </span>
         </div>
 
         {/* Translation & Transcript Toggles */}
@@ -346,6 +460,7 @@ const MeetingRoom = ({ roomCode }) => {
           remoteStreams={remoteStreams} 
           localParticipant={localParticipant}
           localStream={localStream}
+          onRename={handleRename}
         />
 
         {/* ── Live Transcript Sidebar ───────────────────────────────────────── */}
@@ -410,8 +525,34 @@ const MeetingRoom = ({ roomCode }) => {
         toggleVideo={toggleVideo}
         isEchoTestActive={isEchoTestActive}
         toggleEchoTest={() => setIsEchoTestActive(prev => !prev)}
-        onLeave={handleLeave} 
+        onLeave={handleLeaveClick} 
       />
+
+      {/* ── Leave Confirmation Modal ──────────────────────────────────────────── */}
+      {showLeaveModal && (
+        <div className="leave-modal-overlay" id="leave-modal">
+          <div className="leave-modal animate-fade-in">
+            <h3>Leave this meeting?</h3>
+            <p>You'll be redirected to the meeting summary page.</p>
+            <div className="leave-modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={handleLeaveCancel}
+                id="btn-leave-cancel"
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-danger"
+                onClick={handleLeaveConfirm}
+                id="btn-leave-confirm"
+              >
+                Leave Meeting
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

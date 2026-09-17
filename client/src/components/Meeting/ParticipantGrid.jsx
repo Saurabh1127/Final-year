@@ -1,7 +1,7 @@
 import React from 'react';
 import ParticipantTile from './ParticipantTile';
 
-const ParticipantGrid = ({ participants, remoteStreams, localParticipant, localStream }) => {
+const ParticipantGrid = ({ participants, remoteStreams, localParticipant, localStream, onRename }) => {
   return (
     <div className="participant-grid">
       {localParticipant && (
@@ -10,6 +10,7 @@ const ParticipantGrid = ({ participants, remoteStreams, localParticipant, localS
           participant={localParticipant}
           stream={localStream}
           isLocal={true}
+          onRename={onRename}
         />
       )}
       

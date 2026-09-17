@@ -1,21 +1,48 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useAudioVolume } from '../../hooks/useAudioVolume';
 
-const ParticipantTile = ({ participant, stream, isLocal }) => {
+const ParticipantTile = ({ participant, stream, isLocal, onRename }) => {
   // Use the audio volume hook to detect speaking (only if not muted)
   const isSpeaking = useAudioVolume(stream);
   const actuallySpeaking = isSpeaking && !participant.isMuted;
 
+  // ── Rename state (local participant only) ────────────────────────────────
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(participant.displayName || '');
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleRenameSubmit = () => {
+    const trimmed = editName.trim();
+    if (trimmed && trimmed !== participant.displayName && onRename) {
+      onRename(trimmed);
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleRenameSubmit();
+    } else if (e.key === 'Escape') {
+      setEditName(participant.displayName || '');
+      setIsEditing(false);
+    }
+  };
+
+  // Ref-based approach from upstream: useEffect re-attaches when stream changes
+  // (more reliable than callback refs for stream prop changes).
   const videoRef = useRef(null);
   const audioRef = useRef(null);
 
-  // Always re-attach stream to video/audio elements whenever the stream changes.
-  // Using useEffect is more reliable than callback refs because callback refs only
-  // fire when the element mounts/unmounts, not when the stream prop changes later.
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
-      // iOS Safari requires explicit play() call for WebRTC streams sometimes
       videoRef.current.play().catch(e => console.warn('Video play blocked by browser:', e));
     }
   }, [stream]);
@@ -53,9 +80,38 @@ const ParticipantTile = ({ participant, stream, isLocal }) => {
       )}
 
       <div className="participant-info">
-        <span className="participant-name">
-          {participant.displayName} {isLocal ? '(You)' : ''}
-        </span>
+        {/* ── Name with inline rename for local participant ─────────────────── */}
+        {isLocal && isEditing ? (
+          <input
+            ref={inputRef}
+            className="rename-input"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            onBlur={handleRenameSubmit}
+            onKeyDown={handleKeyDown}
+            maxLength={50}
+            id="rename-input"
+          />
+        ) : (
+          <span
+            className={`participant-name ${isLocal ? 'participant-name-editable' : ''}`}
+            onClick={() => {
+              if (isLocal) {
+                setEditName(participant.displayName || '');
+                setIsEditing(true);
+              }
+            }}
+            title={isLocal ? 'Click to rename' : undefined}
+          >
+            {participant.displayName} {isLocal ? '(You)' : ''}
+            {isLocal && (
+              <span className="rename-icon" aria-label="Rename">
+                ✏️
+              </span>
+            )}
+          </span>
+        )}
+
         {participant.isMuted && (
           <span className="participant-muted-icon" style={{ marginLeft: '4px', fontSize: '0.8rem' }}>
             🔇
