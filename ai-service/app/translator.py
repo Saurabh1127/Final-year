@@ -57,6 +57,52 @@ def _get_device() -> str:
     return "cpu"
 
 
+def _resolve_model_path(model_name_or_path: str) -> str:
+    """
+    Ensure the path points to a valid CTranslate2 directory containing 'model.bin'.
+    If a raw HuggingFace repository name is passed (e.g. 'facebook/nllb-200-distilled-1.3B'),
+    this locates the converted INT8 folder or automatically converts it.
+    """
+    import subprocess
+
+    # 1. Direct match with model.bin
+    if os.path.isfile(os.path.join(model_name_or_path, "model.bin")):
+        return model_name_or_path
+
+    # 2. Check candidate local directories
+    raw_name = model_name_or_path.split("/")[-1]
+    candidates = [
+        raw_name,
+        raw_name + "-int8",
+        "nllb-200-distilled-1.3B-int8",
+        "nllb-200-distilled-600M-int8",
+        os.path.join("/content", raw_name + "-int8"),
+        os.path.join("/content", "nllb-200-distilled-1.3B-int8"),
+        os.path.join("/content", "nllb-200-distilled-600M-int8"),
+        os.path.join("/content/Final-year/ai-service", raw_name + "-int8"),
+        os.path.join("/content/Final-year/ai-service", "nllb-200-distilled-1.3B-int8"),
+        os.path.join("/content/Final-year/ai-service", "nllb-200-distilled-600M-int8"),
+    ]
+
+    for candidate in candidates:
+        if os.path.isfile(os.path.join(candidate, "model.bin")):
+            print(f"📁 Found converted CTranslate2 NLLB model at: '{candidate}'")
+            return candidate
+
+    # 3. If no converted directory exists, auto-convert it using ct2-transformers-converter
+    target_dir = raw_name if "-int8" in raw_name else raw_name + "-int8"
+    hf_source = model_name_or_path if "/" in model_name_or_path else f"facebook/{raw_name.replace('-int8', '')}"
+    print(f"🔄 Converting HuggingFace '{hf_source}' to CTranslate2 INT8 in '{target_dir}'...")
+    subprocess.run([
+        "ct2-transformers-converter",
+        "--model", hf_source,
+        "--output_dir", target_dir,
+        "--quantization", "int8",
+        "--force"
+    ], check=True)
+    return target_dir
+
+
 def get_translator_and_tokenizer():
     """Load CTranslate2 NLLB model + tokenizer once and cache them (singleton)."""
     global _translator, _tokenizer
@@ -64,15 +110,19 @@ def get_translator_and_tokenizer():
         if not _DEPS_AVAILABLE:
             raise RuntimeError("ctranslate2, transformers and torch are not installed. Run on Colab.")
         
-        model_path = os.getenv("NLLB_MODEL", "nllb-200-distilled-600M-int8")
+        raw_model_path = os.getenv("NLLB_MODEL", "nllb-200-distilled-600M-int8")
+        model_path = _resolve_model_path(raw_model_path)
         device = _get_device()
         print(f"🌐 Loading CTranslate2 NLLB '{model_path}' on {device.upper()} ...")
         
-        # Ensure tokenizer loads from the same directory (where converter copied it) or fallback to HF hub
+        # Ensure tokenizer loads from the same directory or fallback to HF hub
         try:
             _tokenizer = AutoTokenizer.from_pretrained(model_path)
         except Exception:
-            _tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-200-distilled-600M")
+            try:
+                _tokenizer = AutoTokenizer.from_pretrained(raw_model_path)
+            except Exception:
+                _tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-200-distilled-600M")
             
         compute_type = "int8_float16" if device == "cuda" else "int8"
         _translator = ctranslate2.Translator(model_path, device=device, compute_type=compute_type)
