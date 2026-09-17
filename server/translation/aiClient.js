@@ -35,10 +35,24 @@ export function processAudio({
 }) {
   const emitter = new EventEmitter();
   
+  let isFinished = false;
+  const finish = (latency) => {
+    if (isFinished) return;
+    isFinished = true;
+    clearTimeout(timeoutId);
+    emitter.emit('done', latency || { total_seconds: 0 });
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.close();
+    }
+  };
+
   // Use a timeout to abort if the connection hangs
   const timeoutId = setTimeout(() => {
-    emitter.emit('error', new AIServiceError('WebSocket connection timed out', 'service_down', 504));
-    if (ws) ws.close();
+    if (!isFinished) {
+      isFinished = true;
+      emitter.emit('error', new AIServiceError('WebSocket connection timed out', 'service_down', 504));
+      if (ws) ws.close();
+    }
   }, REQUEST_TIMEOUT_MS);
 
   const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
@@ -72,9 +86,12 @@ export function processAudio({
     try {
       const msg = JSON.parse(data.toString());
       if (msg.error) {
-        clearTimeout(timeoutId);
-        emitter.emit('error', new AIServiceError(msg.error, 'unknown', 500));
-        ws.close();
+        if (!isFinished) {
+          isFinished = true;
+          clearTimeout(timeoutId);
+          emitter.emit('error', new AIServiceError(msg.error, 'unknown', 500));
+          ws.close();
+        }
         return;
       }
 
@@ -83,15 +100,11 @@ export function processAudio({
       } else if (msg.type === 'audio_chunk') {
         emitter.emit('audio_chunk', msg);
       } else if (msg.type === 'done') {
-        clearTimeout(timeoutId);
-        emitter.emit('done', msg.latency);
-        ws.close();
-      } else if (msg.original_text) {
-        // Fallback for legacy format if process() was somehow called
+        finish(msg.latency);
+      } else if (msg.original_text !== undefined) {
+        // Fallback for legacy format or silence response
         emitter.emit('text', msg);
-        clearTimeout(timeoutId);
-        emitter.emit('done', msg.latency);
-        ws.close();
+        finish(msg.latency);
       }
     } catch (err) {
       console.warn('⚠️ [AIClient] Error parsing WS message:', err);
@@ -100,11 +113,17 @@ export function processAudio({
 
   ws.on('error', (err) => {
     clearTimeout(timeoutId);
-    emitter.emit('error', new AIServiceError(`WebSocket error: ${err.message}`, 'service_down', 500));
+    if (!isFinished) {
+      isFinished = true;
+      emitter.emit('error', new AIServiceError(`WebSocket error: ${err.message}`, 'service_down', 500));
+    }
   });
 
   ws.on('close', () => {
     clearTimeout(timeoutId);
+    if (!isFinished) {
+      finish();
+    }
   });
 
   return emitter;

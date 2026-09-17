@@ -110,7 +110,25 @@ class SpeechToSpeechEngine:
             len(original_text.strip()) < 3 or 
             original_text.strip().lower() in ["thank you", "subscribe", "silence"]):
             print("🔇 [Filter] Rejected audio chunk as silence/hallucination.")
-            yield self._empty_response(user_id, meeting_id, detected_lang, target_languages)
+            yield {
+                "type": "text",
+                "original_text": "",
+                "source_language": detected_lang,
+                "translations": {},
+                "speaker_id": user_id,
+                "speaker_name": speaker_name,
+                "meeting_id": meeting_id,
+                "timestamp": time.time(),
+            }
+            yield {
+                "type": "done",
+                "latency": {
+                    "asr_seconds": asr_s,
+                    "nmt_seconds": 0.0,
+                    "tts_seconds": 0.0,
+                    "total_seconds": asr_s,
+                }
+            }
             return
 
         # ── Step 2: NMT — Text → Translations (NLLB-200-600M) ────────────────

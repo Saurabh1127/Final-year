@@ -102,6 +102,11 @@ const useSpeechTranslation = ({
     recorder.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) {
         chunksRef.current.push(e.data);
+        // Pre-roll pruning: when user is not speaking, keep at most 2 slices (~500ms pre-roll)
+        // to prevent accumulating massive megabyte-sized buffers of dead silence
+        if (!speechStartTimeRef.current && chunksRef.current.length > 2) {
+          chunksRef.current.shift();
+        }
       }
     };
     try {
@@ -122,6 +127,8 @@ const useSpeechTranslation = ({
   // FFmpeg on the server rejects them with "EBML header parsing failed".
   // By stopping + restarting, every flushed blob is a valid, self-contained WebM.
   const flushChunk = useCallback(() => {
+    clearTimeout(maxChunkTimerRef.current);
+    speechStartTimeRef.current = null;
     if (!socket?.connected) return;
 
     const recorder = mediaRecorderRef.current;
@@ -202,6 +209,7 @@ const useSpeechTranslation = ({
             speechStartTimeRef.current = Date.now();
             console.log('🎤 [VAD] Speech START');
             maxChunkTimerRef.current = setTimeout(() => {
+              speechStartTimeRef.current = null;
               if (chunksRef.current.length > 0) flushChunk();
             }, VAD_CONFIG.MAX_CHUNK_MS);
           }

@@ -63,6 +63,11 @@ export function registerParticipant(roomCode, socketId, { userId, speakerName, t
 /** Remove a participant when they leave or disconnect. */
 export function unregisterParticipant(roomCode, socketId) {
   if (roomParticipants.has(roomCode)) {
+    const participant = roomParticipants.get(roomCode).get(socketId);
+    if (participant?.userId) {
+      activeSpeakers.delete(participant.userId);
+      pendingChunkBySpeaker.delete(participant.userId);
+    }
     roomParticipants.get(roomCode).delete(socketId);
     if (roomParticipants.get(roomCode).size === 0) {
       roomParticipants.delete(roomCode);
@@ -84,29 +89,59 @@ export function updateParticipantLanguage(roomCode, socketId, targetLanguage) {
 
 // ── Audio Chunk Handler ───────────────────────────────────────────────────────
 
+// Active speaker tracking to serialize processing and prevent GPU overload / out-of-order speech
+const activeSpeakers = new Set();
+const pendingChunkBySpeaker = new Map();
+
 export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
-  const serverReceiveTime = Date.now();
-  const { roomCode, speakerName, mimeType = 'audio/webm;codecs=opus', captureStartTime, flushTime } = metadata || {};
   const speakerId = socket.user?.userId;
+  const { roomCode, speakerName } = metadata || {};
 
   if (!roomCode || !speakerId || !audioBuffer) {
     socket.emit('translation-error', { message: 'Missing audio-chunk payload fields.' });
     return;
   }
 
+  // If this speaker already has an AI translation job in flight, buffer the newest chunk
+  // and discard older intermediate chunks so the speaker never lags behind live conversation.
+  if (activeSpeakers.has(speakerId)) {
+    pendingChunkBySpeaker.set(speakerId, { io, socket, audioBuffer, metadata });
+    return;
+  }
+
+  activeSpeakers.add(speakerId);
+  _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId);
+}
+
+async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId) {
+  const serverReceiveTime = Date.now();
+  const { roomCode, speakerName, mimeType = 'audio/webm;codecs=opus', captureStartTime, flushTime } = metadata || {};
+
+  const onComplete = () => {
+    if (pendingChunkBySpeaker.has(speakerId)) {
+      const next = pendingChunkBySpeaker.get(speakerId);
+      pendingChunkBySpeaker.delete(speakerId);
+      _processSpeakerChunk(next.io, next.socket, next.audioBuffer, next.metadata, speakerId);
+    } else {
+      activeSpeakers.delete(speakerId);
+    }
+  };
+
   // Socket.IO delivers binary as ArrayBuffer — convert to Node.js Buffer for FormData compatibility
   const nodeBuffer = Buffer.isBuffer(audioBuffer) ? audioBuffer : Buffer.from(audioBuffer);
 
-  // Skip tiny blobs (< 1000 bytes) — use byteLength, NOT .length (ArrayBuffer has no .length)
+  // Skip tiny blobs (< 2000 bytes)
   console.log(`🎤 [Orchestrator] Received chunk from ${speakerName} in room ${roomCode} (${nodeBuffer.byteLength} bytes)`);
   if (nodeBuffer.byteLength < 2000) {
     console.log(`🔇 [Orchestrator] Chunk too small (${nodeBuffer.byteLength}b < 2000), skipping.`);
+    onComplete();
     return;
   }
 
   const room = roomParticipants.get(roomCode);
   if (!room || room.size === 0) {
     console.log(`⚠️ [Orchestrator] Audio chunk dropped: room ${roomCode} has no registered participants.`);
+    onComplete();
     return;
   }
 
@@ -126,7 +161,10 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
     languageToReceivers.get(lang).push(sid);
   }
 
-  if (targetLanguageSet.size === 0) return;
+  if (targetLanguageSet.size === 0) {
+    onComplete();
+    return;
+  }
 
   const targetLanguages = [...targetLanguageSet];
 
@@ -239,11 +277,12 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
 
   emitter.on('done', (latency) => {
     console.log(`✅ [Orchestrator] Stream complete. Metrics:`, latency);
-    // Latency can be appended or logged here
+    onComplete();
   });
 
   emitter.on('error', (err) => {
     console.error(`❌ [Orchestrator] AI service streaming error: ${err.message}`);
     socket.emit('translation-error', { message: 'Translation service streaming interrupted.' });
+    onComplete();
   });
 }
