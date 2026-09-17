@@ -115,9 +115,9 @@ async def lifespan(app: "FastAPI"):  # type: ignore[valid-type]
         torch.cuda.empty_cache()
 
     # 2. Preload NLLB-200 NMT
-    from .translator import get_model_and_tokenizer
+    from .translator import get_translator_and_tokenizer
     try:
-        get_model_and_tokenizer()
+        get_translator_and_tokenizer()
     except Exception as e:
         print(f"⚠️ NMT preload failed: {e}")
         
