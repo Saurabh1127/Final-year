@@ -102,24 +102,34 @@ import os
 import subprocess
 
 nllb_name = os.environ.get("NLLB_MODEL", "facebook/nllb-200-distilled-600M")
-output_dir = nllb_name.split("/")[-1] + "-int8"
+# If it's already an -int8 path (e.g. they reran the cell), skip parsing
+if "-int8" not in nllb_name:
+    output_dir = nllb_name.split("/")[-1] + "-int8"
 
-print(f"⬇️  Downloading and converting NLLB '{nllb_name}' to CTranslate2 INT8 format...")
-if not os.path.exists(output_dir):
-    subprocess.run([
-        "ct2-transformers-converter",
-        "--model", nllb_name,
-        "--output_dir", output_dir,
-        "--quantization", "int8",
-        "--force"
-    ], check=True)
-    print(f"✅ NLLB '{nllb_name}' converted and saved to {output_dir}/")
+    print(f"⬇️  Downloading and converting NLLB '{nllb_name}' to CTranslate2 INT8 format...")
+    if not os.path.exists(output_dir):
+        subprocess.run([
+            "ct2-transformers-converter",
+            "--model", nllb_name,
+            "--output_dir", output_dir,
+            "--quantization", "int8",
+            "--force"
+        ], check=True)
+        print(f"✅ NLLB '{nllb_name}' converted and saved to {output_dir}/")
+    else:
+        print(f"✅ NLLB converted model already exists in {output_dir}/")
+
+    # Update env var to point to the converted model directory for the API
+    os.environ["NLLB_MODEL"] = output_dir
+    print(f"  NLLB_MODEL is now set to: {os.environ['NLLB_MODEL']}")
 else:
-    print(f"✅ NLLB converted model already exists in {output_dir}/")
+    print(f"✅ NLLB_MODEL is already set to converted directory: {nllb_name}")
 
-# Update env var to point to the converted model directory for the API
-os.environ["NLLB_MODEL"] = output_dir
-print(f"  NLLB_MODEL is now set to: {os.environ['NLLB_MODEL']}")
+# Force update the .env file so FastAPI picks up the correct path on reboot
+with open(f"{REPO_DIR}/ai-service/.env", "w") as f:
+    f.write(f"WHISPER_MODEL={os.environ.get('WHISPER_MODEL', 'small')}\n")
+    f.write(f"NLLB_MODEL={os.environ.get('NLLB_MODEL', 'nllb-200-distilled-600M-int8')}\n")
+    f.write(f"SARVAM_API_KEY={os.environ.get('SARVAM_API_KEY', '')}\n")
 
 
 # ───────────────────────────────────────────────────────────────────
