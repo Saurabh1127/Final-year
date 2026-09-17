@@ -107,6 +107,13 @@ async def lifespan(app: "FastAPI"):  # type: ignore[valid-type]
     except Exception as e:
         print(f"⚠️ STT preload failed: {e}")
 
+    # Force aggressive garbage collection to clear system RAM before loading the next heavy model
+    import gc
+    import torch
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
     # 2. Preload NLLB-200 NMT
     from .translator import get_model_and_tokenizer
     try:
