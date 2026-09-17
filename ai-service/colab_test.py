@@ -161,18 +161,9 @@ except Exception as e:
 # ───────────────────────────────────────────────────────────────────
 # CELL 8 — 3-Way Speech-to-Speech Audio Verification Widget
 # ───────────────────────────────────────────────────────────────────
-import sys, base64, importlib
+import sys, base64, requests, json
 from IPython.display import HTML, Audio, display
 import google.colab.output
-
-os.chdir('/content/Final-year/ai-service')
-sys.path.append('/content/Final-year/ai-service')
-
-!git pull > /dev/null 2>&1
-import app.tts
-importlib.reload(app.tts)
-from app.pipeline import engine
-from app.tts import synthesize_sarvam_tts, synthesize_edge_tts
 
 TARGET_LANGS = ["hi"]
 
@@ -208,16 +199,28 @@ display(HTML("<script>" + RECORD_JS + "</script>"))
 data = google.colab.output.eval_js("record()")
 recorded_audio_bytes = base64.b64decode(data.split(',')[1])
 
-print("\n🚀 Processing Speech-to-Speech Translation Pipeline...")
+print("\n🚀 Sending audio to FastAPI server for processing...")
 
-result = engine.process(
-    audio_bytes=recorded_audio_bytes,
-    target_languages=TARGET_LANGS,
-    source_language="auto",
-    include_audio=False,
+# We send the request to the local FastAPI server instead of importing the engine.
+# This prevents the notebook from loading a second copy of the AI models into VRAM!
+response = requests.post(
+    "http://localhost:8000/api/process-audio",
+    files={"audio": ("test_audio.webm", recorded_audio_bytes, "audio/webm")},
+    data={
+        "meeting_id": "test_room",
+        "user_id": "colab_tester",
+        "speaker_name": "Colab User",
+        "source_language": "auto",
+        "target_languages": json.dumps(TARGET_LANGS),
+        "include_audio": "true",
+    }
 )
 
-hindi_text = result.get("translations", {}).get("hi", "")
+if response.status_code != 200:
+    print(f"❌ Server Error: {response.status_code}\n{response.text}")
+else:
+    result = response.json()
+    hindi_text = result.get("translations", {}).get("hi", "")
 
 print("\n" + "═"*65)
 print(f"📝 ORIGINAL SPOKEN TEXT [{result.get('source_language','?').upper()}]: \"{result.get('original_text','')}\"")
@@ -232,22 +235,15 @@ print("─"*65)
 display(Audio(data=recorded_audio_bytes, autoplay=False))
 
 print("\n" + "─"*65)
-print("🇮🇳 2. SARVAM AI (bulbul:v2 — Anushka Voice)")
+print("🔊 2. AI TRANSLATED VOICE (Returned from API)")
 print("─"*65)
-try:
-    sarvam_bytes = synthesize_sarvam_tts(hindi_text, "hi")
-    display(Audio(data=sarvam_bytes, autoplay=False))
-except Exception as e:
-    print(f"⚠️ Sarvam error: {e}")
 
-print("\n" + "─"*65)
-print("🎙️ 3. MICROSOFT EDGE NEURAL SPEECH (hi-IN-MadhurNeural)")
-print("─"*65)
-try:
-    edge_bytes = synthesize_edge_tts(hindi_text, "hi")
-    display(Audio(data=edge_bytes, autoplay=False))
-except Exception as e:
-    print(f"⚠️ Edge TTS error: {e}")
+audio_b64 = result.get("audio_base64")
+if audio_b64:
+    audio_bytes = base64.b64decode(audio_b64)
+    display(Audio(data=audio_bytes, autoplay=False))
+else:
+    print("⚠️ No audio returned from API.")
 
 lat = result.get("latency", {})
 print("\n" + "═"*65)
