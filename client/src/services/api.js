@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// Use relative path so Vite Proxy handles routing it to the backend
-const API_URL = '/api';
+// Connect directly to backend URL if specified in .env, otherwise fallback to /api proxy
+const backendBase = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL;
+const API_URL = backendBase ? `${backendBase.replace(/\/$/, '')}/api` : '/api';
 
 const api = axios.create({
   baseURL: API_URL,

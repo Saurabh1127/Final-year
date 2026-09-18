@@ -1,8 +1,7 @@
 import { io } from 'socket.io-client';
 
-// Empty string makes socket.io connect to the same host that served the page
-// Vite proxy will then forward the /socket.io requests to the backend
-const SOCKET_URL = '';
+// Connect directly to backend URL if specified in .env, otherwise fallback to same-origin proxy
+const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL || '';
 
 let socket = null;
 
