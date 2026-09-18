@@ -195,7 +195,7 @@ class SpeechToSpeechEngine:
             tts_s = round(time.time() - t0, 3)
 
         total_s = round(time.time() - t_start, 3)
-        print(f"⚡ Pipeline stream done [{total_s}s]")
+        print(f"⚡ Pipeline stream done [{total_s}s] ➔ STT: {asr_s}s | NMT: {nmt_s}s | TTS: {tts_s}s")
 
         # ⚡ YIELD FINAL METRICS ⚡
         yield {
