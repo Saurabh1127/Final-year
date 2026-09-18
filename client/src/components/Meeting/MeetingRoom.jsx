@@ -60,6 +60,15 @@ const MeetingRoom = ({ roomCode }) => {
 
   // ── Subtitle callback: show for 4 seconds then fade ─────────────────────────
   const handleSubtitle = useCallback((sub) => {
+    if (sub?.timing) {
+      const now = Date.now();
+      const totalMs = now - (sub.timing.captureStartTime || sub.timing.flushTime || now);
+      const serverMs = (sub.timing.serverAiReturnTime && sub.timing.serverReceiveTime)
+        ? (sub.timing.serverAiReturnTime - sub.timing.serverReceiveTime)
+        : null;
+      console.log(`⏱️ [Live Latency] Total end-to-end: ${(totalMs / 1000).toFixed(2)}s${serverMs ? ` | AI Engine: ${(serverMs / 1000).toFixed(2)}s` : ''}`);
+      sub.displayLatency = (totalMs / 1000).toFixed(2) + 's';
+    }
     setSubtitle(sub);
     clearTimeout(subtitleTimeoutRef.current);
     subtitleTimeoutRef.current = setTimeout(() => setSubtitle(null), 4000);
@@ -505,7 +514,12 @@ const MeetingRoom = ({ roomCode }) => {
       {/* ── Live Subtitle Overlay ─────────────────────────────────────────────── */}
       {subtitle && (
         <div className="subtitle-overlay" id="subtitle-overlay" aria-live="polite">
-          <div className="subtitle-speaker">{subtitle.speakerName}</div>
+          <div className="subtitle-speaker">
+            <span>{subtitle.speakerName}</span>
+            {subtitle.displayLatency && (
+              <span className="subtitle-latency-badge">⚡ {subtitle.displayLatency}</span>
+            )}
+          </div>
           <p className="subtitle-original">{subtitle.originalText}</p>
           {subtitle.translatedText && subtitle.translatedText !== subtitle.originalText && (
             <p className="subtitle-translated">
