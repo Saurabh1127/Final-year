@@ -327,24 +327,18 @@ class SpeechToSpeechEngine:
         # ── Step 2: NMT — Text → Translations (NLLB-200-600M) ─────────────────
         t0 = time.time()
 
-        # Phase 10: Build context-aware prompt for NMT
-        context = _get_context(user_id)
-        # Remove current sentence from context (it was just added) to avoid
-        # feeding the sentence to itself — context should be only PRIOR sentences.
+        # ── Context Buffer (Background Only) ──────────────────────────────────
+        # Speaker context is tracked in the background for speaker history/logging.
+        # We do NOT prepend "[Context: ...]" to the NMT prompt because NLLB is a seq2seq
+        # model that literally translates the prefix, causing Edge-TTS to vocalize
+        # "Context: ..." out loud. The context buffer remains purely in the background.
         prior_ctx = _context_buffer.get(user_id)
         if prior_ctx and len(prior_ctx) > 1:
-            # Last 2 entries: prior[-2] is the previous, prior[-1] is current
-            prior_text = list(prior_ctx)[-2]  # only the sentence before current
-            context_prompt = _build_context_prompt(original_text, prior_text)
-        else:
-            context_prompt = original_text  # First sentence — no prior context yet
-
-        if context_prompt != original_text:
-            print(f"📖 [NMT] Context-aware translation for {user_id[:8]}: "
-                  f"prefix='{context_prompt[:60]}...'")
+            print(f"📖 [Context Buffer] Background context active for {user_id[:8]}: "
+                  f"prior='{list(prior_ctx)[-2][:40]}...' | current='{original_text[:40]}...'")
 
         translations = await asyncio.to_thread(
-            translate_to_multiple, context_prompt, detected_lang, target_languages
+            translate_to_multiple, original_text, detected_lang, target_languages
         )
         nmt_s = round(time.time() - t0, 3)
         print(f"🌐 NMT [{nmt_s}s]: translated to {list(translations.keys())}")

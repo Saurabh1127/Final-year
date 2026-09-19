@@ -329,15 +329,18 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
       timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null }
     });
 
-    // Also send subtitle feedback to the speaker
-    const firstTargetLang = targetLanguages[0];
-    socket.emit('speaker-subtitle', {
-      speakerName: 'You',
-      originalText: original_text,
-      translatedText: translations?.[firstTargetLang] || original_text,
-      lang: firstTargetLang,
-      timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null }
-    });
+    // In multi-person meetings, send subtitle feedback to the speaker immediately (they receive no audio).
+    // In solo test mode, the speaker receives translation-audio, so the subtitle is synchronized with the audio.
+    if (!isSoloTest) {
+      const firstTargetLang = targetLanguages[0];
+      socket.emit('speaker-subtitle', {
+        speakerName: 'You',
+        originalText: original_text,
+        translatedText: translations?.[firstTargetLang] || original_text,
+        lang: firstTargetLang,
+        timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null }
+      });
+    }
 
     // ── Emit translation-result (Text) per language ──────
     for (const [lang, receiverSocketIds] of languageToReceivers.entries()) {
@@ -369,11 +372,16 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
 
     if (audio_base64) {
       const audioBuffer = Buffer.from(audio_base64, 'base64');
+      const translatedText = textResult?.translations?.[lang] || '';
       const audioMetadata = {
         speakerId,
+        speakerName: isSoloTest ? 'You' : speakerName,
+        originalText: textResult?.original_text || '',
+        translatedText,
         sequenceNumber,
         lang,
         mimeType: mime_type || 'audio/mp3',
+        timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime: Date.now() }
       };
       for (const receiverSid of receiverSocketIds) {
         io.to(receiverSid).emit('translation-audio', audioBuffer, audioMetadata);

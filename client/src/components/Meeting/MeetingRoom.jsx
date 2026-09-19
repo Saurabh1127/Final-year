@@ -65,8 +65,8 @@ const MeetingRoom = ({ roomCode }) => {
     user?.id
   );
 
-  // ── Subtitle callback: show for 4 seconds then fade ─────────────────────────
-  const handleSubtitle = useCallback((sub) => {
+  // ── Subtitle callback: show with configurable duration (0 = keep alive until cleared) ──
+  const handleSubtitle = useCallback((sub, duration = 4000) => {
     if (sub?.timing) {
       const now = Date.now();
       const totalMs = now - (sub.timing.captureStartTime || sub.timing.flushTime || now);
@@ -78,7 +78,9 @@ const MeetingRoom = ({ roomCode }) => {
     }
     setSubtitle(sub);
     clearTimeout(subtitleTimeoutRef.current);
-    subtitleTimeoutRef.current = setTimeout(() => setSubtitle(null), 4000);
+    if (sub && duration > 0) {
+      subtitleTimeoutRef.current = setTimeout(() => setSubtitle(null), duration);
+    }
   }, []);
 
   // ── Transcript callback: prepend to sidebar log ──────────────────────────────

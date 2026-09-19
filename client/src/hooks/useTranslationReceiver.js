@@ -36,6 +36,7 @@ const useTranslationReceiver = ({
   const [isReceiving, setIsReceiving] = useState(false);
   const [isPending, setIsPending] = useState(false); // Phase 7: true while 'Translating...' indicator is active
   const pendingTimeoutRef = useRef(null);             // Auto-clear pending indicator if no result arrives
+  const fallbackSubtitleTimeoutRef = useRef(null);   // Fallback timer if audio does not arrive
 
   // ── Audio Ducking ────────────────────────────────────────────────────────────
   const duck = useCallback(() => {
@@ -55,7 +56,7 @@ const useTranslationReceiver = ({
     if (isPlayingRef.current || audioQueueRef.current.length === 0) return;
 
     const item = audioQueueRef.current.shift();
-    const { blobUrl, speakerId, sequenceNumber, timing } = item;
+    const { blobUrl, speakerId, sequenceNumber, timing, speakerName, originalText, translatedText, lang } = item;
 
     // Discard stale items
     if (sequenceNumber && speakerId) {
@@ -82,6 +83,18 @@ const useTranslationReceiver = ({
 
     audio.onplay = () => {
       duck();
+      // ⚡ SIMULTANEOUS: Show subtitle at the exact moment the voice begins speaking ⚡
+      if (onSubtitle && (translatedText || originalText)) {
+        onSubtitle({
+          speakerName: speakerName || 'Speaker',
+          originalText: originalText || '',
+          translatedText: translatedText || originalText,
+          lang,
+          isPending: false,
+          timing,
+        }, 0); // 0 = keep alive while voice is speaking
+      }
+
       if (timing) {
         const playTime = Date.now();
         const ttfa = playTime - timing.captureStartTime;
@@ -104,17 +117,52 @@ const useTranslationReceiver = ({
       currentAudioRef.current = null;
       setIsReceiving(audioQueueRef.current.length > 0);
       URL.revokeObjectURL(blobUrl);
+
+      // Keep subtitle visible for 2 seconds after voice ends (or until next audio item replaces it)
+      if (onSubtitle && (translatedText || originalText) && audioQueueRef.current.length === 0) {
+        onSubtitle({
+          speakerName: speakerName || 'Speaker',
+          originalText: originalText || '',
+          translatedText: translatedText || originalText,
+          lang,
+          isPending: false,
+          timing,
+        }, 2000);
+      }
+
       playNext(); // process next item in queue
     };
 
     audio.onended = onDone;
     audio.onerror = () => {
       console.warn('⚠️ [TranslationReceiver] TTS audio error, skipping.');
+      // If audio fails, show subtitle for 4 seconds as fallback
+      if (onSubtitle && (translatedText || originalText)) {
+        onSubtitle({
+          speakerName: speakerName || 'Speaker',
+          originalText: originalText || '',
+          translatedText: translatedText || originalText,
+          lang,
+          isPending: false,
+          timing,
+        }, 4000);
+      }
       onDone();
     };
 
     audio.play().catch(() => {
       console.warn('⚠️ [TranslationReceiver] audio.play() blocked, skipping.');
+      // If audio autoplay is blocked, show subtitle for 4 seconds as fallback
+      if (onSubtitle && (translatedText || originalText)) {
+        onSubtitle({
+          speakerName: speakerName || 'Speaker',
+          originalText: originalText || '',
+          translatedText: translatedText || originalText,
+          lang,
+          isPending: false,
+          timing,
+        }, 4000);
+      }
       onDone();
     });
   }, [duck, restore, onSubtitle, onTranscriptEntry]);
@@ -123,10 +171,8 @@ const useTranslationReceiver = ({
   useEffect(() => {
     if (!socket || !enabled) return;
 
-    // Phase 7: 'translation-pending' fires the moment the server starts processing audio.
-    // Show "Translating…" subtitle immediately — before Whisper/NLLB/TTS finishes.
+    // 'translation-pending': server started processing audio — show "Translating…"
     const handleTranslationPending = ({ speakerName }) => {
-      // Clear any previous pending timeout
       clearTimeout(pendingTimeoutRef.current);
 
       if (onSubtitle) {
@@ -146,20 +192,8 @@ const useTranslationReceiver = ({
     };
 
     const handleTranslationResult = (payload) => {
-      // Phase 7: real result arrived — clear the "Translating…" indicator
       clearTimeout(pendingTimeoutRef.current);
       setIsPending(false);
-
-      // Show subtitle immediately (Subtitle-first delivery)
-      if (onSubtitle) {
-        onSubtitle({
-          speakerName: payload.speakerName,
-          originalText: payload.originalText,
-          translatedText: payload.translatedText,
-          lang: payload.lang,
-          isPending: false,
-        });
-      }
 
       // Add to transcript sidebar immediately
       if (onTranscriptEntry) {
@@ -172,9 +206,30 @@ const useTranslationReceiver = ({
           timestamp: payload.timestamp,
         });
       }
+
+      // Fallback: If audio does NOT arrive within 4s (e.g. TTS disabled or network issue),
+      // show subtitle so the user does not miss what was said.
+      clearTimeout(fallbackSubtitleTimeoutRef.current);
+      fallbackSubtitleTimeoutRef.current = setTimeout(() => {
+        if (!isPlayingRef.current && onSubtitle) {
+          onSubtitle({
+            speakerName: payload.speakerName,
+            originalText: payload.originalText,
+            translatedText: payload.translatedText,
+            lang: payload.lang,
+            isPending: false,
+            timing: payload.timing,
+          }, 4000);
+        }
+      }, 4000);
     };
 
     const handleTranslationAudio = (audioBuffer, metadata) => {
+      // Audio arrived! Cancel fallback and pending timers
+      clearTimeout(fallbackSubtitleTimeoutRef.current);
+      clearTimeout(pendingTimeoutRef.current);
+      setIsPending(false);
+
       const { speakerId, sequenceNumber, mimeType } = metadata;
 
       // Drop oldest if queue is full
@@ -190,8 +245,12 @@ const useTranslationReceiver = ({
       audioQueueRef.current.push({
         blobUrl,
         speakerId,
+        speakerName: metadata.speakerName,
+        originalText: metadata.originalText,
+        translatedText: metadata.translatedText,
+        lang: metadata.lang,
         sequenceNumber,
-        timing: metadata.timing // timing can be passed here if orchestrator includes it
+        timing: metadata.timing
       });
 
       playNext();
@@ -206,6 +265,7 @@ const useTranslationReceiver = ({
       socket.off('translation-result', handleTranslationResult);
       socket.off('translation-audio', handleTranslationAudio);
       clearTimeout(pendingTimeoutRef.current);
+      clearTimeout(fallbackSubtitleTimeoutRef.current);
     };
   }, [socket, enabled, playNext, onSubtitle, onTranscriptEntry]);
 
@@ -223,6 +283,7 @@ const useTranslationReceiver = ({
       setIsReceiving(false);
       setIsPending(false);
       clearTimeout(pendingTimeoutRef.current);
+      clearTimeout(fallbackSubtitleTimeoutRef.current);
     }
   }, [enabled, restore]);
 
