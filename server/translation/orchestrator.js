@@ -30,15 +30,14 @@ import transcriptService from '../services/transcriptService.js';
 
 // ── Phase 6 Configuration ─────────────────────────────────────────────────────
 
-/** Maximum chunks held in a speaker's queue at any moment. */
-const SPEAKER_QUEUE_MAX_DEPTH = 2;
+/** Maximum chunks held in a speaker's queue at any moment (4 allows natural conversational flow without drops). */
+const SPEAKER_QUEUE_MAX_DEPTH = 4;
 
 /**
  * If a chunk has been waiting in the queue longer than this (ms), drop it.
- * The speaker has already moved on — processing stale audio wastes GPU time
- * and would deliver an out-of-date translation.
+ * 8000ms (8s) gives ample time for AI processing variations without discarding valid speech.
  */
-const STALE_THRESHOLD_MS = 3000;
+const STALE_THRESHOLD_MS = 8000;
 
 // ── Participant Registry ──────────────────────────────────────────────────────
 
