@@ -35,18 +35,22 @@ const ParticipantTile = ({ participant, stream, isLocal, onRename }) => {
     }
   };
 
-  // Ref-based approach from upstream: useEffect re-attaches when stream changes
-  // (more reliable than callback refs for stream prop changes).
   const videoRef = useRef(null);
   const audioRef = useRef(null);
+
+  // Attach stream to video element whenever stream changes OR video toggles back on.
+  // The video element is always mounted (just hidden), so the ref is always valid.
+  const hasVideo = stream && !participant.isVideoOff;
 
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
       videoRef.current.play().catch(e => console.warn('Video play blocked by browser:', e));
     }
-  }, [stream]);
+  }, [stream, hasVideo]);
 
+  // Always attach stream to the hidden audio element for remote participants.
+  // This runs on mount and whenever stream changes, ensuring audio is never lost.
   useEffect(() => {
     if (audioRef.current && stream) {
       audioRef.current.srcObject = stream;
@@ -54,19 +58,21 @@ const ParticipantTile = ({ participant, stream, isLocal, onRename }) => {
     }
   }, [stream]);
 
-  const hasVideo = stream && !participant.isVideoOff;
-
   return (
     <div className={`participant-tile ${isLocal ? 'local-tile' : ''} ${actuallySpeaking ? 'speaking' : ''}`}>
-      {hasVideo ? (
-        <video 
-          ref={videoRef} 
-          autoPlay 
-          playsInline 
-          muted={isLocal} 
-          className={`participant-video ${isLocal ? 'mirror-video' : ''}`}
-        />
-      ) : (
+      {/* Video element is ALWAYS rendered but hidden when video is off.
+          This preserves srcObject across camera toggles so it re-appears instantly. */}
+      <video 
+        ref={videoRef} 
+        autoPlay 
+        playsInline 
+        muted={isLocal} 
+        className={`participant-video ${isLocal ? 'mirror-video' : ''}`}
+        style={{ display: hasVideo ? 'block' : 'none' }}
+      />
+
+      {/* Avatar overlay shown when video is off */}
+      {!hasVideo && (
         <div className="participant-avatar-wrapper">
           <div className="participant-avatar">
             {participant.displayName?.charAt(0).toUpperCase()}
@@ -74,8 +80,9 @@ const ParticipantTile = ({ participant, stream, isLocal, onRename }) => {
         </div>
       )}
       
-      {/* Always render hidden audio for remote participants so audio plays even when video is off */}
-      {!hasVideo && !isLocal && (
+      {/* Always render hidden audio for remote participants so audio plays
+          regardless of whether video is on or off */}
+      {!isLocal && (
         <audio ref={audioRef} autoPlay playsInline style={{ display: 'none' }} />
       )}
 
