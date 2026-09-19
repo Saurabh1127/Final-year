@@ -83,7 +83,7 @@ const useTranslationReceiver = ({
 
     audio.onplay = () => {
       duck();
-      // ⚡ SIMULTANEOUS: Show subtitle at the exact moment the voice begins speaking ⚡
+      // ⚡ SIMULTANEOUS: Show subtitle exactly ONCE when voice starts speaking ⚡
       if (onSubtitle && (translatedText || originalText)) {
         onSubtitle({
           speakerName: speakerName || 'Speaker',
@@ -92,7 +92,7 @@ const useTranslationReceiver = ({
           lang,
           isPending: false,
           timing,
-        }, 0); // 0 = keep alive while voice is speaking
+        }, 0); // 0 = keep alive while voice is speaking — cleared manually in onDone
       }
 
       if (timing) {
@@ -119,16 +119,9 @@ const useTranslationReceiver = ({
       setIsReceiving(audioQueueRef.current.length > 0);
       URL.revokeObjectURL(blobUrl);
 
-      // Keep subtitle visible for 2 seconds after voice ends (or until next audio item replaces it)
-      if (onSubtitle && (translatedText || originalText) && audioQueueRef.current.length === 0) {
-        onSubtitle({
-          speakerName: speakerName || 'Speaker',
-          originalText: originalText || '',
-          translatedText: translatedText || originalText,
-          lang,
-          isPending: false,
-          timing,
-        }, 2000);
+      // Linger existing subtitle for 2s by scheduling a null call — no re-render/re-animation.
+      if (onSubtitle && audioQueueRef.current.length === 0) {
+        setTimeout(() => onSubtitle(null), 2000);
       }
 
       playNext(); // process next item in queue
@@ -137,7 +130,6 @@ const useTranslationReceiver = ({
     audio.onended = onDone;
     audio.onerror = () => {
       console.warn('⚠️ [TranslationReceiver] TTS audio error, skipping.');
-      // If audio fails, show subtitle for 4 seconds as fallback
       if (onSubtitle && (translatedText || originalText)) {
         onSubtitle({
           speakerName: speakerName || 'Speaker',
@@ -148,12 +140,17 @@ const useTranslationReceiver = ({
           timing,
         }, 4000);
       }
-      onDone();
+      restore();
+      isPlayingRef.current = false;
+      currentAudioRef.current = null;
+      setIsReceiving(audioQueueRef.current.length > 0);
+      URL.revokeObjectURL(blobUrl);
+      playNext();
     };
 
+    // Mobile: audio.play() is blocked by browser autoplay policy — show subtitle-only fallback
     audio.play().catch(() => {
-      console.warn('⚠️ [TranslationReceiver] audio.play() blocked, skipping.');
-      // If audio autoplay is blocked, show subtitle for 4 seconds as fallback
+      console.warn('⚠️ [TranslationReceiver] audio.play() blocked (mobile autoplay). Showing subtitle only.');
       if (onSubtitle && (translatedText || originalText)) {
         onSubtitle({
           speakerName: speakerName || 'Speaker',
@@ -162,9 +159,14 @@ const useTranslationReceiver = ({
           lang,
           isPending: false,
           timing,
-        }, 4000);
+        }, 5000);
       }
-      onDone();
+      restore();
+      isPlayingRef.current = false;
+      currentAudioRef.current = null;
+      URL.revokeObjectURL(blobUrl);
+      setIsReceiving(audioQueueRef.current.length > 0);
+      playNext();
     });
   }, [duck, restore, onSubtitle, onTranscriptEntry]);
 
