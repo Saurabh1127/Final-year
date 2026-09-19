@@ -43,19 +43,31 @@ const ParticipantTile = ({ participant, stream, isLocal, onRename }) => {
   const hasVideo = stream && !participant.isVideoOff;
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-      videoRef.current.play().catch(e => console.warn('Video play blocked by browser:', e));
+    const videoEl = videoRef.current;
+    if (videoEl && stream) {
+      videoEl.srcObject = stream;
+      videoEl.play().catch(e => console.warn('Video play blocked by browser:', e));
     }
+    return () => {
+      if (videoEl) {
+        videoEl.srcObject = null;
+      }
+    };
   }, [stream, hasVideo]);
 
   // Always attach stream to the hidden audio element for remote participants.
   // This runs on mount and whenever stream changes, ensuring audio is never lost.
   useEffect(() => {
-    if (audioRef.current && stream) {
-      audioRef.current.srcObject = stream;
-      audioRef.current.play().catch(e => console.warn('Audio play blocked by browser:', e));
+    const audioEl = audioRef.current;
+    if (audioEl && stream) {
+      audioEl.srcObject = stream;
+      audioEl.play().catch(e => console.warn('Audio play blocked by browser:', e));
     }
+    return () => {
+      if (audioEl) {
+        audioEl.srcObject = null;
+      }
+    };
   }, [stream]);
 
   return (

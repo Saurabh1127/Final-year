@@ -172,6 +172,11 @@ const MeetingRoom = ({ roomCode }) => {
     if (echoAudioRef.current && !isEchoTestActive) {
       echoAudioRef.current.srcObject = null;
     }
+    return () => {
+      if (echoAudioRef.current) {
+        echoAudioRef.current.srcObject = null;
+      }
+    };
   }, [localStream, isEchoTestActive]);
 
   // 1. Fetch meeting data + start media capture (runs once on mount)
@@ -329,6 +334,7 @@ const MeetingRoom = ({ roomCode }) => {
     // ── Host ended meeting for everyone ─────────────────────────────────────
     const handleMeetingEnded = ({ message }) => {
       console.log('🛑 [Meeting] Meeting ended by host:', message);
+      stopCapture();
       alert(message || 'The host has ended the meeting for all participants.');
       navigate(`/summary/${roomCode}`);
     };
@@ -336,6 +342,7 @@ const MeetingRoom = ({ roomCode }) => {
     // ── Session replaced by another tab / window ───────────────────────────
     const handleSessionReplaced = ({ message }) => {
       console.warn('⚠️ [Meeting] Session replaced:', message);
+      stopCapture();
       alert(message || 'You have joined this meeting from another tab or window.');
       navigate('/');
     };
@@ -357,7 +364,7 @@ const MeetingRoom = ({ roomCode }) => {
       socket.off('meeting-ended', handleMeetingEnded);
       socket.off('session-replaced', handleSessionReplaced);
     };
-  }, [socket, user, removePeerConnection, navigate, roomCode]);
+  }, [socket, user, removePeerConnection, navigate, roomCode, stopCapture]);
 
   // ── Feature: Copy meeting link ────────────────────────────────────────────
   const handleCopyLink = () => {
@@ -387,6 +394,7 @@ const MeetingRoom = ({ roomCode }) => {
 
   const handleLeaveConfirm = () => {
     setShowLeaveModal(false);
+    stopCapture();
     navigate(`/summary/${roomCode}`);
   };
 
@@ -396,6 +404,7 @@ const MeetingRoom = ({ roomCode }) => {
       console.log('👑 [Meeting] Host ending meeting for all:', roomCode);
       socket.emit('end-meeting', { roomCode });
     }
+    stopCapture();
     navigate(`/summary/${roomCode}`);
   };
 
@@ -416,7 +425,7 @@ const MeetingRoom = ({ roomCode }) => {
     return (
       <div className="meeting-error">
         <div className="alert alert-error">{error || mediaError}</div>
-        <button className="btn btn-primary" onClick={() => navigate('/')}>Return to Home</button>
+        <button className="btn btn-primary" onClick={() => { stopCapture(); navigate('/'); }}>Return to Home</button>
       </div>
     );
   }

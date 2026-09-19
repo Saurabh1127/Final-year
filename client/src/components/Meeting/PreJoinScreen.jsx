@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const PreJoinScreen = ({ roomCode, userName, localStream, isMuted, isVideoOff, toggleMute, toggleVideo, onJoin }) => {
@@ -11,14 +11,21 @@ const PreJoinScreen = ({ roomCode, userName, localStream, isMuted, isVideoOff, t
     onJoin();
   };
 
-  // Callback ref for video preview
-  const setVideoRef = useCallback((node) => {
-    if (node && localStream) {
-      node.srcObject = localStream;
-    }
-  }, [localStream]);
-
+  // Video preview ref with cleanup on unmount/toggle
+  const videoRef = useRef(null);
   const hasVideo = localStream && !isVideoOff;
+
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (videoEl && localStream) {
+      videoEl.srcObject = localStream;
+    }
+    return () => {
+      if (videoEl) {
+        videoEl.srcObject = null;
+      }
+    };
+  }, [localStream, hasVideo]);
 
   return (
     <div className="prejoin-screen">
@@ -42,7 +49,7 @@ const PreJoinScreen = ({ roomCode, userName, localStream, isMuted, isVideoOff, t
         <div className="prejoin-video-container">
           {hasVideo ? (
             <video
-              ref={setVideoRef}
+              ref={videoRef}
               autoPlay
               playsInline
               muted
