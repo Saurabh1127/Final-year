@@ -97,16 +97,17 @@ const useTranslationReceiver = ({
 
       if (timing) {
         const playTime = Date.now();
-        const ttfa = playTime - timing.captureStartTime;
-        const uploadTime = timing.serverReceiveTime - timing.flushTime;
-        const serverWaitTime = timing.serverAiReturnTime - timing.serverReceiveTime;
-        const downloadTime = playTime - timing.serverAiReturnTime;
-        console.log(`⏱️ [Latency Metrics] TTFA (End-to-End): ${ttfa}ms`, {
-          captureToFlush: timing.flushTime - timing.captureStartTime,
-          uploadRoundTrip: uploadTime,
-          aiLatency: timing.aiLatency,
-          downloadAndInit: downloadTime,
-          total: ttfa
+        // Measure from the moment audio was flushed/sent to the moment it starts playing
+        const translationDeliveryMs = playTime - (timing.flushTime || timing.serverReceiveTime || playTime);
+        const uploadMs = (timing.serverReceiveTime && timing.flushTime) ? (timing.serverReceiveTime - timing.flushTime) : 0;
+        const aiMs = (timing.serverAiReturnTime && timing.serverReceiveTime) ? (timing.serverAiReturnTime - timing.serverReceiveTime) : null;
+        const downloadMs = timing.serverAiReturnTime ? (playTime - timing.serverAiReturnTime) : 0;
+
+        console.log(`⏱️ [Translation & Delivery] ${(translationDeliveryMs / 1000).toFixed(2)}s (${translationDeliveryMs}ms)`, {
+          aiEngine: aiMs ? `${aiMs}ms` : 'N/A',
+          networkUpload: `${uploadMs}ms`,
+          networkDownloadAndInit: `${downloadMs}ms`,
+          totalDelivery: `${translationDeliveryMs}ms`,
         });
       }
     };

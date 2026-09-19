@@ -69,12 +69,13 @@ const MeetingRoom = ({ roomCode }) => {
   const handleSubtitle = useCallback((sub, duration = 4000) => {
     if (sub?.timing) {
       const now = Date.now();
-      const totalMs = now - (sub.timing.captureStartTime || sub.timing.flushTime || now);
+      // Only measure from when speech was sent (flushTime) to when it was translated and reached the user
+      const latencyMs = now - (sub.timing.flushTime || sub.timing.serverReceiveTime || now);
       const serverMs = (sub.timing.serverAiReturnTime && sub.timing.serverReceiveTime)
         ? (sub.timing.serverAiReturnTime - sub.timing.serverReceiveTime)
         : null;
-      console.log(`⏱️ [Live Latency] Total end-to-end: ${(totalMs / 1000).toFixed(2)}s${serverMs ? ` | AI Engine: ${(serverMs / 1000).toFixed(2)}s` : ''}`);
-      sub.displayLatency = (totalMs / 1000).toFixed(2) + 's';
+      sub.displayLatency = (latencyMs / 1000).toFixed(2) + 's';
+      console.log(`⏱️ [Translation & Delivery] ${sub.displayLatency}${serverMs ? ` | AI Engine: ${(serverMs / 1000).toFixed(2)}s` : ''}`);
     }
     setSubtitle(sub);
     clearTimeout(subtitleTimeoutRef.current);
