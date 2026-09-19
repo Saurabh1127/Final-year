@@ -244,8 +244,14 @@ async def websocket_process_audio(websocket: WebSocket) -> None:
     """
     Real-time bi-directional WebSocket for audio streaming.
 
+    Phase 8: Supports persistent multiplexed connections.
+    Each request payload includes an optional 'job_id' field.
+    Every response message echoes back the same 'job_id' so the
+    Node.js PersistentAIConnection can route results to the correct caller.
+
     Client sends JSON:
         {
+            "job_id": "<uuid>",          ← Phase 8: multiplexing tag (optional)
             "audio_base64": "<base64 audio bytes>",
             "meeting_id": "...",
             "user_id": "...",
@@ -254,7 +260,10 @@ async def websocket_process_audio(websocket: WebSocket) -> None:
             "include_audio": true
         }
 
-    Server responds with the full pipeline result as JSON.
+    Server responds with a stream of JSON messages, each including job_id:
+        { "job_id": "...", "type": "text",        ... }
+        { "job_id": "...", "type": "audio_chunk", ... }
+        { "job_id": "...", "type": "done",        ... }
     """
     await websocket.accept()
     print(f"🔌 WebSocket connected: {websocket.client}")
@@ -266,21 +275,25 @@ async def websocket_process_audio(websocket: WebSocket) -> None:
             try:
                 payload: dict = json.loads(raw)
             except json.JSONDecodeError:
-                await websocket.send_json({"error": "Invalid JSON payload."})
+                await websocket.send_json({"error": "Invalid JSON payload.", "job_id": None})
                 continue
+
+            # Phase 8: Extract job_id for multiplexing. Falls back to None for
+            # one-shot clients (Phase 1 fallback path) — they ignore the field anyway.
+            job_id = payload.get("job_id", None)
 
             audio_b64: str = payload.get("audio_base64", "")
             if not audio_b64:
-                await websocket.send_json({"error": "Missing 'audio_base64' in payload."})
+                await websocket.send_json({"error": "Missing 'audio_base64' in payload.", "job_id": job_id})
                 continue
 
             try:
                 audio_bytes = base64.b64decode(audio_b64)
             except Exception:
-                await websocket.send_json({"error": "Invalid base64 audio data."})
+                await websocket.send_json({"error": "Invalid base64 audio data.", "job_id": job_id})
                 continue
 
-            # Stream results back to the client
+            # Stream results back to the client, tagging every message with job_id
             async for chunk in engine.process_stream(
                 audio_bytes=audio_bytes,
                 target_languages=payload.get("target_languages", ["en"]),
@@ -290,14 +303,15 @@ async def websocket_process_audio(websocket: WebSocket) -> None:
                 meeting_id=payload.get("meeting_id", "unknown"),
                 include_audio=payload.get("include_audio", True),
             ):
-                await websocket.send_json(chunk)
+                # Inject job_id into every chunk before sending
+                await websocket.send_json({**chunk, "job_id": job_id})
 
     except WebSocketDisconnect:
         print(f"🔌 WebSocket disconnected: {websocket.client}")
     except Exception as exc:
         print(f"⚠️  WebSocket error: {exc}")
         try:
-            await websocket.send_json({"error": str(exc)})
+            await websocket.send_json({"error": str(exc), "job_id": None})
         except Exception:
             pass
 
