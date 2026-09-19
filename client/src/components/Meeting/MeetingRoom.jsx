@@ -39,6 +39,7 @@ const MeetingRoom = ({ roomCode }) => {
   const [translationEnabled, setTranslationEnabled] = useState(false);
   const [targetLanguage, setTargetLanguage] = useState(user?.preferredLanguage || 'hi');
   const [subtitle, setSubtitle] = useState(null);        // { speakerName, originalText, translatedText, lang }
+  const [translatingFor, setTranslatingFor] = useState(null); // speakerName while AI is processing
   const [transcriptLog, setTranscriptLog] = useState([]); // Live sidebar entries
   const [showTranscript, setShowTranscript] = useState(false);
   const subtitleTimeoutRef = useRef(null);
@@ -65,11 +66,23 @@ const MeetingRoom = ({ roomCode }) => {
     user?.id
   );
 
-  // ── Subtitle callback: show with configurable duration (0 = keep alive until cleared) ──
+  // ── Subtitle callback: duration=0 means keep until explicitly replaced/cleared ──
   const handleSubtitle = useCallback((sub, duration = 4000) => {
+    if (!sub) {
+      // Explicit clear
+      setSubtitle(null);
+      clearTimeout(subtitleTimeoutRef.current);
+      return;
+    }
+    if (sub.isPending) {
+      // 'Translating...' — update the separate indicator, do NOT touch the current subtitle
+      setTranslatingFor(sub.speakerName || null);
+      return;
+    }
+    // Real subtitle — clear the translating indicator and show subtitle
+    setTranslatingFor(null);
     if (sub?.timing) {
       const now = Date.now();
-      // Only measure from when speech was sent (flushTime) to when it was translated and reached the user
       const latencyMs = now - (sub.timing.flushTime || sub.timing.serverReceiveTime || now);
       const serverMs = (sub.timing.serverAiReturnTime && sub.timing.serverReceiveTime)
         ? (sub.timing.serverAiReturnTime - sub.timing.serverReceiveTime)
@@ -79,7 +92,7 @@ const MeetingRoom = ({ roomCode }) => {
     }
     setSubtitle(sub);
     clearTimeout(subtitleTimeoutRef.current);
-    if (sub && duration > 0) {
+    if (duration > 0) {
       subtitleTimeoutRef.current = setTimeout(() => setSubtitle(null), duration);
     }
   }, []);
@@ -578,26 +591,31 @@ const MeetingRoom = ({ roomCode }) => {
         )}
       </div>
 
-      {/* ── Live Subtitle Overlay ─────────────────────────────────────────────── */}
+      {/* ── Translating indicator — separate pill, does NOT touch the subtitle ── */}
+      {translatingFor && (
+        <div className="translating-indicator" id="translating-indicator" aria-live="polite">
+          <span className="translating-dot" />
+          <span>{translatingFor} is translating…</span>
+        </div>
+      )}
+
+      {/* ── Live Subtitle Overlay — stays visible until voice finishes ─────────── */}
       {subtitle && (
         <div
-          className={`subtitle-overlay${subtitle.isPending ? ' subtitle-overlay--pending' : ''}`}
+          className="subtitle-overlay"
           id="subtitle-overlay"
           aria-live="polite"
         >
           <div className="subtitle-speaker">
             <span>{subtitle.speakerName}</span>
-            {subtitle.displayLatency && !subtitle.isPending && (
+            {subtitle.displayLatency && (
               <span className="subtitle-latency-badge">⚡ {subtitle.displayLatency}</span>
             )}
-            {subtitle.isPending && (
-              <span className="subtitle-pending-badge">⏳ Processing…</span>
-            )}
           </div>
-          <p className={`subtitle-original${subtitle.isPending ? ' subtitle-original--pending' : ''}`}>
+          <p className="subtitle-original">
             {subtitle.originalText}
           </p>
-          {!subtitle.isPending && subtitle.translatedText && subtitle.translatedText !== subtitle.originalText && (
+          {subtitle.translatedText && subtitle.translatedText !== subtitle.originalText && (
             <p className="subtitle-translated">
               <span className="subtitle-lang-badge">{subtitle.lang?.toUpperCase()}</span>
               {subtitle.translatedText}

@@ -442,33 +442,46 @@
   flex-shrink: 0;
 }
 
-/* ─── Phase 7: Pending "Translating…" subtitle state ─── */
-.subtitle-overlay--pending {
-  border-color: rgba(251, 191, 36, 0.30);  /* amber tint while processing */
-  background: rgba(10, 10, 20, 0.78);
-}
 
-.subtitle-original--pending {
-  color: rgba(232, 234, 246, 0.50);        /* dimmed while pending */
-  font-style: italic;
-  animation: subtitle-pulse 1.4s ease-in-out infinite;
-}
-
-.subtitle-pending-badge {
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: #fbbf24;                          /* amber — matches processing border */
-  background: rgba(251, 191, 36, 0.12);
-  border: 1px solid rgba(251, 191, 36, 0.30);
+/* ─── Translating Indicator (separate from subtitle overlay) ─── */
+/* Appears top-right as a small pill while the AI is processing. */
+.translating-indicator {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(10, 10, 20, 0.82);
+  border: 1px solid rgba(251, 191, 36, 0.40);
   border-radius: 999px;
-  padding: 0.1rem 0.45rem;
-  letter-spacing: 0.04em;
-  text-transform: none;
+  padding: 0.3rem 0.9rem 0.3rem 0.65rem;
+  backdrop-filter: blur(12px);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fbbf24;
+  animation: translating-fade-in 0.2s ease;
+  pointer-events: none;
 }
 
-@keyframes subtitle-pulse {
-  0%, 100% { opacity: 0.5; }
-  50%       { opacity: 0.9; }
+@keyframes translating-fade-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.translating-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fbbf24;
+  animation: translating-pulse 1.0s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes translating-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50%       { opacity: 1;   transform: scale(1.1); }
 }
 
 

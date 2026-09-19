@@ -172,23 +172,21 @@ const useTranslationReceiver = ({
   useEffect(() => {
     if (!socket || !enabled) return;
 
-    // 'translation-pending': server started processing audio — show "Translating…"
+    // 'translation-pending': server started processing — signal the separate indicator only
     const handleTranslationPending = ({ speakerName }) => {
       clearTimeout(pendingTimeoutRef.current);
 
+      // Pass isPending to onSubtitle — MeetingRoom routes this to the
+      // separate translating-indicator pill, NOT the subtitle overlay.
       if (onSubtitle) {
-        onSubtitle({
-          speakerName,
-          originalText: '⏳ Translating…',
-          translatedText: null,
-          isPending: true,
-        });
+        onSubtitle({ speakerName, isPending: true });
       }
       setIsPending(true);
 
-      // Safety net: if no translation-result arrives within 12s, clear the indicator
+      // Safety net: clear the indicator if no result arrives within 12s
       pendingTimeoutRef.current = setTimeout(() => {
         setIsPending(false);
+        if (onSubtitle) onSubtitle({ speakerName: null, isPending: true });
       }, 12000);
     };
 
