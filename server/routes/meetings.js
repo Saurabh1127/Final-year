@@ -7,5 +7,6 @@ const router = express.Router();
 router.post('/', auth, meetingController.createMeeting);
 router.get('/:roomCode', auth, meetingController.getMeeting);
 router.patch('/:roomCode/language', auth, meetingController.updateLanguage);
+router.post('/:roomCode/end', auth, meetingController.endMeeting);
 
 export default router;

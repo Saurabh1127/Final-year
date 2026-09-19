@@ -71,9 +71,21 @@ meetingSchema.statics.generateRoomCode = function () {
   return `${seg1}-${seg2}-${seg3}`;
 };
 
-// Get active participants
+// Get active participants (guaranteed unique by userId)
 meetingSchema.methods.getActiveParticipants = function () {
-  return this.participants.filter((p) => p.isActive);
+  const seen = new Set();
+  const active = [];
+  for (const p of this.participants) {
+    if (p.isActive) {
+      const uid = p.userId ? p.userId.toString() : null;
+      if (uid && !seen.has(uid)) {
+        seen.add(uid);
+        active.push(p);
+      }
+    }
+  }
+  return active;
 };
+
 
 export default mongoose.model('Meeting', meetingSchema);

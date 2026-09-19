@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const ControlBar = ({ isMuted, toggleMute, isVideoOff, toggleVideo, isEchoTestActive, toggleEchoTest, onLeave }) => {
+const ControlBar = ({ isMuted, toggleMute, isVideoOff, toggleVideo, isEchoTestActive, toggleEchoTest, onLeave, isHost = false }) => {
   // ── Meeting Timer ──────────────────────────────────────────────────────────
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef(null);
@@ -93,7 +93,7 @@ const ControlBar = ({ isMuted, toggleMute, isVideoOff, toggleVideo, isEchoTestAc
         <button 
           className="btn-icon control-btn btn-danger leave-btn"
           onClick={onLeave}
-          title="End Call"
+          title={isHost ? "Leave or End Call" : "Leave Call"}
           id="btn-end-call"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="24" height="24" strokeLinecap="round" strokeLinejoin="round">

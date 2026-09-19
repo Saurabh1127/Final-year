@@ -1,8 +1,15 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const PreJoinScreen = ({ roomCode, userName, localStream, isMuted, isVideoOff, toggleMute, toggleVideo, onJoin }) => {
   const navigate = useNavigate();
+  const [isJoining, setIsJoining] = useState(false);
+
+  const handleJoin = () => {
+    if (isJoining || !localStream) return;
+    setIsJoining(true);
+    onJoin();
+  };
 
   // Callback ref for video preview
   const setVideoRef = useCallback((node) => {
@@ -115,11 +122,11 @@ const PreJoinScreen = ({ roomCode, userName, localStream, isMuted, isVideoOff, t
         <div className="prejoin-actions">
           <button
             className="btn btn-primary btn-lg prejoin-join-btn"
-            onClick={onJoin}
-            disabled={!localStream}
+            onClick={handleJoin}
+            disabled={!localStream || isJoining}
             id="prejoin-join-btn"
           >
-            {localStream ? 'Join Now' : 'Waiting for media...'}
+            {isJoining ? 'Joining...' : localStream ? 'Join Now' : 'Waiting for media...'}
           </button>
           <button
             className="btn btn-secondary prejoin-back-btn"

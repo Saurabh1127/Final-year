@@ -19,6 +19,17 @@ export default (io, socket) => {
         socketId: socket.id
       });
       
+      // Evict any stale socket for this user already in the room (e.g. from previous tab/session)
+      const existingSockets = await io.in(roomCode).fetchSockets();
+      for (const s of existingSockets) {
+        if (s.userId?.toString() === userId?.toString() && s.id !== socket.id) {
+          console.log(`🔌 [Meeting] Evicting stale socket ${s.id} for user ${userId} in room ${roomCode}`);
+          unregisterParticipant(roomCode, s.id);
+          s.leave(roomCode);
+          s.emit('session-replaced', { message: 'You have joined this meeting from another tab or window.' });
+        }
+      }
+
       // Join the socket room
       socket.join(roomCode);
       
@@ -75,18 +86,49 @@ export default (io, socket) => {
     try {
       console.log(`Socket ${socket.id} leaving room ${roomCode}`);
 
-      // Deregister from orchestrator before leaving
+      // 1. Deregister from orchestrator before leaving
       unregisterParticipant(roomCode, socket.id);
 
+      // 2. Broadcast to remaining participants BEFORE leaving room
+      io.to(roomCode).emit('participant-left', { userId, socketId: socket.id });
+
+      // 3. Leave the room and clean socket state
       socket.leave(roomCode);
       socket.roomCode = null;
       socket.userId = null;
 
+      // 4. Update database
       await meetingService.leaveMeeting({ roomCode, userId });
-
-      socket.to(roomCode).emit('participant-left', { userId, socketId: socket.id });
     } catch (error) {
       console.error('Error leaving meeting:', error);
+    }
+  });
+
+  // Host ends meeting for all participants
+  socket.on('end-meeting', async ({ roomCode }) => {
+    try {
+      const hostId = socket.userId || socket.user?.userId;
+      console.log(`👑 [Meeting] Host ${hostId} ending meeting ${roomCode}`);
+
+      await meetingService.endMeeting({ roomCode, hostId });
+
+      // Broadcast to ALL sockets in the room that the meeting has ended
+      io.to(roomCode).emit('meeting-ended', {
+        message: 'The meeting has been ended by the host.',
+        roomCode,
+      });
+
+      // Evict and clean up all participants from the room
+      const roomSockets = await io.in(roomCode).fetchSockets();
+      for (const s of roomSockets) {
+        unregisterParticipant(roomCode, s.id);
+        s.leave(roomCode);
+        s.roomCode = null;
+        s.userId = null;
+      }
+    } catch (error) {
+      console.error('Error ending meeting:', error);
+      socket.emit('error', { message: error.message || 'Failed to end meeting' });
     }
   });
 
@@ -109,3 +151,4 @@ export default (io, socket) => {
     });
   });
 };
+

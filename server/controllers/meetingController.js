@@ -41,6 +41,20 @@ class MeetingController {
       res.status(error.status || 500).json({ message: error.message || 'Failed to update language.' });
     }
   }
+
+  async endMeeting(req, res) {
+    try {
+      const result = await meetingService.endMeeting({
+        roomCode: req.params.roomCode,
+        hostId: req.userId,
+      });
+      res.json({ message: 'Meeting ended successfully.', meeting: result });
+    } catch (error) {
+      console.error('End meeting error:', error);
+      res.status(error.status || 500).json({ message: error.message || 'Failed to end meeting.' });
+    }
+  }
 }
+
 
 export default new MeetingController();

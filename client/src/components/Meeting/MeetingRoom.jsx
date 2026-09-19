@@ -28,6 +28,13 @@ const MeetingRoom = ({ roomCode }) => {
   // ── Local display name (supports rename) ─────────────────────────────────
   const [displayName, setDisplayName] = useState(user?.name || 'Guest');
 
+  // ── Host status ──────────────────────────────────────────────────────────
+  const isHost = Boolean(
+    meeting && user && (
+      (meeting.hostId?._id ? meeting.hostId._id.toString() : meeting.hostId?.toString()) === user?.id?.toString()
+    )
+  );
+
   // ── Translation feature states ──────────────────────────────────────────────
   const [translationEnabled, setTranslationEnabled] = useState(false);
   const [targetLanguage, setTargetLanguage] = useState(user?.preferredLanguage || 'hi');
@@ -266,36 +273,71 @@ const MeetingRoom = ({ roomCode }) => {
     if (!socket) return;
 
     const handleMeetingJoined = ({ participants: initialParticipants }) => {
-      console.log('✅ [Meeting] Joined, existing participants:', initialParticipants.length);
-      setParticipants(initialParticipants.filter(p => p.userId !== user.id));
+      console.log('✅ [Meeting] Joined, existing participants:', initialParticipants?.length || 0);
+      const myId = user?.id?.toString();
+      const uniqueMap = new Map();
+      for (const p of initialParticipants || []) {
+        const pid = p.userId?.toString();
+        // Never include self, and deduplicate remote participants by userId
+        if (pid && pid !== myId && !uniqueMap.has(pid)) {
+          uniqueMap.set(pid, p);
+        }
+      }
+      setParticipants(Array.from(uniqueMap.values()));
     };
 
     const handleParticipantJoined = (newParticipant) => {
+      const myId = user?.id?.toString();
+      const newId = newParticipant?.userId?.toString();
+      // NEVER add self to remote participants list
+      if (!newId || newId === myId) {
+        console.log('👤 [Meeting] Ignored self in participant-joined:', newParticipant?.displayName);
+        return;
+      }
       console.log('👤 [Meeting] Participant joined:', newParticipant.displayName);
       setParticipants(prev => {
-        const filtered = prev.filter(p => p.userId !== newParticipant.userId);
+        const filtered = prev.filter(p => p.userId?.toString() !== newId);
         return [...filtered, newParticipant];
       });
     };
 
     const handleParticipantLeft = ({ userId: leftUserId }) => {
-      console.log('👤 [Meeting] Participant left:', leftUserId);
-      setParticipants(prev => prev.filter(p => p.userId !== leftUserId));
-      removePeerConnection(leftUserId);
+      const leftId = leftUserId?.toString();
+      console.log('👤 [Meeting] Participant left:', leftId);
+      setParticipants(prev => prev.filter(p => p.userId?.toString() !== leftId));
+      if (leftId) {
+        removePeerConnection(leftId);
+      }
     };
 
     const handleMediaChanged = ({ userId: changedUserId, isMuted: m, isVideoOff: v }) => {
+      const targetId = changedUserId?.toString();
       setParticipants(prev => prev.map(p =>
-        p.userId === changedUserId ? { ...p, isMuted: m, isVideoOff: v } : p
+        p.userId?.toString() === targetId ? { ...p, isMuted: m, isVideoOff: v } : p
       ));
     };
 
     // ── Handle remote participant rename ────────────────────────────────────
     const handleParticipantRenamed = ({ userId: renamedUserId, newDisplayName }) => {
-      console.log(`✏️ [Meeting] ${renamedUserId} renamed to "${newDisplayName}"`);
+      const targetId = renamedUserId?.toString();
+      console.log(`✏️ [Meeting] ${targetId} renamed to "${newDisplayName}"`);
       setParticipants(prev => prev.map(p =>
-        p.userId === renamedUserId ? { ...p, displayName: newDisplayName } : p
+        p.userId?.toString() === targetId ? { ...p, displayName: newDisplayName } : p
       ));
+    };
+
+    // ── Host ended meeting for everyone ─────────────────────────────────────
+    const handleMeetingEnded = ({ message }) => {
+      console.log('🛑 [Meeting] Meeting ended by host:', message);
+      alert(message || 'The host has ended the meeting for all participants.');
+      navigate(`/summary/${roomCode}`);
+    };
+
+    // ── Session replaced by another tab / window ───────────────────────────
+    const handleSessionReplaced = ({ message }) => {
+      console.warn('⚠️ [Meeting] Session replaced:', message);
+      alert(message || 'You have joined this meeting from another tab or window.');
+      navigate('/');
     };
 
     socket.on('meeting-joined', handleMeetingJoined);
@@ -303,6 +345,8 @@ const MeetingRoom = ({ roomCode }) => {
     socket.on('participant-left', handleParticipantLeft);
     socket.on('participant-media-changed', handleMediaChanged);
     socket.on('participant-renamed', handleParticipantRenamed);
+    socket.on('meeting-ended', handleMeetingEnded);
+    socket.on('session-replaced', handleSessionReplaced);
 
     return () => {
       socket.off('meeting-joined', handleMeetingJoined);
@@ -310,8 +354,10 @@ const MeetingRoom = ({ roomCode }) => {
       socket.off('participant-left', handleParticipantLeft);
       socket.off('participant-media-changed', handleMediaChanged);
       socket.off('participant-renamed', handleParticipantRenamed);
+      socket.off('meeting-ended', handleMeetingEnded);
+      socket.off('session-replaced', handleSessionReplaced);
     };
-  }, [socket, user, removePeerConnection]);
+  }, [socket, user, removePeerConnection, navigate, roomCode]);
 
   // ── Feature: Copy meeting link ────────────────────────────────────────────
   const handleCopyLink = () => {
@@ -341,6 +387,15 @@ const MeetingRoom = ({ roomCode }) => {
 
   const handleLeaveConfirm = () => {
     setShowLeaveModal(false);
+    navigate(`/summary/${roomCode}`);
+  };
+
+  const handleEndMeetingForAll = () => {
+    setShowLeaveModal(false);
+    if (socket && connected) {
+      console.log('👑 [Meeting] Host ending meeting for all:', roomCode);
+      socket.emit('end-meeting', { roomCode });
+    }
     navigate(`/summary/${roomCode}`);
   };
 
@@ -549,15 +604,20 @@ const MeetingRoom = ({ roomCode }) => {
         isEchoTestActive={isEchoTestActive}
         toggleEchoTest={() => setIsEchoTestActive(prev => !prev)}
         onLeave={handleLeaveClick} 
+        isHost={isHost}
       />
 
-      {/* ── Leave Confirmation Modal ──────────────────────────────────────────── */}
+      {/* ── Leave / End Meeting Confirmation Modal ────────────────────────────── */}
       {showLeaveModal && (
         <div className="leave-modal-overlay" id="leave-modal">
           <div className="leave-modal animate-fade-in">
-            <h3>Leave this meeting?</h3>
-            <p>You'll be redirected to the meeting summary page.</p>
-            <div className="leave-modal-actions">
+            <h3>{isHost ? 'Leave or End Meeting?' : 'Leave this meeting?'}</h3>
+            <p>
+              {isHost
+                ? 'As host, you can leave the meeting or end it for all participants.'
+                : "You'll be redirected to the meeting summary page."}
+            </p>
+            <div className="leave-modal-actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               <button
                 className="btn btn-secondary"
                 onClick={handleLeaveCancel}
@@ -566,12 +626,21 @@ const MeetingRoom = ({ roomCode }) => {
                 Cancel
               </button>
               <button
-                className="btn btn-danger"
+                className="btn btn-outline"
                 onClick={handleLeaveConfirm}
                 id="btn-leave-confirm"
               >
                 Leave Meeting
               </button>
+              {isHost && (
+                <button
+                  className="btn btn-danger"
+                  onClick={handleEndMeetingForAll}
+                  id="btn-end-meeting-all"
+                >
+                  End Meeting for All
+                </button>
+              )}
             </div>
           </div>
         </div>
