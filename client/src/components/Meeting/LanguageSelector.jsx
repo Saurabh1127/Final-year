@@ -2,7 +2,7 @@ import React from 'react';
 
 // All languages supported by the AI service (NLLB-200 NMT + Edge TTS)
 // Organized: Indian languages first (Tier 1), then global languages
-const SUPPORTED_LANGUAGES = [
+export const SUPPORTED_LANGUAGES = [
   // ── Indian Languages (Tier 1 — full pipeline + Sarvam AI TTS) ──
   { code: 'hi', label: '🇮🇳 Hindi' },
   { code: 'ta', label: '🇮🇳 Tamil' },
@@ -35,15 +35,15 @@ const SUPPORTED_LANGUAGES = [
   { code: 'sw', label: '🇰🇪 Swahili' },
 ];
 
-export default function LanguageSelector({ currentLanguage, onChange, disabled }) {
+export default function LanguageSelector({ currentLanguage, onChange, disabled, label = 'Translate to:', includeAuto = false }) {
   return (
     <div className="language-selector-wrapper" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-      <label htmlFor="language-select" style={{ fontSize: '0.85rem', color: '#9ca3af', fontWeight: 500 }}>
-        Translate to:
+      <label htmlFor={`language-select-${label.replace(/\s+/g, '-')}`} style={{ fontSize: '0.85rem', color: '#9ca3af', fontWeight: 500 }}>
+        {label}
       </label>
       <select
-        id="language-select"
-        value={currentLanguage || 'hi'}
+        id={`language-select-${label.replace(/\s+/g, '-')}`}
+        value={currentLanguage || (includeAuto ? 'auto' : 'hi')}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         style={{
@@ -57,6 +57,9 @@ export default function LanguageSelector({ currentLanguage, onChange, disabled }
           outline: 'none',
         }}
       >
+        {includeAuto && (
+          <option value="auto">🔍 Auto-detect</option>
+        )}
         {SUPPORTED_LANGUAGES.map((lang) => (
           <option key={lang.code} value={lang.code}>
             {lang.label}
@@ -66,3 +69,4 @@ export default function LanguageSelector({ currentLanguage, onChange, disabled }
     </div>
   );
 }
+

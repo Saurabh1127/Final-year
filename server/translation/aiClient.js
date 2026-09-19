@@ -333,6 +333,7 @@ export function processAudio({
   userId,
   speakerName,
   targetLanguages = [],
+  sourceLanguage = 'auto',
 }) {
   const emitter = new EventEmitter();
   const jobId = randomUUID();
@@ -342,7 +343,7 @@ export function processAudio({
     meeting_id: meetingId,
     user_id: userId,
     speaker_name: speakerName,
-    source_language: 'auto',
+    source_language: sourceLanguage || 'auto',
     target_languages: targetLanguages,
     include_audio: true,
     mime_type: mimeType,

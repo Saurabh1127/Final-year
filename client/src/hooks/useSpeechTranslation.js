@@ -107,6 +107,7 @@ const useSpeechTranslation = ({
   roomCode,
   userId,
   speakerName,
+  sourceLanguage   = 'auto',     // explicit source language hint for Whisper
   isMuted          = false,
   remoteAudioRefs  = [],          // refs to remote <audio>/<video> elements for ducking
   onSubtitle,
@@ -181,14 +182,15 @@ const useSpeechTranslation = ({
     socket.emit('audio-chunk', wavBuffer, {
       roomCode,
       speakerName,
+      sourceLanguage: sourceLanguage || 'auto',
       mimeType:         'audio/wav',
       captureStartTime: chunkStartTimeRef.current ?? flushTime,
       flushTime,
     });
     console.log(
-      `📤 [Speech] Emitted audio-chunk (WAV, ${(wavBuffer.byteLength / 1024).toFixed(1)}KB) for room ${roomCode}`
+      `📤 [Speech] Emitted audio-chunk (WAV, ${(wavBuffer.byteLength / 1024).toFixed(1)}KB, src: ${sourceLanguage || 'auto'}) for room ${roomCode}`
     );
-  }, [socket, roomCode, speakerName]);
+  }, [socket, roomCode, speakerName, sourceLanguage]);
 
   // ── VAD: called for every ~20ms worklet frame ──────────────────────────────
   const processFrame = useCallback(

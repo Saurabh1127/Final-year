@@ -218,7 +218,7 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
 
 async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId) {
   const serverReceiveTime = Date.now();
-  const { roomCode, speakerName, mimeType = 'audio/wav', captureStartTime, flushTime } = metadata || {};
+  const { roomCode, speakerName, mimeType = 'audio/wav', captureStartTime, flushTime, sourceLanguage } = metadata || {};
 
   // Called when this job is done — triggers the next chunk in queue (if any)
   const onComplete = () => _runSpeakerQueue(speakerId);
@@ -282,6 +282,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
     userId: speakerId,
     speakerName,
     targetLanguages,
+    sourceLanguage: sourceLanguage || 'auto',
   });
 
   const timestamp = new Date();

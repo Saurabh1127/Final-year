@@ -38,6 +38,7 @@ const MeetingRoom = ({ roomCode }) => {
   // ── Translation feature states ──────────────────────────────────────────────
   const [translationEnabled, setTranslationEnabled] = useState(false);
   const [targetLanguage, setTargetLanguage] = useState(user?.preferredLanguage || 'hi');
+  const [sourceLanguage, setSourceLanguage] = useState('auto');
   const [subtitle, setSubtitle] = useState(null);        // { speakerName, originalText, translatedText, lang }
   const [translatingFor, setTranslatingFor] = useState(null); // speakerName while AI is processing
   const [transcriptLog, setTranscriptLog] = useState([]); // Live sidebar entries
@@ -127,6 +128,7 @@ const MeetingRoom = ({ roomCode }) => {
     roomCode,
     userId: user?.id,
     speakerName: displayName,
+    sourceLanguage,
     isMuted,
     remoteAudioRefs: remoteVideoRefs.current,
     onSubtitle: handleSubtitle,
@@ -519,6 +521,13 @@ const MeetingRoom = ({ roomCode }) => {
 
         {/* Translation & Transcript Toggles */}
         <div className="meeting-header-actions">
+          <LanguageSelector
+            currentLanguage={sourceLanguage}
+            onChange={setSourceLanguage}
+            disabled={isTranslating}
+            label="Speaking in:"
+            includeAuto={true}
+          />
           <LanguageSelector
             currentLanguage={targetLanguage}
             onChange={handleLanguageChange}
