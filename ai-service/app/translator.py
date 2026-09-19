@@ -125,8 +125,30 @@ def get_translator_and_tokenizer():
                 _tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-200-distilled-600M")
             
         compute_type = "int8_float16" if device == "cuda" else "int8"
-        _translator = ctranslate2.Translator(model_path, device=device, compute_type=compute_type)
-        print(f"✅ NLLB (CTranslate2) ready.")
+
+        # ── Phase 11: CTranslate2 thread tuning ──────────────────────────────
+        # inter_threads: number of independent translation pipelines running in parallel.
+        #   GPU: 1 — the GPU handles parallelism internally; multiple pipelines fight for VRAM.
+        #   CPU: 2 — allows 2 requests to overlap on the Ryzen 7 5800H (8 cores).
+        # intra_threads: threads within a single pipeline (matrix ops, attention).
+        #   GPU: 4 — enough for T4's compute units; more threads add scheduling overhead.
+        #   CPU: 4 — optimal for 8-core Ryzen without over-subscribing.
+        if device == "cuda":
+            inter_threads = 1
+            intra_threads = 4
+        else:
+            inter_threads = 2
+            intra_threads = 4
+
+        _translator = ctranslate2.Translator(
+            model_path,
+            device=device,
+            compute_type=compute_type,
+            inter_threads=inter_threads,
+            intra_threads=intra_threads,
+        )
+        print(f"✅ NLLB (CTranslate2) ready. "
+              f"[inter_threads={inter_threads}, intra_threads={intra_threads}]")
     return _translator, _tokenizer
 
 

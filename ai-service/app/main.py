@@ -96,31 +96,71 @@ load_dotenv()
 async def lifespan(app: "FastAPI"):  # type: ignore[valid-type]
     """
     FastAPI Lifespan Context Manager.
-    Used for preloading heavy ML models into GPU memory before accepting requests.
+
+    Phase 11: GPU Warmup.
+    After each model is loaded, we run a brief dummy inference to:
+      - Pre-allocate CUDA kernel memory
+      - JIT-compile any lazy CUDA operations (cuDNN auto-tuning)
+      - Ensure the FIRST real request is as fast as all subsequent ones
+
+    Without warmup, the first request takes 2–5x longer because CUDA
+    allocates memory, loads kernels, and runs cuDNN benchmarking on-demand.
     """
+    import gc
+    import asyncio
+
     print("🚀 Initialising AI Service Pipeline...")
-    
-    # 1. Preload Whisper STT
+
+    # ── 1. Load + Warm up Whisper STT ────────────────────────────────────────
     from .stt import get_model as get_stt_model
     try:
-        get_stt_model()
+        stt_model = get_stt_model()
+        print("🔥 [Warmup] Running Whisper dummy inference to pre-heat CUDA kernels...")
+        try:
+            import numpy as np
+            # 0.5 seconds of silence at 16kHz — tiny enough to be instant
+            dummy_audio = np.zeros(8000, dtype=np.float32)
+            list(stt_model.transcribe(dummy_audio, beam_size=1, vad_filter=False)[0])
+            print("✅ [Warmup] Whisper kernel warm-up complete.")
+        except Exception as warmup_err:
+            print(f"⚠️ [Warmup] Whisper warmup failed (non-fatal): {warmup_err}")
     except Exception as e:
         print(f"⚠️ STT preload failed: {e}")
 
-    # Force aggressive garbage collection to clear system RAM before loading the next heavy model
-    import gc
+    # Force aggressive garbage collection before loading the next heavy model
     import torch
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
-    # 2. Preload NLLB-200 NMT
+    # ── 2. Load + Warm up NLLB-200 NMT ───────────────────────────────────────
     from .translator import get_translator_and_tokenizer
     try:
-        get_translator_and_tokenizer()
+        translator, tokenizer = get_translator_and_tokenizer()
+        print("🔥 [Warmup] Running NLLB dummy inference to pre-heat CUDA kernels...")
+        try:
+            # Translate a single short token from English → Hindi (cheapest possible call)
+            tokenizer.src_lang = "eng_Latn"
+            dummy_tokens = tokenizer.convert_ids_to_tokens(tokenizer.encode("hello"))
+            translator.translate_batch(
+                [dummy_tokens],
+                target_prefix=[["hin_Deva"]],
+                max_decoding_length=5,
+            )
+            print("✅ [Warmup] NLLB kernel warm-up complete.")
+        except Exception as warmup_err:
+            print(f"⚠️ [Warmup] NLLB warmup failed (non-fatal): {warmup_err}")
     except Exception as e:
         print(f"⚠️ NMT preload failed: {e}")
-        
+
+    # Final GPU memory snapshot after warmup
+    if torch.cuda.is_available():
+        alloc = torch.cuda.memory_allocated() / 1e9
+        reserved = torch.cuda.memory_reserved() / 1e9
+        total = torch.cuda.get_device_properties(0).total_memory / 1e9
+        print(f"📊 [Warmup] GPU ready: {alloc:.2f}GB alloc / {reserved:.2f}GB reserved / {total:.1f}GB total")
+        print("✅ [Warmup] All models loaded and kernels warm — first request will be fast!")
+
     yield
     print("🛑 Shutting down AI service...")
 
