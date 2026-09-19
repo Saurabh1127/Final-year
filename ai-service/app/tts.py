@@ -1,6 +1,6 @@
 """
 Text-to-Speech Module — Multi-Engine Architecture:
-  1. Sarvam AI TTS (bulbul:v2) — Sovereign Indian AI for 10 Regional Indian Languages.
+  1. Sarvam AI TTS (bulbul:v3) — Sovereign Indian AI for 10 Regional Indian Languages.
   2. Microsoft Edge Neural Speech (edge-tts) — Studio-grade global neural human voices.
   3. Google Text-to-Speech (gTTS) — Universal fallback.
 """
@@ -33,7 +33,7 @@ except ImportError:
     _GTTS_AVAILABLE = False
 
 
-# ── Sarvam AI Language Map (bulbul:v2) ──────────────────────────────────────
+# ── Sarvam AI Language Map (bulbul:v3) ──────────────────────────────────────
 SARVAM_LANG_MAP: dict[str, str] = {
     "hi": "hi-IN",  # Hindi
     "bn": "bn-IN",  # Bengali
@@ -95,7 +95,7 @@ GTTS_LANG_MAP: dict[str, str] = {
 
 
 def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = None) -> bytes:
-    """Synthesise Indian Regional Speech via Sarvam AI API (bulbul:v2 model)."""
+    """Synthesise Indian Regional Speech via Sarvam AI API (bulbul:v3 model)."""
     raw_key = api_key or os.getenv("SARVAM_API_KEY")
     if not raw_key:
         raise ValueError("SARVAM_API_KEY environment variable is missing.")
@@ -109,26 +109,31 @@ def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = 
         "Content-Type": "application/json",
     }
     payload = {
-        "inputs": [text],
-        "target_language_code": target_code,
-        "speaker": "anushka",
-        "pitch": 0,
-        "pace": 0.95,
-        "loudness": 1.5,
-        "speech_sample_rate": 22050,
-        "enable_preprocessing": True,
-        "model": "bulbul:v2",
+        "text": text,
+        "language_code": target_code,
+        "model": "bulbul:v3",
+        "speaker": os.getenv("SARVAM_SPEAKER", "shubh"),
+        "pace": float(os.getenv("SARVAM_PACE", "1.0")),
+        "temperature": 0.6,
+        "speech_sample_rate": 24000,
+        "output_audio_codec": "wav",
     }
 
     resp = requests.post("https://api.sarvam.ai/text-to-speech", headers=headers, json=payload, timeout=20)
     if resp.status_code != 200:
         raise RuntimeError(f"Sarvam AI API ({resp.status_code}): {resp.text}")
 
-    audio_base64_list = resp.json().get("audios", [])
-    if not audio_base64_list:
-        raise RuntimeError("Sarvam AI returned empty audio payload.")
+    data = resp.json()
+    audio_b64 = (
+        data.get("audio_content")
+        or data.get("audio_data")
+        or (data.get("audios") and data["audios"][0])
+        or data.get("audio")
+    )
+    if not audio_b64:
+        raise RuntimeError(f"Sarvam AI returned empty audio payload. Response keys: {list(data.keys())}")
 
-    return base64.b64decode(audio_base64_list[0])
+    return base64.b64decode(audio_b64)
 
 
 async def stream_edge_tts(text: str, target_lang: str):
@@ -237,7 +242,7 @@ def synthesize_speech(
     if use_sarvam and target_lang in SARVAM_LANG_MAP:
         try:
             raw = synthesize_sarvam_tts(text, target_lang, api_key=sarvam_key)
-            mime, engine_name = "audio/wav", "🇮🇳 Sarvam AI (bulbul:v2)"
+            mime, engine_name = "audio/wav", "🇮🇳 Sarvam AI (bulbul:v3)"
         except Exception as exc:
             print(f"⚠️ Sarvam AI TTS failed for '{target_lang}': {exc} — Fallback to Edge Neural TTS")
 
