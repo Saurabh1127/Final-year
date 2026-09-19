@@ -16,10 +16,31 @@
  *   Server → Client:  'translation-result' { speakerId, speakerName, originalText, sourceLanguage,
  *                                            translatedText, audioBase64, mimeType, lang, timestamp }
  *   Server → Client:  'translation-error'  { message }
+ *
+ * Phase 6 — Per-Speaker State & Priority Queue:
+ *   - Each speaker gets a dedicated queue (max depth = SPEAKER_QUEUE_MAX_DEPTH).
+ *   - When the queue is full, the OLDEST chunk is evicted (we always want the freshest speech).
+ *   - Chunks older than STALE_THRESHOLD_MS are silently skipped before processing.
+ *   - Only ONE AI job runs per speaker at a time (single-flight concurrency).
+ *   - Other speakers are completely unaffected by any one speaker's queue depth.
  */
 
 import { processAudio } from './aiClient.js';
 import transcriptService from '../services/transcriptService.js';
+
+// ── Phase 6 Configuration ─────────────────────────────────────────────────────
+
+/** Maximum chunks held in a speaker's queue at any moment. */
+const SPEAKER_QUEUE_MAX_DEPTH = 2;
+
+/**
+ * If a chunk has been waiting in the queue longer than this (ms), drop it.
+ * The speaker has already moved on — processing stale audio wastes GPU time
+ * and would deliver an out-of-date translation.
+ */
+const STALE_THRESHOLD_MS = 3000;
+
+// ── Participant Registry ──────────────────────────────────────────────────────
 
 /**
  * In-memory room participant map.
@@ -65,13 +86,14 @@ export function unregisterParticipant(roomCode, socketId) {
   if (roomParticipants.has(roomCode)) {
     const participant = roomParticipants.get(roomCode).get(socketId);
     if (participant?.userId) {
-      activeSpeakers.delete(participant.userId);
-      pendingChunkBySpeaker.delete(participant.userId);
+      // Clean up the speaker's queue state
+      speakerQueues.delete(participant.userId);
+      speakerProcessing.delete(participant.userId);
     }
     roomParticipants.get(roomCode).delete(socketId);
     if (roomParticipants.get(roomCode).size === 0) {
       roomParticipants.delete(roomCode);
-      sequenceCounters.delete(roomCode); // Clean up sequence counters
+      sequenceCounters.delete(roomCode);
     }
   }
 }
@@ -87,12 +109,90 @@ export function updateParticipantLanguage(roomCode, socketId, targetLanguage) {
   }
 }
 
-// ── Audio Chunk Handler ───────────────────────────────────────────────────────
+// ── Phase 6: Per-Speaker Queue State ─────────────────────────────────────────
 
-// Active speaker tracking to serialize processing and prevent GPU overload / out-of-order speech
-const activeSpeakers = new Set();
-const pendingChunkBySpeaker = new Map();
+/**
+ * Per-speaker chunk queue.
+ * Structure: Map<speakerId, Array<{ io, socket, audioBuffer, metadata, enqueuedAt }>>
+ *
+ * Each speaker has their own independent queue. Chunks are processed FIFO, but the
+ * queue is capped at SPEAKER_QUEUE_MAX_DEPTH — oldest chunk is dropped when full.
+ */
+const speakerQueues = new Map();
 
+/**
+ * Tracks whether a speaker already has an AI job running.
+ * Structure: Map<speakerId, boolean>
+ *
+ * If true → new chunks go into the queue.
+ * If false → chunk can be processed immediately (starts a new job).
+ */
+const speakerProcessing = new Map();
+
+/**
+ * Enqueue a new audio chunk for a speaker.
+ * If the queue is already at max depth, the oldest entry is evicted to make room.
+ *
+ * @param {string} speakerId
+ * @param {{ io, socket, audioBuffer, metadata }} entry
+ */
+function _enqueueChunk(speakerId, entry) {
+  if (!speakerQueues.has(speakerId)) {
+    speakerQueues.set(speakerId, []);
+  }
+  const queue = speakerQueues.get(speakerId);
+
+  if (queue.length >= SPEAKER_QUEUE_MAX_DEPTH) {
+    const dropped = queue.shift(); // Evict the oldest (head) — keep the newest
+    const age = Date.now() - dropped.enqueuedAt;
+    console.log(
+      `⚠️  [Orchestrator] Queue full for ${entry.metadata?.speakerName} — dropped oldest chunk (was ${age}ms old)`
+    );
+  }
+
+  queue.push({ ...entry, enqueuedAt: Date.now() });
+  console.log(
+    `📥 [Orchestrator] Queued chunk for ${entry.metadata?.speakerName} (queue depth: ${queue.length})`
+  );
+}
+
+/**
+ * Pull the next chunk from a speaker's queue and process it.
+ * Skips stale chunks automatically. Recurses until the queue is empty.
+ *
+ * @param {string} speakerId
+ */
+function _runSpeakerQueue(speakerId) {
+  const queue = speakerQueues.get(speakerId);
+
+  if (!queue || queue.length === 0) {
+    // Nothing left — mark speaker as idle
+    speakerProcessing.set(speakerId, false);
+    return;
+  }
+
+  const next = queue.shift();
+  const age = Date.now() - next.enqueuedAt;
+
+  if (age > STALE_THRESHOLD_MS) {
+    console.log(
+      `⏩ [Orchestrator] Dropped stale chunk for ${next.metadata?.speakerName} (${age}ms old — threshold ${STALE_THRESHOLD_MS}ms)`
+    );
+    // Chunk is too old — skip it and try the next one immediately
+    _runSpeakerQueue(speakerId);
+    return;
+  }
+
+  // Process this chunk; when done, _runSpeakerQueue is called again
+  _processSpeakerChunk(next.io, next.socket, next.audioBuffer, next.metadata, speakerId);
+}
+
+// ── Public Audio Chunk Handler ────────────────────────────────────────────────
+
+/**
+ * Entry point called by socket/index.js on every 'audio-chunk' event.
+ * Enqueues the chunk for the speaker and starts the queue runner if idle.
+ */
 export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
   const speakerId = socket.user?.userId;
   const { roomCode, speakerName } = metadata || {};
@@ -102,36 +202,33 @@ export async function handleAudioChunk(io, socket, audioBuffer, metadata) {
     return;
   }
 
-  // If this speaker already has an AI translation job in flight, buffer the newest chunk
-  // and discard older intermediate chunks so the speaker never lags behind live conversation.
-  if (activeSpeakers.has(speakerId)) {
-    pendingChunkBySpeaker.set(speakerId, { io, socket, audioBuffer, metadata });
+  _enqueueChunk(speakerId, { io, socket, audioBuffer, metadata });
+
+  // If the speaker is already processing a chunk, the queue runner will pick this
+  // up automatically when the current job finishes. No action needed here.
+  if (speakerProcessing.get(speakerId)) {
     return;
   }
 
-  activeSpeakers.add(speakerId);
-  _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId);
+  // Speaker is idle — mark as processing and kick off the queue runner
+  speakerProcessing.set(speakerId, true);
+  _runSpeakerQueue(speakerId);
 }
+
+// ── Core Processing Logic ─────────────────────────────────────────────────────
 
 async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId) {
   const serverReceiveTime = Date.now();
-  const { roomCode, speakerName, mimeType = 'audio/webm;codecs=opus', captureStartTime, flushTime } = metadata || {};
+  const { roomCode, speakerName, mimeType = 'audio/wav', captureStartTime, flushTime } = metadata || {};
 
-  const onComplete = () => {
-    if (pendingChunkBySpeaker.has(speakerId)) {
-      const next = pendingChunkBySpeaker.get(speakerId);
-      pendingChunkBySpeaker.delete(speakerId);
-      _processSpeakerChunk(next.io, next.socket, next.audioBuffer, next.metadata, speakerId);
-    } else {
-      activeSpeakers.delete(speakerId);
-    }
-  };
+  // Called when this job is done — triggers the next chunk in queue (if any)
+  const onComplete = () => _runSpeakerQueue(speakerId);
 
   // Socket.IO delivers binary as ArrayBuffer — convert to Node.js Buffer for FormData compatibility
   const nodeBuffer = Buffer.isBuffer(audioBuffer) ? audioBuffer : Buffer.from(audioBuffer);
 
-  // Skip tiny blobs (< 2000 bytes)
-  console.log(`🎤 [Orchestrator] Received chunk from ${speakerName} in room ${roomCode} (${nodeBuffer.byteLength} bytes)`);
+  // Skip tiny blobs (< 2000 bytes — likely silence or malformed chunks)
+  console.log(`🎤 [Orchestrator] Processing chunk from ${speakerName} in room ${roomCode} (${nodeBuffer.byteLength} bytes)`);
   if (nodeBuffer.byteLength < 2000) {
     console.log(`🔇 [Orchestrator] Chunk too small (${nodeBuffer.byteLength}b < 2000), skipping.`);
     onComplete();
@@ -140,7 +237,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
 
   const room = roomParticipants.get(roomCode);
   if (!room || room.size === 0) {
-    console.log(`⚠️ [Orchestrator] Audio chunk dropped: room ${roomCode} has no registered participants.`);
+    console.log(`⚠️  [Orchestrator] Audio chunk dropped: room ${roomCode} has no registered participants.`);
     onComplete();
     return;
   }
@@ -170,7 +267,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
 
   const emitter = processAudio({
     audioBuffer: nodeBuffer,
-    fileName: 'chunk.webm',
+    fileName: 'chunk.wav',
     mimeType,
     meetingId: roomCode,
     userId: speakerId,
@@ -185,7 +282,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
   emitter.on('text', async (msg) => {
     const { original_text, source_language, translations } = msg;
     textResult = msg;
-    
+
     // Discard no-speech results
     if (!original_text || original_text.trim() === '' || original_text === '[Pipeline Error]') {
       console.log('🔇 [Orchestrator] AI detected silence or empty transcription.');
@@ -208,7 +305,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
         translations,
       });
     } catch (saveErr) {
-      console.warn('⚠️ [Orchestrator] Failed to persist transcript:', saveErr.message);
+      console.warn('⚠️  [Orchestrator] Failed to persist transcript:', saveErr.message);
     }
 
     // Broadcast new-transcript to ALL participants
@@ -220,7 +317,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
       translations,
       timestamp,
       sequenceNumber,
-      timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null } // Latency comes in 'done'
+      timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null }
     });
 
     // Also send subtitle feedback to the speaker
@@ -256,7 +353,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
 
   emitter.on('audio_chunk', (msg) => {
     const { lang, mime_type, audio_base64 } = msg;
-    
+
     // Only send if receivers exist for this lang
     const receiverSocketIds = languageToReceivers.get(lang);
     if (!receiverSocketIds || receiverSocketIds.length === 0) return;
@@ -276,7 +373,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
   });
 
   emitter.on('done', (latency) => {
-    console.log(`✅ [Orchestrator] Stream complete. Metrics:`, latency);
+    console.log(`✅ [Orchestrator] Stream complete for ${speakerName}. Metrics:`, latency);
     onComplete();
   });
 
