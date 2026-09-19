@@ -1,15 +1,20 @@
 /**
  * useTranslationReceiver.js
  *
- * Phase 3: Client-side translation result receiver.
+ * Phase 3 + Phase 7: Client-side translation result receiver.
  *
- * Listens for 'translation-result' Socket.IO events (emitted by the server orchestrator)
- * and handles:
- *   1. Audio queue management (max 3 items, oldest dropped on overflow)
+ * Listens for Socket.IO events emitted by the server orchestrator and handles:
+ *   1. Audio queue management (max 100 items, oldest dropped on overflow)
  *   2. Sequential TTS audio playback via HTML Audio element
  *   3. Audio ducking of remote participant streams during TTS
  *   4. Subtitle state for the overlay
  *   5. Transcript sidebar updates for received translations
+ *
+ * Phase 7 additions:
+ *   6. 'translation-pending' → immediately shows "Translating…" subtitle
+ *      for the speaking participant, so listeners get instant visual feedback
+ *      while the AI pipeline (~500–800ms) is still running.
+ *   7. isPending state exposed to parent for UI indicators.
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
@@ -29,6 +34,8 @@ const useTranslationReceiver = ({
   const currentAudioRef = useRef(null);   // Currently playing Audio element
   const lastPlayedSeqRef = useRef({});    // { speakerId: lastSequenceNumber } — for ordering
   const [isReceiving, setIsReceiving] = useState(false);
+  const [isPending, setIsPending] = useState(false); // Phase 7: true while 'Translating...' indicator is active
+  const pendingTimeoutRef = useRef(null);             // Auto-clear pending indicator if no result arrives
 
   // ── Audio Ducking ────────────────────────────────────────────────────────────
   const duck = useCallback(() => {
@@ -112,11 +119,37 @@ const useTranslationReceiver = ({
     });
   }, [duck, restore, onSubtitle, onTranscriptEntry]);
 
-  // ── Socket.IO event: translation-result ──────────────────────────────────────
+  // ── Socket.IO event handlers ──────────────────────────────────────────────────
   useEffect(() => {
     if (!socket || !enabled) return;
 
+    // Phase 7: 'translation-pending' fires the moment the server starts processing audio.
+    // Show "Translating…" subtitle immediately — before Whisper/NLLB/TTS finishes.
+    const handleTranslationPending = ({ speakerName }) => {
+      // Clear any previous pending timeout
+      clearTimeout(pendingTimeoutRef.current);
+
+      if (onSubtitle) {
+        onSubtitle({
+          speakerName,
+          originalText: '⏳ Translating…',
+          translatedText: null,
+          isPending: true,
+        });
+      }
+      setIsPending(true);
+
+      // Safety net: if no translation-result arrives within 12s, clear the indicator
+      pendingTimeoutRef.current = setTimeout(() => {
+        setIsPending(false);
+      }, 12000);
+    };
+
     const handleTranslationResult = (payload) => {
+      // Phase 7: real result arrived — clear the "Translating…" indicator
+      clearTimeout(pendingTimeoutRef.current);
+      setIsPending(false);
+
       // Show subtitle immediately (Subtitle-first delivery)
       if (onSubtitle) {
         onSubtitle({
@@ -124,6 +157,7 @@ const useTranslationReceiver = ({
           originalText: payload.originalText,
           translatedText: payload.translatedText,
           lang: payload.lang,
+          isPending: false,
         });
       }
 
@@ -163,14 +197,17 @@ const useTranslationReceiver = ({
       playNext();
     };
 
+    socket.on('translation-pending', handleTranslationPending);
     socket.on('translation-result', handleTranslationResult);
     socket.on('translation-audio', handleTranslationAudio);
 
     return () => {
+      socket.off('translation-pending', handleTranslationPending);
       socket.off('translation-result', handleTranslationResult);
       socket.off('translation-audio', handleTranslationAudio);
+      clearTimeout(pendingTimeoutRef.current);
     };
-  }, [socket, enabled, playNext]);
+  }, [socket, enabled, playNext, onSubtitle, onTranscriptEntry]);
 
   // ── Cleanup on disable / unmount ─────────────────────────────────────────────
   useEffect(() => {
@@ -184,10 +221,12 @@ const useTranslationReceiver = ({
       isPlayingRef.current = false;
       restore();
       setIsReceiving(false);
+      setIsPending(false);
+      clearTimeout(pendingTimeoutRef.current);
     }
   }, [enabled, restore]);
 
-  return { isReceiving };
+  return { isReceiving, isPending };
 };
 
 export default useTranslationReceiver;

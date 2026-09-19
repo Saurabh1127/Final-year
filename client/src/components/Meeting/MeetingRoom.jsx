@@ -111,8 +111,8 @@ const MeetingRoom = ({ roomCode }) => {
     enabled: translationEnabled,
   });
 
-  // ── Translation Receiver hook — plays incoming TTS from server ───────────────
-  const { isReceiving } = useTranslationReceiver({
+  // ── Translation Receiver hook — plays incoming TTS from server ─────────────────────
+  const { isReceiving, isPending } = useTranslationReceiver({
     remoteAudioRefs: remoteVideoRefs.current,
     onSubtitle: handleSubtitle,
     onTranscriptEntry: handleTranscriptEntry,
@@ -450,7 +450,7 @@ const MeetingRoom = ({ roomCode }) => {
             onClick={() => setTranslationEnabled(prev => !prev)}
             title={translationEnabled ? 'Stop live translation' : 'Start live AI translation'}
           >
-          {isTranslating ? '🔴 Sending...' : isReceiving ? '🔊 Playing...' : translationEnabled ? '⏹ Stop Translation' : '🌐 Start Translation'}
+          {isTranslating ? '🔴 Sending...' : isPending ? '⏳ Translating...' : isReceiving ? '🔊 Playing...' : translationEnabled ? '⏹ Stop Translation' : '🌐 Start Translation'}
           </button>
           <button
             id="btn-toggle-transcript"
@@ -513,15 +513,24 @@ const MeetingRoom = ({ roomCode }) => {
 
       {/* ── Live Subtitle Overlay ─────────────────────────────────────────────── */}
       {subtitle && (
-        <div className="subtitle-overlay" id="subtitle-overlay" aria-live="polite">
+        <div
+          className={`subtitle-overlay${subtitle.isPending ? ' subtitle-overlay--pending' : ''}`}
+          id="subtitle-overlay"
+          aria-live="polite"
+        >
           <div className="subtitle-speaker">
             <span>{subtitle.speakerName}</span>
-            {subtitle.displayLatency && (
+            {subtitle.displayLatency && !subtitle.isPending && (
               <span className="subtitle-latency-badge">⚡ {subtitle.displayLatency}</span>
             )}
+            {subtitle.isPending && (
+              <span className="subtitle-pending-badge">⏳ Processing…</span>
+            )}
           </div>
-          <p className="subtitle-original">{subtitle.originalText}</p>
-          {subtitle.translatedText && subtitle.translatedText !== subtitle.originalText && (
+          <p className={`subtitle-original${subtitle.isPending ? ' subtitle-original--pending' : ''}`}>
+            {subtitle.originalText}
+          </p>
+          {!subtitle.isPending && subtitle.translatedText && subtitle.translatedText !== subtitle.originalText && (
             <p className="subtitle-translated">
               <span className="subtitle-lang-badge">{subtitle.lang?.toUpperCase()}</span>
               {subtitle.translatedText}

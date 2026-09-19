@@ -228,6 +228,16 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
 
   // Skip tiny blobs (< 2000 bytes — likely silence or malformed chunks)
   console.log(`🎤 [Orchestrator] Processing chunk from ${speakerName} in room ${roomCode} (${nodeBuffer.byteLength} bytes)`);
+
+  // ── Phase 7: Subtitle-First — emit "Translating..." immediately ──────────────
+  // Broadcast to ALL participants in the room (except the speaker) so listeners
+  // see a "Translating…" indicator the moment processing starts — well before
+  // Whisper/NLLB/TTS finishes (~500–800ms later).
+  io.to(roomCode).emit('translation-pending', {
+    speakerId,
+    speakerName,
+    timestamp: Date.now(),
+  });
   if (nodeBuffer.byteLength < 2000) {
     console.log(`🔇 [Orchestrator] Chunk too small (${nodeBuffer.byteLength}b < 2000), skipping.`);
     onComplete();

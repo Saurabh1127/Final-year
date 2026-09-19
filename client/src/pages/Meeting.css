@@ -442,6 +442,36 @@
   flex-shrink: 0;
 }
 
+/* ─── Phase 7: Pending "Translating…" subtitle state ─── */
+.subtitle-overlay--pending {
+  border-color: rgba(251, 191, 36, 0.30);  /* amber tint while processing */
+  background: rgba(10, 10, 20, 0.78);
+}
+
+.subtitle-original--pending {
+  color: rgba(232, 234, 246, 0.50);        /* dimmed while pending */
+  font-style: italic;
+  animation: subtitle-pulse 1.4s ease-in-out infinite;
+}
+
+.subtitle-pending-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #fbbf24;                          /* amber — matches processing border */
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.30);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+@keyframes subtitle-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 0.9; }
+}
+
+
 /* ─── Transcript Sidebar ─── */
 .transcript-sidebar {
   width: 320px;
