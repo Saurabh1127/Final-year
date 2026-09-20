@@ -205,12 +205,12 @@ class PersistentAIConnection {
     } else if (msg.type === 'audio_chunk') {
       emitter.emit('audio_chunk', msg);
     } else if (msg.type === 'done') {
-      emitter.emit('done', msg.latency || { total_seconds: 0 });
+      emitter.emit('done', msg);
       this._jobs.delete(jobId);
     } else if (msg.original_text !== undefined) {
       // Fallback for legacy format
       emitter.emit('text', msg);
-      emitter.emit('done', msg.latency || { total_seconds: 0 });
+      emitter.emit('done', msg);
       this._jobs.delete(jobId);
     }
   }
@@ -241,11 +241,11 @@ function _sendOneShotWebSocket(payload, emitter) {
   console.warn('⚡ [AIClient] Persistent connection unavailable — using one-shot WebSocket fallback.');
 
   let isFinished = false;
-  const finish = (latency) => {
+  const finish = (msg) => {
     if (isFinished) return;
     isFinished = true;
     clearTimeout(timeoutId);
-    emitter.emit('done', latency || { total_seconds: 0 });
+    emitter.emit('done', msg || { latency: { total_seconds: 0 } });
     if (ws?.readyState === WebSocket.OPEN) ws.close();
   };
 
@@ -290,10 +290,10 @@ function _sendOneShotWebSocket(payload, emitter) {
       } else if (msg.type === 'audio_chunk') {
         emitter.emit('audio_chunk', msg);
       } else if (msg.type === 'done') {
-        finish(msg.latency);
+        finish(msg);
       } else if (msg.original_text !== undefined) {
         emitter.emit('text', msg);
-        finish(msg.latency);
+        finish(msg);
       }
     } catch (err) {
       console.warn('⚠️  [AIClient] Error parsing fallback WS message:', err);

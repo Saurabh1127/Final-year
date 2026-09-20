@@ -46,7 +46,7 @@ def log_gpu_stats(stage: str = "") -> None:
         pass
 
 from .stt import transcribe_audio
-from .translator import translate_to_multiple
+from .translator import translate_to_multiple, get_nllb_code
 from .tts import synthesize_speech
 from .voice_retention import voice_engine
 
@@ -222,6 +222,102 @@ def _build_context_prompt(text: str, context: str | None) -> str:
     return f"[Context: {context}] {text}"
 
 
+def _diagnose_pipeline(
+    original_text: str,
+    detected_lang: str,
+    hint_lang: str | None,
+    lang_prob: float,
+    avg_logprob: float,
+    no_speech_prob: float,
+    duration_s: float,
+    translations: dict[str, str],
+    tts_engine: str,
+) -> tuple[str, list[dict], str]:
+    """
+    Analyzes all pipeline handoffs (Audio -> STT -> Language -> NMT -> TTS)
+    and pinpoints exactly which stage is degrading translation quality.
+    Returns: (status: 'healthy' | 'warning' | 'error', warnings: list[dict], primary_remedy: str)
+    """
+    flags = []
+    status = "healthy"
+    remedy = "All translation pipeline stages are functioning normally."
+
+    # Stage 1: Audio / VAD issues
+    if duration_s > 0 and duration_s < 0.7:
+        flags.append({
+            "stage": "vad",
+            "level": "warning",
+            "title": "Audio Chunk Was Short",
+            "message": f"Audio chunk duration was only {duration_s:.2f}s. Speech was likely cut off mid-sentence by silence detection.",
+            "suggestion": "Speak complete thoughts without long mid-word pauses, or speak slightly closer to the mic."
+        })
+        status = "warning"
+        remedy = f"Audio chunk was cut short ({duration_s:.2f}s). Sentence was likely sliced prematurely by VAD."
+
+    # Stage 2: Spoken Language Mismatch
+    if hint_lang and hint_lang.lower() not in ("auto", "", "none"):
+        if detected_lang.lower() != hint_lang.lower():
+            flags.append({
+                "stage": "language_detection",
+                "level": "warning",
+                "title": "Spoken Language Mismatch",
+                "message": f"You selected 'Speaking in: {hint_lang.upper()}', but Whisper identified speech as '{detected_lang.upper()}' (conf: {lang_prob*100:.1f}%).",
+                "suggestion": f"If speaking in {hint_lang.upper()}, ensure words are pronounced clearly without excessive English mixing, or select 'auto'."
+            })
+            status = "warning"
+            remedy = f"Language mismatch: Spoken {hint_lang.upper()} was classified as {detected_lang.upper()}. NLLB applied wrong grammar rules."
+
+    # Stage 3: Whisper Recognition Confidence
+    if avg_logprob < -0.95:
+        flags.append({
+            "stage": "stt",
+            "level": "warning",
+            "title": "Low STT Confidence",
+            "message": f"Whisper speech recognition confidence was low ({avg_logprob:.2f} logprob). Some spoken words were likely misrecognized.",
+            "suggestion": "Reduce background noise and speak with higher volume into your microphone."
+        })
+        status = "warning"
+        if status != "error":
+            remedy = f"Whisper recognition confidence was low ({avg_logprob:.2f}). Misheard words corrupted the translation."
+
+    # Stage 4: NMT Translation Check
+    for target_lang, trans in translations.items():
+        if not trans or "[Translation error" in trans:
+            flags.append({
+                "stage": "nmt",
+                "level": "error",
+                "title": "NMT Translation Failure",
+                "message": f"Meta NLLB model failed to produce translation for '{target_lang}'.",
+                "suggestion": "Check NLLB model status in Colab."
+            })
+            status = "error"
+            remedy = f"NLLB-200 model failed to generate translation for {target_lang.upper()}."
+        elif original_text and len(original_text.split()) >= 4 and len(trans.split()) <= 1:
+            flags.append({
+                "stage": "nmt",
+                "level": "warning",
+                "title": "NMT Truncated Output",
+                "message": f"Translation for '{target_lang}' is unusually brief compared to the input sentence.",
+                "suggestion": "NLLB beam search may have dropped clauses. Try rephrasing."
+            })
+            status = "warning"
+            remedy = f"NMT model over-compressed or dropped words during translation to {target_lang.upper()}."
+
+    # Stage 5: TTS Synthesis
+    if tts_engine and ("fallback" in tts_engine.lower() or "error" in tts_engine.lower()):
+        flags.append({
+            "stage": "tts",
+            "level": "warning",
+            "title": "TTS Fallback Used",
+            "message": f"Primary voice engine failed and fell back to: {tts_engine}.",
+            "suggestion": "Check your Sarvam AI API key or network connection to Edge-TTS."
+        })
+        if status == "healthy":
+            status = "warning"
+
+    return status, flags, remedy
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Pipeline Engine
 # ─────────────────────────────────────────────────────────────────────────────
@@ -281,25 +377,52 @@ class SpeechToSpeechEngine:
         no_speech_prob: float = transcription.get("no_speech_prob", 0.0)
         avg_logprob: float = transcription.get("avg_logprob", 0.0)
         lang_prob: float = transcription.get("language_probability", 1.0)
+        duration_s: float = transcription.get("duration_seconds", round(len(audio_bytes) / 32000.0, 2))
         asr_s = round(time.time() - t0, 3)
         print(f"📝 STT [{asr_s}s] [{detected_lang.upper()}]: {original_text[:80]}"
-              f"  | no_speech={no_speech_prob:.3f} logprob={avg_logprob:.3f} lang_prob={lang_prob:.3f}")
+              f"  | duration={duration_s}s no_speech={no_speech_prob:.3f} logprob={avg_logprob:.3f} lang_prob={lang_prob:.3f}")
         log_gpu_stats("after-STT")
 
-        # ── Phase 10 Hallucination Filters ───────────────────────────────────
-        # Combined statistical filters (from Whisper confidence scores)
-        # + expanded fuzzy blocklist + repetition loop detection
+        # ── Phase 10 Hallucination & Noise Filters ───────────────────────────
+        # Soften rejection when user provided an explicit language hint
         stat_reject = (
-            no_speech_prob > 0.6 or
-            avg_logprob < -1.0 or
-            lang_prob < 0.5
+            no_speech_prob > 0.65 or
+            avg_logprob < -1.1 or
+            (lang_prob < 0.4 if not hint else False)
         )
         text_reject = not original_text or len(original_text.strip()) < 3
 
         if stat_reject or text_reject or _is_hallucination(original_text):
-            if stat_reject:
-                print(f"🔇 [Filter] Statistical rejection: no_speech={no_speech_prob:.3f} "
-                      f"logprob={avg_logprob:.3f} lang_prob={lang_prob:.3f}")
+            reject_reason = (
+                f"Silence/low-speech (no_speech={no_speech_prob:.2f})" if no_speech_prob > 0.65
+                else f"Low confidence ({avg_logprob:.2f})" if avg_logprob < -1.1
+                else f"Low language confidence ({lang_prob:.2f})" if (lang_prob < 0.4 and not hint)
+                else "Short/empty utterance" if text_reject
+                else "Hallucination pattern detected"
+            )
+            print(f"🔇 [Filter] Utterance filtered: {reject_reason}")
+            filtered_diagnostics = {
+                "status": "warning",
+                "primary_remedy": f"Speech segment was filtered out: {reject_reason}.",
+                "warnings": [{
+                    "stage": "stt",
+                    "level": "warning",
+                    "title": "Speech Segment Filtered",
+                    "message": f"Utterance was not passed to translation: {reject_reason}.",
+                    "suggestion": "Speak louder and closer to the microphone."
+                }],
+                "vad": {"duration_seconds": duration_s, "audio_bytes": len(audio_bytes)},
+                "stt": {
+                    "original_text": original_text,
+                    "detected_language": detected_lang,
+                    "hint_language": hint or "auto",
+                    "language_probability": round(lang_prob, 3),
+                    "confidence_logprob": round(avg_logprob, 3),
+                    "asr_seconds": asr_s,
+                },
+                "nmt": {"source_nllb_code": get_nllb_code(detected_lang), "nmt_seconds": 0.0, "target_languages": []},
+                "tts": {"engine": "none", "tts_seconds": 0.0},
+            }
             yield {
                 "type": "text",
                 "original_text": "",
@@ -309,6 +432,7 @@ class SpeechToSpeechEngine:
                 "speaker_name": speaker_name,
                 "meeting_id": meeting_id,
                 "timestamp": time.time(),
+                "diagnostics": filtered_diagnostics,
             }
             yield {
                 "type": "done",
@@ -317,26 +441,16 @@ class SpeechToSpeechEngine:
                     "nmt_seconds": 0.0,
                     "tts_seconds": 0.0,
                     "total_seconds": asr_s,
-                }
+                },
+                "diagnostics": filtered_diagnostics,
             }
             return
 
         # ── Phase 10: Update context buffer with confirmed transcription ──────
         _update_context(user_id, original_text)
 
-        # ── Step 2: NMT — Text → Translations (NLLB-200-600M) ─────────────────
+        # ── Step 2: NMT — Text → Translations (NLLB-200) ──────────────────────
         t0 = time.time()
-
-        # ── Context Buffer (Background Only) ──────────────────────────────────
-        # Speaker context is tracked in the background for speaker history/logging.
-        # We do NOT prepend "[Context: ...]" to the NMT prompt because NLLB is a seq2seq
-        # model that literally translates the prefix, causing Edge-TTS to vocalize
-        # "Context: ..." out loud. The context buffer remains purely in the background.
-        prior_ctx = _context_buffer.get(user_id)
-        if prior_ctx and len(prior_ctx) > 1:
-            print(f"📖 [Context Buffer] Background context active for {user_id[:8]}: "
-                  f"prior='{list(prior_ctx)[-2][:40]}...' | current='{original_text[:40]}...'")
-
         translations = await asyncio.to_thread(
             translate_to_multiple, original_text, detected_lang, target_languages
         )
@@ -344,7 +458,47 @@ class SpeechToSpeechEngine:
         print(f"🌐 NMT [{nmt_s}s]: translated to {list(translations.keys())}")
         log_gpu_stats("after-NMT")
 
-        # ⚡ YIELD TEXT IMMEDIATELY ⚡
+        # Initial diagnostic evaluation (STT + NMT)
+        early_status, early_warnings, early_remedy = _diagnose_pipeline(
+            original_text=original_text,
+            detected_lang=detected_lang,
+            hint_lang=hint,
+            lang_prob=lang_prob,
+            avg_logprob=avg_logprob,
+            no_speech_prob=no_speech_prob,
+            duration_s=duration_s,
+            translations=translations,
+            tts_engine="pending",
+        )
+
+        early_diagnostics = {
+            "status": early_status,
+            "primary_remedy": early_remedy,
+            "warnings": early_warnings,
+            "vad": {
+                "duration_seconds": duration_s,
+                "audio_bytes": len(audio_bytes),
+            },
+            "stt": {
+                "original_text": original_text,
+                "detected_language": detected_lang,
+                "hint_language": hint or "auto",
+                "language_probability": round(lang_prob, 3),
+                "confidence_logprob": round(avg_logprob, 3),
+                "asr_seconds": asr_s,
+            },
+            "nmt": {
+                "source_nllb_code": get_nllb_code(detected_lang),
+                "nmt_seconds": nmt_s,
+                "target_languages": list(translations.keys()),
+            },
+            "tts": {
+                "engine": "pending",
+                "tts_seconds": 0.0,
+            }
+        }
+
+        # ⚡ YIELD TEXT IMMEDIATELY (with early diagnostic trace) ⚡
         yield {
             "type": "text",
             "original_text": original_text,
@@ -354,45 +508,33 @@ class SpeechToSpeechEngine:
             "speaker_name": speaker_name,
             "meeting_id": meeting_id,
             "timestamp": time.time(),
+            "diagnostics": early_diagnostics,
         }
 
         # ── Step 3: TTS — Translated Text → Audio ──────────────────────────
         tts_s = 0.0
-        audio_translations: dict = {}
+        last_tts_engine = "none"
         if include_audio:
             t0 = time.time()
-            from .tts import stream_edge_tts, synthesize_speech, _EDGE_TTS_AVAILABLE
+            from .tts import synthesize_speech
 
-            # For Phase 5 streaming, we currently only support streaming Edge-TTS.
-            # Other engines can just yield a single chunk.
             async def _stream_tts_for_lang(lang, translated_text):
+                nonlocal last_tts_engine
                 if not translated_text or translated_text.startswith("[Translation error"):
                     return
 
                 try:
-                    import base64
-                    # ⚠️ ARCHITECTURE CHANGE for Stability:
-                    # We stream the TEXT instantly (already yielded above), but we wait for the
-                    # FULL audio sentence to synthesize before yielding it. This completely
-                    # eliminates browser audio queue sputtering and MP3 frame slicing issues,
-                    # guaranteeing 100% perfect, gapless playback on all browsers (including Safari)
-                    # while preserving the perception of real-time latency because the subtitle is already visible!
-
                     tts_result = await asyncio.to_thread(synthesize_speech, translated_text, lang, audio_bytes, True)
+                    last_tts_engine = tts_result.get("engine", "unknown")
                     yield {
                         "type": "audio_chunk",
                         "lang": lang,
                         "mime_type": tts_result["mime_type"],
-                        "audio_base64": tts_result["audio_base64"]
+                        "audio_base64": tts_result["audio_base64"],
+                        "engine": last_tts_engine,
                     }
                 except Exception as exc:
                     print(f"⚠️ TTS generation failed for {lang}: {exc}")
-
-            # Create streaming tasks for all languages
-            # Since yielding from multiple streams concurrently is complex in python generators,
-            # we can run them sequentially or buffer them into tasks and yield as they arrive.
-            # To avoid crossing audio chunks of different languages to the same client improperly,
-            # we will process languages sequentially. (GPU batching happens in NMT anyway).
 
             for lang, translated_text in translations.items():
                 async for chunk_payload in _stream_tts_for_lang(lang, translated_text):
@@ -401,17 +543,43 @@ class SpeechToSpeechEngine:
             tts_s = round(time.time() - t0, 3)
 
         total_s = round(time.time() - t_start, 3)
-        print(f"⚡ Pipeline stream done [{total_s}s] ➔ STT: {asr_s}s | NMT: {nmt_s}s | TTS: {tts_s}s")
+        print(f"⚡ Pipeline stream done [{total_s}s] ➔ STT: {asr_s}s | NMT: {nmt_s}s | TTS: {tts_s}s | Engine: {last_tts_engine}")
 
-        # ⚡ YIELD FINAL METRICS ⚡
-        yield {
-            "type": "done",
+        # Final diagnostic with TTS confirmation
+        final_status, final_warnings, final_remedy = _diagnose_pipeline(
+            original_text=original_text,
+            detected_lang=detected_lang,
+            hint_lang=hint,
+            lang_prob=lang_prob,
+            avg_logprob=avg_logprob,
+            no_speech_prob=no_speech_prob,
+            duration_s=duration_s,
+            translations=translations,
+            tts_engine=last_tts_engine,
+        )
+
+        final_diagnostics = {
+            **early_diagnostics,
+            "status": final_status,
+            "primary_remedy": final_remedy,
+            "warnings": final_warnings,
+            "tts": {
+                "engine": last_tts_engine,
+                "tts_seconds": tts_s,
+            },
             "latency": {
                 "asr_seconds": asr_s,
                 "nmt_seconds": nmt_s,
                 "tts_seconds": tts_s,
                 "total_seconds": total_s,
             }
+        }
+
+        # ⚡ YIELD FINAL METRICS & COMPLETE DIAGNOSTICS ⚡
+        yield {
+            "type": "done",
+            "latency": final_diagnostics["latency"],
+            "diagnostics": final_diagnostics,
         }
 
     def process(
@@ -434,6 +602,7 @@ class SpeechToSpeechEngine:
             text_data = {}
             audio_translations = {}
             latency = {}
+            diagnostics = {}
 
             async for payload in self.process_stream(
                 audio_bytes, target_languages, source_language, user_id,
@@ -441,6 +610,8 @@ class SpeechToSpeechEngine:
             ):
                 if payload["type"] == "text":
                     text_data = payload
+                    if "diagnostics" in payload:
+                        diagnostics = payload["diagnostics"]
                 elif payload["type"] == "audio_chunk":
                     lang = payload["lang"]
                     if lang not in audio_translations:
@@ -448,6 +619,8 @@ class SpeechToSpeechEngine:
                     audio_translations[lang]["audio_base64"] += payload["audio_base64"] # This is slightly broken for raw base64 appending, but only affects legacy REST API which we will stop using.
                 elif payload["type"] == "done":
                     latency = payload["latency"]
+                    if "diagnostics" in payload:
+                        diagnostics = payload["diagnostics"]
 
             if not text_data:
                 return self._empty_response(user_id, meeting_id, source_language or "unknown", target_languages or [])
@@ -462,6 +635,7 @@ class SpeechToSpeechEngine:
                 "meeting_id": meeting_id,
                 "timestamp": text_data.get("timestamp", time.time()),
                 "latency": latency,
+                "diagnostics": diagnostics,
                 "voice_retention": {"enabled": False, "engine": "xtts_v2", "status": "skeleton"}
             }
 

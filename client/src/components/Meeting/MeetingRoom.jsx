@@ -10,6 +10,7 @@ import ParticipantGrid from './ParticipantGrid';
 import ControlBar from './ControlBar';
 import LanguageSelector from './LanguageSelector';
 import PreJoinScreen from './PreJoinScreen';
+import PipelineInspectorModal from './PipelineInspectorModal';
 import api from '../../services/api';
 
 const MeetingRoom = ({ roomCode }) => {
@@ -44,6 +45,11 @@ const MeetingRoom = ({ roomCode }) => {
   const [transcriptLog, setTranscriptLog] = useState([]); // Live sidebar entries
   const [showTranscript, setShowTranscript] = useState(false);
   const subtitleTimeoutRef = useRef(null);
+
+  // ── Diagnostics Inspector state ───────────────────────────────────────────
+  const [showDiagnosticsModal, setShowDiagnosticsModal] = useState(false);
+  const [selectedDiagnostics, setSelectedDiagnostics] = useState(null);
+  const [latestDiagnostics, setLatestDiagnostics] = useState(null);
 
   // ── Copy-link toast state ─────────────────────────────────────────────────
   const [copyToast, setCopyToast] = useState(false);
@@ -91,6 +97,9 @@ const MeetingRoom = ({ roomCode }) => {
       sub.displayLatency = (latencyMs / 1000).toFixed(2) + 's';
       console.log(`⏱️ [Translation & Delivery] ${sub.displayLatency}${serverMs ? ` | AI Engine: ${(serverMs / 1000).toFixed(2)}s` : ''}`);
     }
+    if (sub?.diagnostics) {
+      setLatestDiagnostics(sub);
+    }
     setSubtitle(sub);
     clearTimeout(subtitleTimeoutRef.current);
     if (duration > 0) {
@@ -101,6 +110,9 @@ const MeetingRoom = ({ roomCode }) => {
   // ── Transcript callback: prepend to sidebar log ──────────────────────────────
   const handleTranscriptEntry = useCallback((entry) => {
     setTranscriptLog((prev) => [entry, ...prev].slice(0, 200)); // keep last 200 entries
+    if (entry?.diagnostics) {
+      setLatestDiagnostics(entry);
+    }
   }, []);
 
   // ── Socket.IO: receive transcripts from meeting ──────────────────────────────
@@ -111,14 +123,27 @@ const MeetingRoom = ({ roomCode }) => {
     };
     const handleSpeakerSubtitle = (sub) => {
       handleSubtitle(sub);
+      if (sub?.diagnostics) {
+        setLatestDiagnostics(sub);
+      }
+    };
+    const handleTranslationDiagnostics = (diagEvent) => {
+      if (diagEvent?.diagnostics) {
+        setLatestDiagnostics(prev => ({
+          ...(prev || {}),
+          ...diagEvent
+        }));
+      }
     };
 
     socket.on('new-transcript', handleNewTranscript);
     socket.on('speaker-subtitle', handleSpeakerSubtitle);
+    socket.on('translation-diagnostics', handleTranslationDiagnostics);
 
     return () => {
       socket.off('new-transcript', handleNewTranscript);
       socket.off('speaker-subtitle', handleSpeakerSubtitle);
+      socket.off('translation-diagnostics', handleTranslationDiagnostics);
     };
   }, [socket, handleTranscriptEntry, handleSubtitle]);
 
@@ -549,6 +574,29 @@ const MeetingRoom = ({ roomCode }) => {
           >
             📝 Transcript {transcriptLog.length > 0 && `(${transcriptLog.length})`}
           </button>
+          <button
+            id="btn-toggle-diagnostics"
+            className="btn btn-sm btn-outline"
+            onClick={() => {
+              setSelectedDiagnostics(latestDiagnostics || {
+                speakerName: displayName,
+                originalText: 'No utterances analyzed yet.',
+                diagnostics: {
+                  status: 'healthy',
+                  primary_remedy: 'Speak into your microphone with live translation enabled to see stage-by-stage diagnostics.',
+                  warnings: [],
+                  stt: {},
+                  nmt: {},
+                  tts: {},
+                  vad: {}
+                }
+              });
+              setShowDiagnosticsModal(true);
+            }}
+            title="Inspect Translation Pipeline Diagnostics (STT, NMT, TTS, VAD)"
+          >
+            🩺 Diagnostics
+          </button>
         </div>
       </div>
 
@@ -582,9 +630,24 @@ const MeetingRoom = ({ roomCode }) => {
                   <div key={idx} className="transcript-entry">
                     <div className="transcript-entry-header">
                       <span className="transcript-speaker">{entry.speakerName}</span>
-                      <span className="transcript-time">
-                        {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        {entry.diagnostics && (
+                          <button
+                            type="button"
+                            className="transcript-diag-btn"
+                            onClick={() => {
+                              setSelectedDiagnostics(entry);
+                              setShowDiagnosticsModal(true);
+                            }}
+                            title="Inspect pipeline diagnostics"
+                          >
+                            🩺
+                          </button>
+                        )}
+                        <span className="transcript-time">
+                          {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
                     </div>
                     <p className="transcript-original">{entry.originalText}</p>
                     {entry.translations && Object.entries(entry.translations).map(([lang, text]) => (
@@ -617,9 +680,24 @@ const MeetingRoom = ({ roomCode }) => {
         >
           <div className="subtitle-speaker">
             <span>{subtitle.speakerName}</span>
-            {subtitle.displayLatency && (
-              <span className="subtitle-latency-badge">⚡ {subtitle.displayLatency}</span>
-            )}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              {subtitle.displayLatency && (
+                <span className="subtitle-latency-badge">⚡ {subtitle.displayLatency}</span>
+              )}
+              {subtitle.diagnostics && (
+                <button
+                  type="button"
+                  className="subtitle-diag-btn"
+                  onClick={() => {
+                    setSelectedDiagnostics(subtitle);
+                    setShowDiagnosticsModal(true);
+                  }}
+                  title="Inspect translation pipeline diagnostics for this speech"
+                >
+                  🩺 Inspect
+                </button>
+              )}
+            </div>
           </div>
           <p className="subtitle-original">
             {subtitle.originalText}
@@ -684,6 +762,13 @@ const MeetingRoom = ({ roomCode }) => {
           </div>
         </div>
       )}
+
+      {/* ── Translation Pipeline Diagnostics Inspector Modal ──────────────── */}
+      <PipelineInspectorModal
+        isOpen={showDiagnosticsModal}
+        onClose={() => setShowDiagnosticsModal(false)}
+        data={selectedDiagnostics}
+      />
     </div>
   );
 };

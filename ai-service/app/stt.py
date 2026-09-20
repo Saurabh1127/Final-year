@@ -132,8 +132,17 @@ def transcribe_audio(
     """
     model = get_model()
 
+    beam_size = int(os.getenv("WHISPER_BEAM_SIZE", "2"))
+    vad_params = dict(
+        threshold=0.4,
+        min_speech_duration_ms=150,
+        min_silence_duration_ms=800,
+    )
+
     # Try in-memory decoding first
     audio_array = _decode_audio_to_numpy(audio_bytes, mime_type)
+    duration_s = round(len(audio_array) / 16000.0, 2) if audio_array is not None and audio_array.size > 0 else 0.0
+
     if audio_array is not None and audio_array.size > 0:
         try:
             opts: dict = {}
@@ -142,13 +151,9 @@ def transcribe_audio(
 
             segments, info = model.transcribe(
                 audio_array, 
-                beam_size=1, 
+                beam_size=beam_size, 
                 vad_filter=True, 
-                vad_parameters=dict(
-                    threshold=0.5,
-                    min_speech_duration_ms=250,
-                    min_silence_duration_ms=500
-                ),
+                vad_parameters=vad_params,
                 condition_on_previous_text=False, 
                 **opts
             )
@@ -169,6 +174,8 @@ def transcribe_audio(
                 "language_probability": round(info.language_probability, 4),
                 "no_speech_prob":       round(avg_no_speech, 4),
                 "avg_logprob":          round(avg_logprob, 4),
+                "hint":                 source_language or "auto",
+                "duration_seconds":     duration_s,
                 "segments":             [],
             }
         except Exception as exc:
@@ -188,13 +195,9 @@ def transcribe_audio(
 
         segments, info = model.transcribe(
             tmp_path, 
-            beam_size=1, 
+            beam_size=beam_size, 
             vad_filter=True, 
-            vad_parameters=dict(
-                threshold=0.5,
-                min_speech_duration_ms=250,
-                min_silence_duration_ms=500
-            ),
+            vad_parameters=vad_params,
             condition_on_previous_text=False, 
             **opts
         )
@@ -215,6 +218,8 @@ def transcribe_audio(
             "language_probability": round(info.language_probability, 4),
             "no_speech_prob":       round(avg_no_speech, 4),
             "avg_logprob":          round(avg_logprob, 4),
+            "hint":                 source_language or "auto",
+            "duration_seconds":     duration_s,
             "segments":             [],
         }
     except Exception as exc:

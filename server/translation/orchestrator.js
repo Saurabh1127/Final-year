@@ -290,12 +290,15 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
   let textResult = null;
 
   emitter.on('text', async (msg) => {
-    const { original_text, source_language, translations } = msg;
+    const { original_text, source_language, translations, diagnostics } = msg;
     textResult = msg;
 
     // Discard no-speech results
     if (!original_text || original_text.trim() === '' || original_text === '[Pipeline Error]') {
       console.log('🔇 [Orchestrator] AI detected silence or empty transcription.');
+      if (diagnostics) {
+        logPipelineDiagnostic(speakerName, roomCode, diagnostics);
+      }
       return;
     }
 
@@ -327,7 +330,8 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
       translations,
       timestamp,
       sequenceNumber,
-      timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null }
+      timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null },
+      diagnostics: diagnostics || null,
     });
 
     // In multi-person meetings, send subtitle feedback to the speaker immediately (they receive no audio).
@@ -339,7 +343,8 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
         originalText: original_text,
         translatedText: translations?.[firstTargetLang] || original_text,
         lang: firstTargetLang,
-        timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null }
+        timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null },
+        diagnostics: diagnostics || null,
       });
     }
 
@@ -355,7 +360,8 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
         lang,
         timestamp,
         sequenceNumber,
-        timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null }
+        timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null },
+        diagnostics: diagnostics || null,
       };
 
       for (const receiverSid of receiverSocketIds) {
@@ -382,7 +388,8 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
         sequenceNumber,
         lang,
         mimeType: mime_type || 'audio/mp3',
-        timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime: Date.now() }
+        timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime: Date.now() },
+        diagnostics: textResult?.diagnostics || null,
       };
       for (const receiverSid of receiverSocketIds) {
         io.to(receiverSid).emit('translation-audio', audioBuffer, audioMetadata);
@@ -390,8 +397,21 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
     }
   });
 
-  emitter.on('done', (latency) => {
+  emitter.on('done', (donePayload) => {
+    const latency = donePayload?.latency || donePayload || {};
+    const finalDiagnostics = donePayload?.diagnostics || textResult?.diagnostics;
     console.log(`✅ [Orchestrator] Stream complete for ${speakerName}. Metrics:`, latency);
+
+    if (finalDiagnostics) {
+      logPipelineDiagnostic(speakerName, roomCode, finalDiagnostics);
+      io.to(roomCode).emit('translation-diagnostics', {
+        sequenceNumber,
+        speakerId,
+        speakerName,
+        diagnostics: finalDiagnostics,
+      });
+    }
+
     onComplete();
   });
 
@@ -400,4 +420,33 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
     socket.emit('translation-error', { message: 'Translation service streaming interrupted.' });
     onComplete();
   });
+}
+
+/** Pretty-print diagnostic breakdown to server terminal */
+function logPipelineDiagnostic(speakerName, roomCode, diag) {
+  if (!diag) return;
+  const { status, primary_remedy, warnings = [], stt = {}, nmt = {}, tts = {}, vad = {}, latency = {} } = diag;
+  const statusIcon = status === 'healthy' ? '✅ HEALTHY' : status === 'warning' ? '⚠️ WARNING' : '❌ ERROR';
+  console.log(`\n┌── 🩺 PIPELINE DIAGNOSTIC [${speakerName} in ${roomCode}] ── [${statusIcon}]`);
+  console.log(`│ 1. 🎤 Audio / VAD : ${vad.duration_seconds || 0}s (${Math.round((vad.audio_bytes || 0) / 1024)} KB) | Spoken Hint: '${stt.hint_language || 'auto'}'`);
+  console.log(`│ 2. 🗣️ STT (Whisper): "${(stt.original_text || '').slice(0, 65)}"`);
+  console.log(`│    └─ Detected: '${stt.detected_language}' (${Math.round((stt.language_probability || 0) * 100)}% conf) | LogProb: ${stt.confidence_logprob || 0} | ${stt.asr_seconds || 0}s`);
+  console.log(`│ 3. 🌐 NMT (NLLB)  : ${nmt.source_nllb_code || stt.detected_language} ➔ ${nmt.target_languages?.join(', ')} | ${nmt.nmt_seconds || 0}s`);
+  if (nmt.translations) {
+    for (const [lang, text] of Object.entries(nmt.translations)) {
+      console.log(`│    └─ [${lang.toUpperCase()}]: "${(text || '').slice(0, 65)}"`);
+    }
+  }
+  console.log(`│ 4. 🔊 TTS Voice   : ${tts.engine || 'none'} | ${tts.tts_seconds || 0}s`);
+  console.log(`│ 5. ⏱️ Total Time  : ${latency.total_seconds || 0}s`);
+  if (warnings.length > 0) {
+    console.log(`│ 6. ⚠️ DIAGNOSIS / ROOT CAUSE IDENTIFIED:`);
+    for (const w of warnings) {
+      console.log(`│    - [${w.stage?.toUpperCase()}] ${w.title}: ${w.message}`);
+      console.log(`│      👉 Recommendation: ${w.suggestion}`);
+    }
+  } else {
+    console.log(`│ 6. 🩺 Diagnosis   : All pipeline stages performed with high confidence.`);
+  }
+  console.log(`└──────────────────────────────────────────────────────────────────────────\n`);
 }
