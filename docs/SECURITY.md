@@ -1,6 +1,6 @@
 # SECURITY.md — Security Audit & Hardening Plan
 
-# LinguaMeet — Security Specification
+# SAMVADA — Security Specification
 
 **Version**: 1.0-draft  
 **Date**: 2026-09-11  

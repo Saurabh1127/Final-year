@@ -35,7 +35,7 @@ const authLimiter = rateLimit({
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'linguameet-server',
+    service: 'samvada-server',
     timestamp: new Date().toISOString(),
   });
 });

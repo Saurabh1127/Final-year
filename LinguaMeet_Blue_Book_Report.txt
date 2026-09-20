@@ -1,6 +1,6 @@
 # PROJECT REPORT (PART I)
 ## ON
-# LINGUAMEET: REAL-TIME MULTILINGUAL SPEECH-TO-SPEECH TRANSLATION PLATFORM FOR WEB-BASED VIDEO CONFERENCING
+# SAMVADA: REAL-TIME MULTILINGUAL SPEECH-TO-SPEECH TRANSLATION PLATFORM FOR WEB-BASED VIDEO CONFERENCING
 
 **Submitted in partial fulfillment for the award of the degree of**  
 *BACHELOR OF ENGINEERING*  
@@ -27,7 +27,7 @@ Shyamnarayan Thakur Marg, Thakur Village, Kandivali (East), Mumbai – 400101
 
 ## CERTIFICATE
 
-This is to certify that the project entitled **“LinguaMeet: Real-Time Multilingual Speech-to-Speech Translation Platform for Web-Based Video Conferencing”** is a bonafide work of:
+This is to certify that the project entitled **“SAMVADA: Real-Time Multilingual Speech-to-Speech Translation Platform for Web-Based Video Conferencing”** is a bonafide work of:
 - **[Name of Student 1]** (Roll No: ____________)
 - **[Name of Student 2]** (Roll No: ____________)
 - **[Name of Student 3]** (Roll No: ____________)
@@ -49,7 +49,7 @@ Thakur College of Engineering and Technology, Mumbai
 
 ## PROJECT APPROVAL CERTIFICATE
 
-This project report entitled **“LinguaMeet: Real-Time Multilingual Speech-to-Speech Translation Platform for Web-Based Video Conferencing”** by:
+This project report entitled **“SAMVADA: Real-Time Multilingual Speech-to-Speech Translation Platform for Web-Based Video Conferencing”** by:
 - **[Name of Student 1]** (Roll No: ____________)
 - **[Name of Student 2]** (Roll No: ____________)
 - **[Name of Student 3]** (Roll No: ____________)
@@ -159,12 +159,12 @@ This project report has been prepared based on original design, engineering impl
 |---|---|---|
 | Figure 1.1 | High-Level Real-Time Cross-Lingual Video Communication Conceptual Flow | 3 |
 | Figure 2.1 | Cascaded vs. Unified Speech-to-Speech Translation Pipeline Comparison | 20 |
-| Figure 2.2 | Proposed LinguaMeet Dual-Stream Distributed Architectural Flow | 27 |
+| Figure 2.2 | Proposed SAMVADA Dual-Stream Distributed Architectural Flow | 27 |
 | Figure 3.1 | Agile Scrum Evolutionary Engineering Methodology | 41 |
-| Figure 3.2 | LinguaMeet Full-Stack Technology Ecosystem | 45 |
+| Figure 3.2 | SAMVADA Full-Stack Technology Ecosystem | 45 |
 | Figure 3.3 | Project Work Breakdown Structure and Gantt Schedule Timeline | 49 |
 | Figure 3.4 | Structural Entity-Relationship and Data Association Model | 53 |
-| Figure 4.1 | LinguaMeet Three-Tier Distributed System Architecture | 56 |
+| Figure 4.1 | SAMVADA Three-Tier Distributed System Architecture | 56 |
 | Figure 4.2 | Data Flow Diagram (DFD) Level 0: Context Analysis Diagram | 58 |
 | Figure 4.3 | Data Flow Diagram (DFD) Level 1: Subsystem Functional Decomposition | 60 |
 | Figure 4.4 | Data Flow Diagram (DFD) Level 2: AI Cascaded Pipeline & Buffer Subsystem | 62 |
@@ -214,13 +214,13 @@ This project report has been prepared based on original design, engineering impl
 
 In an increasingly interconnected global economy, cross-lingual verbal communication remains one of the most persistent bottlenecks in international commerce, academic collaboration, telemedicine, and humanitarian coordination. Conventional video conferencing platforms (such as Zoom, Microsoft Teams, and Google Meet) either rely entirely on a common *lingua franca*, mandate the costly intervention of human simultaneous interpreters, or provide rudimentary closed-caption text translations that force participants to divert visual attention away from interpersonal facial expressions. 
 
-This project presents **LinguaMeet**, a distributed, web-based video conferencing platform engineered to deliver near real-time, bidirectional, speech-to-speech translation (S2ST) directly within active multi-party video calls. LinguaMeet pioneers an optimized cascaded neural processing architecture consisting of:
+This project presents **SAMVADA**, a distributed, web-based video conferencing platform engineered to deliver near real-time, bidirectional, speech-to-speech translation (S2ST) directly within active multi-party video calls. SAMVADA pioneers an optimized cascaded neural processing architecture consisting of:
 1. **Client-Side Voice Activity Detection (VAD)**: A dynamic RMS energy and silence-window analyzer executing directly in the browser via the Web Audio API, which intelligently segments continuous speech into semantically viable acoustic utterances while preventing silence packet transmission.
 2. **Automatic Speech Recognition (ASR)**: An accelerated transcription engine powered by OpenAI Whisper and optimized with CTranslate2 INT8 quantization, providing automatic source language identification and robust multi-lingual speech-to-text conversion.
 3. **Neural Machine Translation (NMT)**: Meta's No Language Left Behind (NLLB-200-distilled-600M) model, mapping lexical tokens across 200+ languages using Flores-200 language codes with minimal translation degradation.
 4. **Neural Text-to-Speech (TTS)**: Microsoft Edge Neural TTS with automated fallbacks to gTTS and localized Indian language engines (Sarvam AI), synthesizing high-fidelity, naturalistic vocal output.
 
-LinguaMeet couples this neural pipeline with a full-mesh WebRTC media infrastructure that guarantees zero-latency peer-to-peer video and original audio exchange. A centralized Node.js/Socket.IO Translation Orchestrator manages language deduplication—ensuring that multiple listeners subscribing to the same target language share a single inference result, drastically reducing GPU compute overhead. To eliminate acoustic clash, the client architecture integrates an intelligent audio-ducking system that dynamically lowers the original speaker's volume by 85–90% during translated speech playback, coupled with a subtitle-first parallel delivery mechanism that yields a perceived latency of just 1.0 to 1.5 seconds. Empirical evaluations on an NVIDIA Tesla T4 GPU demonstrate that the proposed optimized cascade achieves an end-to-end turnaround latency of ~1.8 seconds, a Word Error Rate (WER) of 7.4% on standard conversational benchmarks, and BLEU scores exceeding 36.2 across high- and medium-resource language pairs, delivering an immersive, naturalistic multilingual conferencing experience.
+SAMVADA couples this neural pipeline with a full-mesh WebRTC media infrastructure that guarantees zero-latency peer-to-peer video and original audio exchange. A centralized Node.js/Socket.IO Translation Orchestrator manages language deduplication—ensuring that multiple listeners subscribing to the same target language share a single inference result, drastically reducing GPU compute overhead. To eliminate acoustic clash, the client architecture integrates an intelligent audio-ducking system that dynamically lowers the original speaker's volume by 85–90% during translated speech playback, coupled with a subtitle-first parallel delivery mechanism that yields a perceived latency of just 1.0 to 1.5 seconds. Empirical evaluations on an NVIDIA Tesla T4 GPU demonstrate that the proposed optimized cascade achieves an end-to-end turnaround latency of ~1.8 seconds, a Word Error Rate (WER) of 7.4% on standard conversational benchmarks, and BLEU scores exceeding 36.2 across high- and medium-resource language pairs, delivering an immersive, naturalistic multilingual conferencing experience.
 
 **Keywords**: Real-Time Speech-to-Speech Translation (S2ST), WebRTC Full-Mesh, Automatic Speech Recognition (ASR), Whisper, NLLB-200, Neural Text-to-Speech (TTS), Voice Activity Detection (VAD), Audio Ducking, Translation Deduplication, Distributed Video Conferencing.
 
@@ -236,9 +236,9 @@ Across the globe, over 7,000 distinct spoken languages exist, with international
 
 Recent breakthroughs in deep neural networks—specifically Transformer-based sequence-to-sequence models, large-scale self-supervised acoustic representations, and neural vocoders—have catalyzed the discipline of Speech-to-Speech Translation (S2ST). S2ST aims to convert an acoustic speech utterance in a source language directly into naturalistic, intelligible acoustic speech in a target language while preserving semantic fidelity.
 
-**LinguaMeet** is an autonomous, open-source, full-stack video conferencing platform engineered to deliver real-time, bidirectional speech-to-speech translation natively within web browsers. Developed as a modern three-tier distributed web application, LinguaMeet integrates browser-based WebRTC real-time media transport, an event-driven Node.js and Socket.IO signaling and orchestration server, and a specialized Python FastAPI artificial intelligence microservice. 
+**SAMVADA** is an autonomous, open-source, full-stack video conferencing platform engineered to deliver real-time, bidirectional speech-to-speech translation natively within web browsers. Developed as a modern three-tier distributed web application, SAMVADA integrates browser-based WebRTC real-time media transport, an event-driven Node.js and Socket.IO signaling and orchestration server, and a specialized Python FastAPI artificial intelligence microservice. 
 
-Rather than treating translation as a disconnected post-processing transcription task, LinguaMeet introduces a high-performance **Cascaded Speech-to-Speech Pipeline**:
+Rather than treating translation as a disconnected post-processing transcription task, SAMVADA introduces a high-performance **Cascaded Speech-to-Speech Pipeline**:
 - Continuous speech is analyzed in real-time within the client browser via Web Audio API RMS energy Voice Activity Detection (VAD).
 - Speech segments are dispatched asynchronously to an accelerated inference microservice powered by OpenAI Whisper (Automatic Speech Recognition), Meta's No Language Left Behind (NLLB-200) for Neural Machine Translation, and Microsoft Edge Neural Text-to-Speech (TTS).
 - Translated audio streams are dynamically routed back to participants, where client-side audio ducking smoothly attenuates original speaker volume, allowing listeners to hear their peers speak naturally in their chosen native language with minimal cognitive disruption.
@@ -260,7 +260,7 @@ Figure 1.1: High-Level Real-Time Cross-Lingual Video Communication Conceptual Fl
 >         Mic --> P2P_Vid[WebRTC Peer-to-Peer Stream]
 >     end
 > 
->     subgraph "LinguaMeet Cloud / Edge AI Infrastructure"
+>     subgraph "SAMVADA Cloud / Edge AI Infrastructure"
 >         Chunks --> ASR[Whisper STT: 'Hola, ¿cómo estás?']
 >         ASR --> NMT[NLLB-200 Translation: 'Hello, how are you?']
 >         NMT --> TTS[Edge Neural TTS: Synthesized Voice]
@@ -279,20 +279,20 @@ Figure 1.1: High-Level Real-Time Cross-Lingual Video Communication Conceptual Fl
 ## 1.2 Motivation & Application
 
 ### 1.2.1 Motivation
-The primary motivation behind LinguaMeet stems from the acute friction encountered by multilingual distributed engineering teams and academic institutions. In contemporary software development, open-source initiatives, global supply chain operations, and international research consortiums, team members are frequently dispersed across continents—spanning North America, Europe, East Asia, and the Indian subcontinent. 
+The primary motivation behind SAMVADA stems from the acute friction encountered by multilingual distributed engineering teams and academic institutions. In contemporary software development, open-source initiatives, global supply chain operations, and international research consortiums, team members are frequently dispersed across continents—spanning North America, Europe, East Asia, and the Indian subcontinent. 
 
 While video conferencing tools such as Zoom, Google Meet, and Microsoft Teams provide robust video streaming, their language accessibility mechanisms remain deeply flawed:
 1. **Visual Cognitive Overload of Closed Captions**: Existing tools primarily offer text-based live transcriptions. Reading subtitles during an active video conference requires the user to continuously divert gaze away from the speaker's face, breaking eye contact, losing visual cues (facial expressions, body language), and inducing substantial cognitive fatigue over prolonged meetings.
 2. **Text-Only Exclusion**: Text captions fail to serve users in multi-tasking scenarios, individuals with visual impairments or reading difficulties (such as dyslexia), or non-native listeners who comprehend spoken phonetic intonations far better than dense translated text.
 3. **Proprietary Commercial Exploitation**: Enterprise translation features in legacy platforms are locked behind expensive enterprise tiers (e.g., Zoom AI Companion, Teams Premium) and rely on opaque cloud infrastructure that incurs high per-minute costs. Furthermore, proprietary tools mandate vendor lock-in and provide zero transparency into speech data retention policies, raising grave data privacy concerns for sensitive discussions.
 
-LinguaMeet addresses these systemic shortcomings by engineering a democratized, open-source, speech-to-speech platform where spoken translation is delivered as synthesized acoustic audio directly into the listener's earpiece, supplemented by synchronous subtitles, creating an inclusive, frictionless conversational medium.
+SAMVADA addresses these systemic shortcomings by engineering a democratized, open-source, speech-to-speech platform where spoken translation is delivered as synthesized acoustic audio directly into the listener's earpiece, supplemented by synchronous subtitles, creating an inclusive, frictionless conversational medium.
 
 ### 1.2.2 Target Applications
 
-The applications of LinguaMeet span diverse societal, enterprise, and educational domains:
+The applications of SAMVADA span diverse societal, enterprise, and educational domains:
 1. **Global Software Development & Agile Standups**: Multi-national engineering teams with contributors across India, Japan, Germany, and the United States can conduct daily standups and sprint planning sessions where each developer speaks in their mother tongue (e.g., Hindi, Japanese, German) and hears responses seamlessly rendered in their preferred language.
-2. **Telemedicine & Cross-Border Healthcare**: In multicultural nations and humanitarian medical missions, medical practitioners frequently encounter patients who cannot articulate medical symptoms in the practitioner’s language. LinguaMeet enables doctors and patients to communicate verbally in real time, reducing diagnostic misunderstandings.
+2. **Telemedicine & Cross-Border Healthcare**: In multicultural nations and humanitarian medical missions, medical practitioners frequently encounter patients who cannot articulate medical symptoms in the practitioner’s language. SAMVADA enables doctors and patients to communicate verbally in real time, reducing diagnostic misunderstandings.
 3. **International Academic Seminars and Higher Education**: Universities can host global research webinars, guest lectures, and student exchange thesis defenses where professors and students interact without English-fluency barriers hindering technical intellectual exchange.
 4. **Emergency Response and Multilateral Humanitarian Aid**: Disaster management agencies (such as the United Nations, Red Cross, and local civil protection teams) operating in disaster zones can rapidly coordinate relief operations across international rescue workers and local populations without awaiting human translators.
 5. **Diplomatic and Judicial Proceedings**: Lower-tier cross-border commercial arbitration and international non-governmental organization (NGO) deliberations can be conducted affordably and transparently.
@@ -340,7 +340,7 @@ In a video meeting with $N$ participants speaking $K$ distinct languages, naive 
 ## 1.4 Objective & Scope
 
 ### 1.4.1 Primary Objectives
-The definitive engineering objectives of the LinguaMeet project are:
+The definitive engineering objectives of the SAMVADA project are:
 1. **Develop a Resilient Web-Based Video Conferencing Client**: Implement a modern React 19 application utilizing native browser WebRTC (`RTCPeerConnection`) for peer-to-peer audio/video streaming, with zero external browser plugins or software installations required.
 2. **Engineer an Intelligent Client-Side Voice Activity Detection (VAD) Engine**: Utilize the Web Audio API (`AudioContext`, `AnalyserNode`) to compute real-time Root Mean Square (RMS) energy, dynamically isolating speech utterances from silence and background noise, and auto-flushing audio chunks upon natural speech pauses (300ms silence threshold).
 3. **Construct an Accelerated Cascaded Neural AI Pipeline**:
@@ -371,7 +371,7 @@ The definitive engineering objectives of the LinguaMeet project are:
 
 ## 1.5 Expected Outcome
 
-Upon full deployment and verification, the LinguaMeet platform delivers the following quantifiable outcomes:
+Upon full deployment and verification, the SAMVADA platform delivers the following quantifiable outcomes:
 1. **Conversational Turnaround Latency**:
    - **Perceived Latency (Subtitle Delivery)**: $\le 1.0 - 1.2$ seconds from the termination of an utterance.
    - **Acoustic Latency (Full Translated Speech Playback)**: $\le 1.5 - 2.0$ seconds on dedicated GPU hardware (NVIDIA Tesla T4).
@@ -402,7 +402,7 @@ This project report is organized systematically into six exhaustive chapters con
 
 ## 2.1 Literature Review of Existing System
 
-The quest to achieve real-time, automated cross-lingual speech translation has occupied computer science researchers for decades. The field sits at the confluence of four complex sub-disciplines: Digital Signal Processing (Voice Activity Detection), Automatic Speech Recognition (ASR), Machine Translation (MT), and Speech Synthesis (Text-to-Speech). In recent years, deep learning has revolutionized each of these pillars. Understanding the evolution of these technologies is essential to contextualizing the architectural innovations of LinguaMeet.
+The quest to achieve real-time, automated cross-lingual speech translation has occupied computer science researchers for decades. The field sits at the confluence of four complex sub-disciplines: Digital Signal Processing (Voice Activity Detection), Automatic Speech Recognition (ASR), Machine Translation (MT), and Speech Synthesis (Text-to-Speech). In recent years, deep learning has revolutionized each of these pillars. Understanding the evolution of these technologies is essential to contextualizing the architectural innovations of SAMVADA.
 
 ### 2.1.1 Simultaneous Speech Translation (SimulST) Foundations
 Traditional Speech Translation (ST) operates in a full-sentence "offline" mode: the system waits for an entire sentence to conclude before initiating transcription and translation. While this ensures complete syntactic context, it introduces latency equal to the duration of the entire sentence (often 4 to 8 seconds), making it fundamentally incompatible with natural human conversation.
@@ -447,7 +447,7 @@ Figure 2.1: Cascaded vs. Unified Speech-to-Speech Translation Pipeline Compariso
 > **MERMAID DIAGRAM SPECIFICATION (Figure 2.1)**:
 > ```mermaid
 > graph TD
->     subgraph "Cascaded Pipeline (LinguaMeet Architecture)"
+>     subgraph "Cascaded Pipeline (SAMVADA Architecture)"
 >         A1[Source Speech Audio] --> B1[Whisper / Faster-Whisper ASR]
 >         B1 -->|Source Text: 'Good morning'| C1[NLLB-200 Neural MT]
 >         C1 -->|Target Text: 'Bonjour'| D1[Edge Neural TTS Synthesis]
@@ -464,7 +464,7 @@ Figure 2.1: Cascaded vs. Unified Speech-to-Speech Translation Pipeline Compariso
 
 ### 2.1.5 Comparative Review of Existing Video Conferencing Platforms
 
-To understand the industry landscape, Table 2.1 compares prominent commercial video conferencing platforms and emerging translation research systems against LinguaMeet across critical functional and technological parameters.
+To understand the industry landscape, Table 2.1 compares prominent commercial video conferencing platforms and emerging translation research systems against SAMVADA across critical functional and technological parameters.
 
 **Table 2.1: Comparative Analysis of Existing Video Conferencing and Translation Platforms**
 
@@ -475,22 +475,22 @@ To understand the industry landscape, Table 2.1 compares prominent commercial vi
 | **Google Meet** | Proprietary WebRTC SFU | Live Translated Captions (Text) | ❌ None (Text captions only) | ~20 Languages | ❌ Proprietary (Google Workspace) | ❌ N/A | 2.0s – 3.0s (Text) |
 | **Skype Translator** | Microsoft Media Relays | Speech-to-Speech (Cascaded) | ✅ Yes (Basic synthetic voice) | ~10 Languages | ❌ Proprietary | ❌ No | 4.0s – 7.0s |
 | **Meta SeamlessM4T (Research Demo)** | Non-Realtime Demo Web App | Direct Unified S2ST | ✅ Yes (UnitY vocoder) | 100 Languages | ⚠️ Code open, no meeting UI | ❌ No | 3.5s – 6.0s (High GPU load) |
-| **LinguaMeet (Proposed System)** | **Native WebRTC Full-Mesh** | **Cascaded S2ST + Subtitle-First** | **✅ Yes (Edge Neural TTS + gTTS)** | **200+ NMT, 12 Core TTS** | **✅ 100% Open-Source Full Stack** | **✅ Yes (Central Orchestrator)** | **1.0s – 1.8s (Perceived)** |
+| **SAMVADA (Proposed System)** | **Native WebRTC Full-Mesh** | **Cascaded S2ST + Subtitle-First** | **✅ Yes (Edge Neural TTS + gTTS)** | **200+ NMT, 12 Core TTS** | **✅ 100% Open-Source Full Stack** | **✅ Yes (Central Orchestrator)** | **1.0s – 1.8s (Perceived)** |
 
 ---
 
 ### 2.1.6 Landmark Research Publications Survey
 
-Table 2.2 synthesizes landmark academic literature that directly informed the architectural and algorithmic choices of LinguaMeet.
+Table 2.2 synthesizes landmark academic literature that directly informed the architectural and algorithmic choices of SAMVADA.
 
 **Table 2.2: Landmark Research Publications in Speech Translation and Neural Synthesis**
 
-| Author & Year | Publication Title / Venue | Core Breakthrough / Contribution | Relevance to LinguaMeet |
+| Author & Year | Publication Title / Venue | Core Breakthrough / Contribution | Relevance to SAMVADA |
 |---|---|---|---|
-| **Radford et al. (2022)** | *Robust Speech Recognition via Large-Scale Weak Supervision* (OpenAI) | Introduced Whisper, trained on 680,000 hours of multi-task audio, achieving extreme zero-shot robustness across 99 languages. | Provides the core Speech-to-Text (ASR) foundation for LinguaMeet. |
-| **NLLB Team et al. (2022)** | *No Language Left Behind: Scaling Human-Centered Machine Translation* (Meta AI) | Introduced NLLB-200, a 200-language multilingual translation model utilizing Flores-200 language codes and high-quality synthetic bitexts. | Powers LinguaMeet's multi-target translation with superior low-resource language fidelity. |
+| **Radford et al. (2022)** | *Robust Speech Recognition via Large-Scale Weak Supervision* (OpenAI) | Introduced Whisper, trained on 680,000 hours of multi-task audio, achieving extreme zero-shot robustness across 99 languages. | Provides the core Speech-to-Text (ASR) foundation for SAMVADA. |
+| **NLLB Team et al. (2022)** | *No Language Left Behind: Scaling Human-Centered Machine Translation* (Meta AI) | Introduced NLLB-200, a 200-language multilingual translation model utilizing Flores-200 language codes and high-quality synthetic bitexts. | Powers SAMVADA's multi-target translation with superior low-resource language fidelity. |
 | **Klein et al. (2020)** | *OpenNMT and CTranslate2: Efficient Inference for Neural Machine Translation* | Developed CTranslate2, a custom C++ runtime offering INT8 quantization, layer fusion, and high-throughput CUDA execution. | Applied to accelerate Whisper and NLLB-200 inference, cutting latency by 65%. |
-| **Ma et al. (2019)** | *STACL: Simultaneous Translation with Implicit Anticipation and Controllable Latency* (ACL 2019) | Formalized the wait-$k$ policy and prefix-to-prefix translation framework for simultaneous streaming translation. | Guided LinguaMeet's dynamic chunking and latency-budget allocation. |
+| **Ma et al. (2019)** | *STACL: Simultaneous Translation with Implicit Anticipation and Controllable Latency* (ACL 2019) | Formalized the wait-$k$ policy and prefix-to-prefix translation framework for simultaneous streaming translation. | Guided SAMVADA's dynamic chunking and latency-budget allocation. |
 | **Silero Team (2021)** | *Silero VAD: Pre-trained Enterprise-Grade Voice Activity Detector* | Ultra-lightweight deep learning Voice Activity Detector operating on 30ms audio windows with negligible CPU footprint. | Serves as the blueprint for secondary server-side acoustic gating to eliminate hallucinations. |
 | **Ren et al. (2020)** | *FastSpeech 2: Fast and High-Quality End-to-End Text to Speech* (ICLR 2021) | Non-autoregressive speech synthesis utilizing duration, pitch, and energy predictors, drastically cutting synthesis latency. | Provided theoretical basis for low-latency non-autoregressive neural vocoding. |
 | **Barrault et al. (2023)** | *SeamlessM4T: Massively Multilingual & Multimodal Machine Translation* (Meta AI) | Unified foundational model for speech-to-speech, speech-to-text, text-to-speech translation across 100 languages. | Serves as the reference benchmark for comparing cascaded vs. unified S2ST architectures. |
@@ -523,15 +523,15 @@ When speech translation prototypes introduce translated audio playback, they fre
 
 ## 2.3 Proposed System
 
-To resolve these systemic limitations, this project engineers **LinguaMeet**, an innovative, fully distributed, web-based Speech-to-Speech video conferencing architecture. LinguaMeet synergizes client-side signal processing, decentralized peer-to-peer media delivery, and centralized neural acceleration.
+To resolve these systemic limitations, this project engineers **SAMVADA**, an innovative, fully distributed, web-based Speech-to-Speech video conferencing architecture. SAMVADA synergizes client-side signal processing, decentralized peer-to-peer media delivery, and centralized neural acceleration.
 
 ```
 [DIAGRAM PLACEHOLDER: Figure 2.2]
-Figure 2.2: Proposed LinguaMeet Dual-Stream Distributed Architectural Flow
+Figure 2.2: Proposed SAMVADA Dual-Stream Distributed Architectural Flow
 ```
 
 > **IMAGE GENERATION PROMPT (Figure 2.2)**:
-> *"A comprehensive architectural flow diagram of the LinguaMeet system. The diagram is split into three horizontal tiers: Tier 1 (Client Browser with React, WebRTC peer connection, and Web Audio RMS VAD), Tier 2 (Node.js Application & Socket.IO Translation Orchestrator Server), and Tier 3 (Python FastAPI AI Microservice with Whisper, NLLB-200, and Edge-TTS). Bright neon cyan arrows show the WebRTC direct peer-to-peer video/audio link between users. Deep purple and gold data lines show audio chunks streaming via Socket.IO to Tier 2, being deduplicated, forwarded to Tier 3 for cascaded inference, and returning translated speech and subtitles to Tier 1 listeners. Technical dark mode background, crisp isometric blocks, professional software engineering layout, 8k resolution, vector graphics."*
+> *"A comprehensive architectural flow diagram of the SAMVADA system. The diagram is split into three horizontal tiers: Tier 1 (Client Browser with React, WebRTC peer connection, and Web Audio RMS VAD), Tier 2 (Node.js Application & Socket.IO Translation Orchestrator Server), and Tier 3 (Python FastAPI AI Microservice with Whisper, NLLB-200, and Edge-TTS). Bright neon cyan arrows show the WebRTC direct peer-to-peer video/audio link between users. Deep purple and gold data lines show audio chunks streaming via Socket.IO to Tier 2, being deduplicated, forwarded to Tier 3 for cascaded inference, and returning translated speech and subtitles to Tier 1 listeners. Technical dark mode background, crisp isometric blocks, professional software engineering layout, 8k resolution, vector graphics."*
 
 > **MERMAID DIAGRAM SPECIFICATION (Figure 2.2)**:
 > ```mermaid
@@ -575,11 +575,11 @@ Figure 2.2: Proposed LinguaMeet Dual-Stream Distributed Architectural Flow
 >     ClientB->>ClientB: Restore WebRTC Audio Track to 100%
 > ```
 
-### 2.3.1 Key Architectural Pillars of LinguaMeet
-1. **Dual-Stream Client Capture**: Rather than contending for hardware audio devices with multiple `getUserMedia` invocations, LinguaMeet acquires a single, high-fidelity media stream, cloning the track into:
+### 2.3.1 Key Architectural Pillars of SAMVADA
+1. **Dual-Stream Client Capture**: Rather than contending for hardware audio devices with multiple `getUserMedia` invocations, SAMVADA acquires a single, high-fidelity media stream, cloning the track into:
    - A direct WebRTC peer track for uncompressed, instant audio/video delivery.
    - A dedicated `AudioContext` and `AnalyserNode` feeding an adaptive Root Mean Square (RMS) energy Voice Activity Detection (VAD) algorithm.
-2. **Dynamic Semantic VAD Flush**: Instead of chopping speech into arbitrary, fixed-time slices that sever words in half, LinguaMeet's VAD dynamically monitors acoustic energy. When the speaker pauses for $\ge 300ms$ (or reaches a safety ceiling of $4.0s$), the accumulated WebM Opus audio chunk is cleanly finalized and dispatched.
+2. **Dynamic Semantic VAD Flush**: Instead of chopping speech into arbitrary, fixed-time slices that sever words in half, SAMVADA's VAD dynamically monitors acoustic energy. When the speaker pauses for $\ge 300ms$ (or reaches a safety ceiling of $4.0s$), the accumulated WebM Opus audio chunk is cleanly finalized and dispatched.
 3. **Centralized Translation Orchestration & Deduplication**: The Node.js application server acts as an intelligent routing broker. Upon receiving an audio chunk, it queries the in-memory room participant state, aggregates all unique target languages requested by connected listeners, and submits a single unified request to the AI microservice.
 4. **Quantized Neural Microservice**: The AI service decouples heavy PyTorch execution from the I/O event loop using `asyncio.to_thread`. By employing Faster-Whisper with CTranslate2 INT8 quantization and NLLB-200 distilled-600M, GPU execution times are reduced to ~400ms on an NVIDIA Tesla T4 GPU.
 5. **Subtitle-First Delivery & Auditory Ducking**: Subtitles are transmitted to listeners the millisecond text translation completes, providing instant visual feedback at ~1.0s. When synthesized audio arrives at ~1.8s, the listener's browser smoothly ducks the incoming original speaker track to 10% volume, schedules playback through an audio jitter buffer, and restores volume upon completion, providing an unparalleled conversational experience.
@@ -588,11 +588,11 @@ Figure 2.2: Proposed LinguaMeet Dual-Stream Distributed Architectural Flow
 
 ## 3.1 Requirement Specification
 
-The formulation of a resilient software architecture begins with rigorous requirement gathering and classification. LinguaMeet addresses complex multidisciplinary domains encompassing real-time telecommunications, distributed network synchronization, and high-throughput deep neural inference. Requirements are formally categorized into Functional Requirements (defining explicit behavioral capabilities) and Non-Functional Requirements (defining architectural constraints, quality attributes, and performance service level agreements).
+The formulation of a resilient software architecture begins with rigorous requirement gathering and classification. SAMVADA addresses complex multidisciplinary domains encompassing real-time telecommunications, distributed network synchronization, and high-throughput deep neural inference. Requirements are formally categorized into Functional Requirements (defining explicit behavioral capabilities) and Non-Functional Requirements (defining architectural constraints, quality attributes, and performance service level agreements).
 
 ### 3.1.1 Functional Requirements Specification
 
-Functional requirements delineate the discrete operational capabilities and interactions that the LinguaMeet platform must provide to end-users and system administrators. Table 3.1 provides an exhaustive mapping of these requirements, organized by functional subsystem.
+Functional requirements delineate the discrete operational capabilities and interactions that the SAMVADA platform must provide to end-users and system administrators. Table 3.1 provides an exhaustive mapping of these requirements, organized by functional subsystem.
 
 **Table 3.1: Functional Requirements Specification Matrix**
 
@@ -643,7 +643,7 @@ Non-functional requirements specify systemic quality attributes, performance env
 
 ## 3.2 Feasibility Study
 
-A thorough feasibility study was conducted across technical, operational, economic, and schedule dimensions to ensure the engineering viability of the LinguaMeet platform.
+A thorough feasibility study was conducted across technical, operational, economic, and schedule dimensions to ensure the engineering viability of the SAMVADA platform.
 
 ### 3.2.1 Technical Feasibility
 The technical feasibility centered primarily on whether modern deep learning models for ASR, NMT, and TTS could execute within a sub-two-second latency envelope while co-existing within the memory constraints of readily accessible cloud GPU infrastructure (specifically an NVIDIA Tesla T4 GPU with 16GB GDDR6 VRAM, typical of Google Colab and AWS `g4dn.xlarge` instances).
@@ -666,19 +666,19 @@ As demonstrated in Table 3.3, the combined static and peak dynamic VRAM consumpt
 Furthermore, browser technical feasibility was validated: modern browsers natively support WebRTC (`RTCPeerConnection`), Web Audio API (`AudioContext`, `AnalyserNode`), and `MediaRecorder` with WebM Opus encoding, ensuring zero dependency on legacy browser plugins.
 
 ### 3.2.2 Operational Feasibility
-From an operational perspective, LinguaMeet introduces an extraordinarily low barrier to adoption. Users are not required to download or install proprietary executables, configure audio virtual cables, or install specialized device drivers. A user simply navigates to the web application URL, verifies their camera and microphone on the pre-join staging screen, selects their native preferred listening language from an intuitive dropdown, and enters the meeting room code. 
+From an operational perspective, SAMVADA introduces an extraordinarily low barrier to adoption. Users are not required to download or install proprietary executables, configure audio virtual cables, or install specialized device drivers. A user simply navigates to the web application URL, verifies their camera and microphone on the pre-join staging screen, selects their native preferred listening language from an intuitive dropdown, and enters the meeting room code. 
 
 The application abstracts away all underlying complexities: WebRTC ICE candidate gathering, NAT traversal via STUN servers, audio chunk segmentation, model inference, and audio ducking operate completely autonomously without user intervention.
 
 ### 3.2.3 Economic Feasibility
 Commercial speech translation platforms impose severe economic burdens:
 - **Commercial API Rates**: Cloud ASR services (e.g., Google Speech-to-Text) bill approximately \$0.024 per minute, while neural translation and TTS add another \$0.020 to \$0.030 per minute. In a 60-minute meeting with 4 participants, commercial cloud API charges can exceed \$7.00 to \$10.00 per meeting.
-- **LinguaMeet Economic Profile**: LinguaMeet is architected exclusively on open-source, permissive technologies:
+- **SAMVADA Economic Profile**: SAMVADA is architected exclusively on open-source, permissive technologies:
   - Frontend and Backend run on standard low-cost cloud virtual machines (Node.js / Express consumes < 200 MB RAM).
   - The AI microservice can be hosted on self-managed GPU instances, student academic compute clusters, or ephemeral Google Colab T4 instances.
   - Microsoft Edge Neural TTS is accessible via free edge endpoints, and local open-source fallback models (e.g., Piper TTS, VITS) require zero API subscriptions.
   
-Thus, the ongoing operational expenditure of LinguaMeet is virtually zero for educational institutions and small development teams, confirming robust economic feasibility.
+Thus, the ongoing operational expenditure of SAMVADA is virtually zero for educational institutions and small development teams, confirming robust economic feasibility.
 
 ### 3.2.4 Schedule Feasibility
 The project development lifecycle was structured into a 12-phase incremental engineering roadmap over a two-semester academic period, aligning perfectly with academic milestone deliverables, project reviews, and testing intervals.
@@ -687,7 +687,7 @@ The project development lifecycle was structured into a 12-phase incremental eng
 
 ## 3.3 Methodology
 
-To engineer LinguaMeet with high architectural integrity, the development team adopted the **Agile Scrum Framework** enhanced with **Iterative Empirical Profiling**. 
+To engineer SAMVADA with high architectural integrity, the development team adopted the **Agile Scrum Framework** enhanced with **Iterative Empirical Profiling**. 
 
 ```
 [DIAGRAM PLACEHOLDER: Figure 3.1]
@@ -734,15 +734,15 @@ The project was executed across four primary release milestones:
 
 ## 3.4 Technology Stack
 
-LinguaMeet employs a modern, decoupled, full-stack technology ecosystem specifically chosen for high real-time throughput, low computational overhead, and cross-platform compatibility.
+SAMVADA employs a modern, decoupled, full-stack technology ecosystem specifically chosen for high real-time throughput, low computational overhead, and cross-platform compatibility.
 
 ```
 [DIAGRAM PLACEHOLDER: Figure 3.2]
-Figure 3.2: LinguaMeet Full-Stack Technology Ecosystem
+Figure 3.2: SAMVADA Full-Stack Technology Ecosystem
 ```
 
 > **IMAGE GENERATION PROMPT (Figure 3.2)**:
-> *"A visually stunning full-stack technology stack diagram displaying the LinguaMeet ecosystem. Organized into four horizontal layers: 1. Frontend Client (React 19, Vite, WebRTC, Web Audio API, Lucide Icons), 2. Application Server (Node.js 20 LTS, Express, Socket.IO, Mongoose, Axios), 3. AI Inference Microservice (FastAPI, PyTorch, CTranslate2, Faster-Whisper, Meta NLLB-200, Edge-TTS), 4. Database & Infrastructure (MongoDB Atlas, NVIDIA Tesla T4, Ngrok Tunneling, STUN/TURN). Flat modern design with official technology brand icons, glowing connector lines, crisp vector layout, corporate enterprise blue and teal theme, white background."*
+> *"A visually stunning full-stack technology stack diagram displaying the SAMVADA ecosystem. Organized into four horizontal layers: 1. Frontend Client (React 19, Vite, WebRTC, Web Audio API, Lucide Icons), 2. Application Server (Node.js 20 LTS, Express, Socket.IO, Mongoose, Axios), 3. AI Inference Microservice (FastAPI, PyTorch, CTranslate2, Faster-Whisper, Meta NLLB-200, Edge-TTS), 4. Database & Infrastructure (MongoDB Atlas, NVIDIA Tesla T4, Ngrok Tunneling, STUN/TURN). Flat modern design with official technology brand icons, glowing connector lines, crisp vector layout, corporate enterprise blue and teal theme, white background."*
 
 > **MERMAID DIAGRAM SPECIFICATION (Figure 3.2)**:
 > ```mermaid
@@ -803,7 +803,7 @@ Figure 3.2: LinguaMeet Full-Stack Technology Ecosystem
 - **MongoDB Atlas & Mongoose 8**: Cloud document-oriented NoSQL database providing elastic scaling and flexible schema definitions for Users, Meetings, and multi-turn Transcripts.
 
 ### 3.4.2 Language Mapping and Linguistic Standards
-NMT models (NLLB-200) utilize Flores-200 language codes, whereas frontend browsers and ASR engines utilize standard ISO-639-1 two-letter codes. LinguaMeet implements an explicit translation mapping matrix, detailed in Table 3.4.
+NMT models (NLLB-200) utilize Flores-200 language codes, whereas frontend browsers and ASR engines utilize standard ISO-639-1 two-letter codes. SAMVADA implements an explicit translation mapping matrix, detailed in Table 3.4.
 
 **Table 3.4: Language Coverage and Flores-200 / ISO-639 Mapping Matrix**
 
@@ -856,7 +856,7 @@ Figure 3.3: Project Work Breakdown Structure and Gantt Schedule Timeline
 > **MERMAID DIAGRAM SPECIFICATION (Figure 3.3)**:
 > ```mermaid
 > gantt
->     title LinguaMeet Engineering Lifecycle Schedule
+>     title SAMVADA Engineering Lifecycle Schedule
 >     dateFormat  YYYY-MM-DD
 >     section Foundation
 >     Architecture Audit & Room Fixes       :done, p0, 2026-09-01, 2026-09-03
@@ -882,7 +882,7 @@ Figure 3.3: Project Work Breakdown Structure and Gantt Schedule Timeline
 To construct a robust software architecture, the system was analyzed through three complementary modeling perspectives: Functional (what the system does), Structural (how data and components are organized), and Behavioral (how states change dynamically over time).
 
 ### 3.6.1 Functional Analysis (Actors & Primary Roles)
-The functional model identifies three distinct primary actors interacting within the LinguaMeet ecosystem:
+The functional model identifies three distinct primary actors interacting within the SAMVADA ecosystem:
 1. **Meeting Host**: Authenticated user with administrative privileges to initialize meeting rooms, configure room titles, monitor active participants, and terminate meetings for all peers.
 2. **Participant / Listener**: Authenticated or guest peer who joins an existing room, configures audio/video input devices, defines their preferred native language, streams media via WebRTC, and receives real-time translated audio and subtitles.
 3. **AI Translation Microservice & Orchestrator**: Automated background computational agent responsible for ingesting binary audio chunks, managing VRAM resources, executing cascaded ASR-NMT-TTS inference, and dispatching targeted responses.
@@ -896,7 +896,7 @@ Figure 3.4: Structural Entity-Relationship and Data Association Model
 ```
 
 > **IMAGE GENERATION PROMPT (Figure 3.4)**:
-> *"A clean, formal database Entity-Relationship (ER) diagram illustrating the data architecture of LinguaMeet. Three primary entity boxes: 'User', 'Meeting', and 'Transcript'. User has fields: _id, name, email, passwordHash, preferredLanguage, createdAt. Meeting has fields: _id, roomCode, title, hostId, status, participants array (userId, displayName, targetLanguage, socketId, joinedAt), summary object. Transcript has fields: _id, meetingId, speakerId, speakerName, sourceLanguage, text, translations Map, timestamp. Crisp crow's foot notation showing 1-to-Many relationships, database primary and foreign key icons, modern software engineering design, white background."*
+> *"A clean, formal database Entity-Relationship (ER) diagram illustrating the data architecture of SAMVADA. Three primary entity boxes: 'User', 'Meeting', and 'Transcript'. User has fields: _id, name, email, passwordHash, preferredLanguage, createdAt. Meeting has fields: _id, roomCode, title, hostId, status, participants array (userId, displayName, targetLanguage, socketId, joinedAt), summary object. Transcript has fields: _id, meetingId, speakerId, speakerName, sourceLanguage, text, translations Map, timestamp. Crisp crow's foot notation showing 1-to-Many relationships, database primary and foreign key icons, modern software engineering design, white background."*
 
 > **MERMAID DIAGRAM SPECIFICATION (Figure 3.4)**:
 > ```mermaid
@@ -960,11 +960,11 @@ To guarantee real-time integrity without memory leaks or race conditions, every 
 
 ## 4.1 System Architecture & Diagrams
 
-The system architecture of LinguaMeet is designed around a three-tier, decoupled, distributed paradigm. This architecture separates interactive media transport (WebRTC), signaling and translation business logic (Node.js / Express), and compute-intensive artificial intelligence inference (FastAPI on cloud GPU).
+The system architecture of SAMVADA is designed around a three-tier, decoupled, distributed paradigm. This architecture separates interactive media transport (WebRTC), signaling and translation business logic (Node.js / Express), and compute-intensive artificial intelligence inference (FastAPI on cloud GPU).
 
 ```
 [DIAGRAM PLACEHOLDER: Figure 4.1]
-Figure 4.1: LinguaMeet Three-Tier Distributed System Architecture
+Figure 4.1: SAMVADA Three-Tier Distributed System Architecture
 ```
 
 > **IMAGE GENERATION PROMPT (Figure 4.1)**:
@@ -1023,7 +1023,7 @@ Figure 4.1: LinguaMeet Three-Tier Distributed System Architecture
 Data Flow Diagrams illustrate how data enters the system, progresses through computational processes, is transformed, and is ultimately persisted or rendered to clients.
 
 #### 1. DFD Level 0: Context Analysis Diagram
-The Context Diagram defines the external boundaries of LinguaMeet. The entire platform is treated as a single process interacting with three external entities: Meeting Participants, Cloud Database (MongoDB), and External AI/TTS Services.
+The Context Diagram defines the external boundaries of SAMVADA. The entire platform is treated as a single process interacting with three external entities: Meeting Participants, Cloud Database (MongoDB), and External AI/TTS Services.
 
 ```
 [DIAGRAM PLACEHOLDER: Figure 4.2]
@@ -1031,13 +1031,13 @@ Figure 4.2: Data Flow Diagram (DFD) Level 0: Context Analysis Diagram
 ```
 
 > **IMAGE GENERATION PROMPT (Figure 4.2)**:
-> *"A formal Data Flow Diagram (DFD) Level 0 Context Diagram for a video conferencing speech translation system. A central large circular process labeled '0.0 LinguaMeet Platform'. External rectangular entities: 'Meeting Participants (Speakers & Listeners)', 'MongoDB Cloud Database', and 'Microsoft Edge TTS Cloud'. Labeled arrows show data inputs (User Credentials, Room Codes, Acoustic Mic Stream, Language Preferences) and data outputs (Decrypted WebRTC Video/Audio, Translated Speech Waveforms, Live Bilingual Subtitles, Session Summaries). Standard Yourdon-DeMarco DFD symbology, crisp black and blue lines, high readability, white background."*
+> *"A formal Data Flow Diagram (DFD) Level 0 Context Diagram for a video conferencing speech translation system. A central large circular process labeled '0.0 SAMVADA Platform'. External rectangular entities: 'Meeting Participants (Speakers & Listeners)', 'MongoDB Cloud Database', and 'Microsoft Edge TTS Cloud'. Labeled arrows show data inputs (User Credentials, Room Codes, Acoustic Mic Stream, Language Preferences) and data outputs (Decrypted WebRTC Video/Audio, Translated Speech Waveforms, Live Bilingual Subtitles, Session Summaries). Standard Yourdon-DeMarco DFD symbology, crisp black and blue lines, high readability, white background."*
 
 > **MERMAID DIAGRAM SPECIFICATION (Figure 4.2)**:
 > ```mermaid
 > graph LR
 >     P[Meeting Participants: Host, Speaker, Listener]
->     System((0.0 LinguaMeet Conferencing & S2ST Platform))
+>     System((0.0 SAMVADA Conferencing & S2ST Platform))
 >     DB[(MongoDB Atlas Database)]
 >     CloudTTS[External Edge Neural TTS Service]
 > 
@@ -1054,7 +1054,7 @@ Figure 4.2: Data Flow Diagram (DFD) Level 0: Context Analysis Diagram
 ---
 
 #### 2. DFD Level 1: Subsystem Functional Decomposition
-The Level 1 DFD decomposes the primary LinguaMeet process into four interconnected sub-processes: Authentication Management, Meeting Lifecycle & Signaling, Audio Capture & Orchestration, and AI Cascaded Translation.
+The Level 1 DFD decomposes the primary SAMVADA process into four interconnected sub-processes: Authentication Management, Meeting Lifecycle & Signaling, Audio Capture & Orchestration, and AI Cascaded Translation.
 
 ```
 [DIAGRAM PLACEHOLDER: Figure 4.3]
@@ -1062,7 +1062,7 @@ Figure 4.3: Data Flow Diagram (DFD) Level 1: Subsystem Functional Decomposition
 ```
 
 > **IMAGE GENERATION PROMPT (Figure 4.3)**:
-> *"A formal DFD Level 1 diagram for LinguaMeet. Four numbered circular processes: '1.0 User Authentication & Session Control', '2.0 WebRTC Signaling & Room Management', '3.0 Speech Chunking & Translation Orchestration', and '4.0 Cascaded AI Inference Pipeline'. Data stores for Users, Meetings, and Transcripts shown with open-ended rectangles. Arrows indicating precise data flows (JWT tokens, SDP offers/answers, WebM audio chunks, language tags, base64 audio frames). Clean technical documentation diagram, professional vector graphics, white background."*
+> *"A formal DFD Level 1 diagram for SAMVADA. Four numbered circular processes: '1.0 User Authentication & Session Control', '2.0 WebRTC Signaling & Room Management', '3.0 Speech Chunking & Translation Orchestration', and '4.0 Cascaded AI Inference Pipeline'. Data stores for Users, Meetings, and Transcripts shown with open-ended rectangles. Arrows indicating precise data flows (JWT tokens, SDP offers/answers, WebM audio chunks, language tags, base64 audio frames). Clean technical documentation diagram, professional vector graphics, white background."*
 
 > **MERMAID DIAGRAM SPECIFICATION (Figure 4.3)**:
 > ```mermaid
@@ -1134,7 +1134,7 @@ Figure 4.5: UML Use Case Diagram: Participant, Host, and AI Orchestrator Interac
 ```
 
 > **IMAGE GENERATION PROMPT (Figure 4.5)**:
-> *"A formal UML Use Case Diagram for LinguaMeet. Left stick-figure actor: 'Meeting Host'. Center stick-figure actor: 'Meeting Participant'. Right rectangular system actor: 'AI Orchestration Service'. Large system boundary box containing oval use cases: 'Register & Authenticate', 'Create Meeting Room', 'Join via Room Code', 'Configure Audio/Video Devices', 'Select Preferred Language', 'Stream WebRTC Video/Audio', 'Capture & VAD Segment Audio', 'Translate Speech-to-Speech', 'Display Live Subtitles', 'Duck Background Audio', 'Generate Post-Meeting Summary'. Include <<include>> and <<extend>> dependency arrows, standard UML notation, white background."*
+> *"A formal UML Use Case Diagram for SAMVADA. Left stick-figure actor: 'Meeting Host'. Center stick-figure actor: 'Meeting Participant'. Right rectangular system actor: 'AI Orchestration Service'. Large system boundary box containing oval use cases: 'Register & Authenticate', 'Create Meeting Room', 'Join via Room Code', 'Configure Audio/Video Devices', 'Select Preferred Language', 'Stream WebRTC Video/Audio', 'Capture & VAD Segment Audio', 'Translate Speech-to-Speech', 'Display Live Subtitles', 'Duck Background Audio', 'Generate Post-Meeting Summary'. Include <<include>> and <<extend>> dependency arrows, standard UML notation, white background."*
 
 > **MERMAID DIAGRAM SPECIFICATION (Figure 4.5)**:
 > ```mermaid
@@ -1143,7 +1143,7 @@ Figure 4.5: UML Use Case Diagram: Participant, Host, and AI Orchestrator Interac
 >     Peer((Participant))
 >     AI((AI Microservice))
 > 
->     subgraph "LinguaMeet Conferencing Platform Boundary"
+>     subgraph "SAMVADA Conferencing Platform Boundary"
 >         UC1([Register & Authenticate])
 >         UC2([Create Meeting Room])
 >         UC3([Join Meeting via Room Code])
@@ -1304,7 +1304,7 @@ Figure 4.8: UML Component Diagram: Modular Architecture and Decoupled Services
 ```
 
 > **IMAGE GENERATION PROMPT (Figure 4.8)**:
-> *"A UML 2.0 Component Diagram detailing the software components of LinguaMeet. Client components: 'AudioCaptureModule', 'VADProcessor', 'WebRTCClient', 'TranslationPlaybackManager'. Server components: 'SignalingBroker', 'AuthModule', 'MeetingManager', 'TranslationOrchestrator'. AI Microservice components: 'FastAPIController', 'WhisperWorker', 'NLLBWorker', 'EdgeTTSWorker'. Ball-and-socket interface wiring, standard UML component boxes with two small tabs on the left, clear dependency stereotypes, white background."*
+> *"A UML 2.0 Component Diagram detailing the software components of SAMVADA. Client components: 'AudioCaptureModule', 'VADProcessor', 'WebRTCClient', 'TranslationPlaybackManager'. Server components: 'SignalingBroker', 'AuthModule', 'MeetingManager', 'TranslationOrchestrator'. AI Microservice components: 'FastAPIController', 'WhisperWorker', 'NLLBWorker', 'EdgeTTSWorker'. Ball-and-socket interface wiring, standard UML component boxes with two small tabs on the left, clear dependency stereotypes, white background."*
 
 > **MERMAID DIAGRAM SPECIFICATION (Figure 4.8)**:
 > ```mermaid
@@ -1798,7 +1798,7 @@ class ClientAudioPlaybackQueue:
 
 ### 4.3.1 User Interface Wireframes & Component Design
 
-The user interface of LinguaMeet is crafted with modern dark-mode aesthetics, high responsiveness, and strict adherence to cognitive usability principles.
+The user interface of SAMVADA is crafted with modern dark-mode aesthetics, high responsiveness, and strict adherence to cognitive usability principles.
 
 ```
 [DIAGRAM PLACEHOLDER: Figure 4.13]
@@ -1806,7 +1806,7 @@ Figure 4.13: User Interface Layout: Device Configuration and Pre-Join Staging Sc
 ```
 
 > **IMAGE GENERATION PROMPT (Figure 4.13)**:
-> *"A modern, sleek dark-mode UI mockup of the LinguaMeet Pre-Join Staging Screen. Center left: Live circular webcam preview video feed with microphone volume meter fluctuating in green. Center right: Clean card container with input fields for 'Display Name', dropdown for 'Select Native Preferred Language' (showing English, Hindi, Spanish flags), audio input device selector, camera selector, and a prominent glowing cyan 'Join Meeting' button. Top header with LinguaMeet logo. Minimalist Figma design aesthetic, dark charcoal (#0F172A) background, modern typography, white vector layout."*
+> *"A modern, sleek dark-mode UI mockup of the SAMVADA Pre-Join Staging Screen. Center left: Live circular webcam preview video feed with microphone volume meter fluctuating in green. Center right: Clean card container with input fields for 'Display Name', dropdown for 'Select Native Preferred Language' (showing English, Hindi, Spanish flags), audio input device selector, camera selector, and a prominent glowing cyan 'Join Meeting' button. Top header with SAMVADA logo. Minimalist Figma design aesthetic, dark charcoal (#0F172A) background, modern typography, white vector layout."*
 
 ```
 [DIAGRAM PLACEHOLDER: Figure 4.14]
@@ -1814,7 +1814,7 @@ Figure 4.14: User Interface Layout: Active Multilingual Video Conference Room Vi
 ```
 
 > **IMAGE GENERATION PROMPT (Figure 4.14)**:
-> *"A high-fidelity mockup of the active LinguaMeet video conference room. Main stage: 2x2 grid of participant video tiles with rounded corners. Each tile features an avatar or video feed, participant name tag, and target language pill badge ('EN', 'ES', 'HI'). The active speaker's tile is highlighted with an elegant glowing cyan border. Bottom overlay: Floating semi-transparent glassmorphic subtitle banner displaying live bilingual captions ('Original: Hola a todos | Translated: Hello everyone'). Bottom control bar: Rounded buttons for Mic mute, Camera toggle, Language switch, Screen share, Pipeline Inspector, and Leave Room. Dark theme, professional UI/UX, 8k resolution."*
+> *"A high-fidelity mockup of the active SAMVADA video conference room. Main stage: 2x2 grid of participant video tiles with rounded corners. Each tile features an avatar or video feed, participant name tag, and target language pill badge ('EN', 'ES', 'HI'). The active speaker's tile is highlighted with an elegant glowing cyan border. Bottom overlay: Floating semi-transparent glassmorphic subtitle banner displaying live bilingual captions ('Original: Hola a todos | Translated: Hello everyone'). Bottom control bar: Rounded buttons for Mic mute, Camera toggle, Language switch, Screen share, Pipeline Inspector, and Leave Room. Dark theme, professional UI/UX, 8k resolution."*
 
 ```
 [DIAGRAM PLACEHOLDER: Figure 4.15]
@@ -1822,7 +1822,7 @@ Figure 4.15: User Interface Layout: Pipeline Diagnostic Inspector and Latency Te
 ```
 
 > **IMAGE GENERATION PROMPT (Figure 4.15)**:
-> *"A modern dark-mode diagnostic modal dashboard for developer telemetry. Title: 'LinguaMeet Real-Time Pipeline Inspector'. Left panel: Live latency breakdown waterfall bar chart showing VAD Chunking (400ms), Uplink (80ms), Whisper ASR (320ms), NLLB NMT (180ms), Edge-TTS (450ms), and Playback Buffer (120ms). Total Latency: 1.55s. Right panel: Scrolling console log displaying recent speech chunks, detected language confidence, raw transcript text, translated target tokens, and audio buffer sizes. Sleek monospace typography, cyberpunk green and electric blue telemetry graphs, dark slate container."*
+> *"A modern dark-mode diagnostic modal dashboard for developer telemetry. Title: 'SAMVADA Real-Time Pipeline Inspector'. Left panel: Live latency breakdown waterfall bar chart showing VAD Chunking (400ms), Uplink (80ms), Whisper ASR (320ms), NLLB NMT (180ms), Edge-TTS (450ms), and Playback Buffer (120ms). Total Latency: 1.55s. Right panel: Scrolling console log displaying recent speech chunks, detected language confidence, raw transcript text, translated target tokens, and audio buffer sizes. Sleek monospace typography, cyberpunk green and electric blue telemetry graphs, dark slate container."*
 
 ---
 
@@ -1839,22 +1839,31 @@ The system utilizes two distinct communication paradigms: synchronous HTTP REST 
 | `POST` | `/api/meetings` | Meeting Management | `{ title, targetLanguage }` (Auth Bearer) | `201 Created`: `{ roomCode, title, hostId, status }` |
 | `GET` | `/api/meetings/:roomCode` | Meeting Management | Route param: `roomCode` | `200 OK`: Meeting document with participant array |
 | `POST` | `/api/process-audio` | AI Microservice | `multipart/form-data`: `audio` (file), `target_languages` (JSON string) | `200 OK`: `{ transcript, source_language, translations: {}, audio: {} }` |
-| `GET` | `/api/health` | Diagnostic Telemetry | None | `200 OK`: `{ status: 'ok', service: 'linguameet-server', uptime }` |
+| `GET` | `/api/health` | Diagnostic Telemetry | None | `200 OK`: `{ status: 'ok', service: 'samvada-server', uptime }` |
 | `GET` | `/api/summary/:roomCode` | AI Summarization | Route param: `roomCode` | `200 OK`: `{ executiveSummary, keyTopics, actionItems }` |
 
 **Table 4.2: Real-Time WebSocket / Socket.IO Signaling and Audio Event Protocol**
 
 | Event Name | Direction | Payload Structure | Functional Purpose |
 |---|---|---|---|
-| `join-meeting` | Client $ightarrow$ Server | `{ roomCode, userId, displayName, targetLanguage }` | Registers socket in room namespace; updates participant roster. |
-| `user-connected` | Server $ightarrow$ Room | `{ userId, displayName, targetLanguage, socketId }` | Notifies existing peers to initiate WebRTC peer connection. |
-| `offer` | Client $ightarrow$ Server | `{ targetSocketId, sdpOffer }` | Relays WebRTC session description offer to target peer. |
-| `answer` | Client $ightarrow$ Server | `{ targetSocketId, sdpAnswer }` | Relays WebRTC session description answer to offering peer. |
-| `ice-candidate`| Client $ightarrow$ Server | `{ targetSocketId, candidate }` | Relays ICE candidate for NAT/firewall traversal. |
-| `audio-chunk` | Client $ightarrow$ Server | `Binary Buffer`, `{ roomCode, speakerName, mimeType }` | Transmits VAD-segmented WebM speech audio chunk for translation. |
-| `new-transcript`| Server $ightarrow$ Room | `{ speakerName, sourceLanguage, sourceText, translations }` | Subtitle-first broadcast of translated textual dialogue turn. |
-| `translation-result`| Server $ightarrow$ Client | `{ speakerName, language, audioBase64, mimeType }` | Delivers synthesized target speech audio exclusively to subscribed listener. |
-| `language-changed`| Client $ightarrow$ Server | `{ roomCode, targetLanguage }` | Updates listener's runtime translation subscription language. |
+| `join-meeting` | Client $
+ightarrow$ Server | `{ roomCode, userId, displayName, targetLanguage }` | Registers socket in room namespace; updates participant roster. |
+| `user-connected` | Server $
+ightarrow$ Room | `{ userId, displayName, targetLanguage, socketId }` | Notifies existing peers to initiate WebRTC peer connection. |
+| `offer` | Client $
+ightarrow$ Server | `{ targetSocketId, sdpOffer }` | Relays WebRTC session description offer to target peer. |
+| `answer` | Client $
+ightarrow$ Server | `{ targetSocketId, sdpAnswer }` | Relays WebRTC session description answer to offering peer. |
+| `ice-candidate`| Client $
+ightarrow$ Server | `{ targetSocketId, candidate }` | Relays ICE candidate for NAT/firewall traversal. |
+| `audio-chunk` | Client $
+ightarrow$ Server | `Binary Buffer`, `{ roomCode, speakerName, mimeType }` | Transmits VAD-segmented WebM speech audio chunk for translation. |
+| `new-transcript`| Server $
+ightarrow$ Room | `{ speakerName, sourceLanguage, sourceText, translations }` | Subtitle-first broadcast of translated textual dialogue turn. |
+| `translation-result`| Server $
+ightarrow$ Client | `{ speakerName, language, audioBase64, mimeType }` | Delivers synthesized target speech audio exclusively to subscribed listener. |
+| `language-changed`| Client $
+ightarrow$ Server | `{ roomCode, targetLanguage }` | Updates listener's runtime translation subscription language. |
 
 ---
 
@@ -1876,7 +1885,7 @@ All development, profiling, and benchmarking experiments were conducted across a
 
 **Table 4.4: Software Dependencies, Framework Versions, and Cloud Runtimes**
 
-| Software Package / Module | Version | Ecosystem | Functional Role in LinguaMeet |
+| Software Package / Module | Version | Ecosystem | Functional Role in SAMVADA |
 |---|---|---|---|
 | **Node.js** | 20.12.0 LTS | Application Server | Asynchronous JavaScript server runtime |
 | **Express** | 4.19.2 | Application Server | REST API routing and middleware framework |
@@ -2013,7 +2022,8 @@ A rigorous test suite comprising 15 formal test scenarios was executed across un
 | **TC-08** | Single Mic Sharing| Peer activates camera and mic | Single `getUserMedia` stream acquired; WebRTC and VAD tracks cloned | Zero device contention or audio track muting | ✅ PASS |
 | **TC-09** | Language Dedup | Three listeners in room all select Spanish | Node.js identifies 1 unique language; calls AI service once | AI microservice logs exactly 1 NMT and 1 TTS call | ✅ PASS |
 | **TC-10** | Whisper ASR | Speech audio input in Hindi: 'नमस्ते आप कैसे हैं' | Whisper detects `hi`, transcribes accurately | Accurately transcribed with confidence > 0.94 | ✅ PASS |
-| **TC-11** | NLLB-200 NMT | English input: 'Welcome to the project demo' $ightarrow$ French | NLLB-200 generates 'Bienvenue à la démonstration...' | Grammatically flawless French translation | ✅ PASS |
+| **TC-11** | NLLB-200 NMT | English input: 'Welcome to the project demo' $
+ightarrow$ French | NLLB-200 generates 'Bienvenue à la démonstration...' | Grammatically flawless French translation | ✅ PASS |
 | **TC-12** | Edge Neural TTS | Synthesize French text using `fr-FR-HenriNeural` | MP3 audio stream synthesized and base64 encoded | High-fidelity natural voice synthesized in 380ms | ✅ PASS |
 | **TC-13** | TTS Fallback | Simulate network timeout on Edge-TTS endpoint | System automatically catches error and invokes gTTS | Fallback gTTS audio generated within 650ms | ✅ PASS |
 | **TC-14** | Subtitle-First | Speaker completes phrase | Subtitle rendered on listener UI before audio plays | Subtitles appear 620ms before audio starts | ✅ PASS |
@@ -2024,7 +2034,7 @@ A rigorous test suite comprising 15 formal test scenarios was executed across un
 ## 4.6 Performance Evaluation
 
 ### 4.6.1 End-to-End Latency Budget Analysis
-To validate the real-time feasibility of LinguaMeet, comprehensive latency profiling was conducted across each discrete stage of the pipeline. Table 4.6 compares the baseline system against the optimized cascaded architecture.
+To validate the real-time feasibility of SAMVADA, comprehensive latency profiling was conducted across each discrete stage of the pipeline. Table 4.6 compares the baseline system against the optimized cascaded architecture.
 
 **Table 4.6: Latency Budget Comparison: Baseline vs. Optimized Cascaded Architecture**
 
@@ -2043,7 +2053,7 @@ To validate the real-time feasibility of LinguaMeet, comprehensive latency profi
 
 ## 4.7 Summary
 
-Chapter 4 established the complete architectural and engineering blueprint of LinguaMeet. The three-tier decoupled architecture guarantees that heavy artificial intelligence computations are completely isolated from real-time WebRTC media streams and client rendering threads. 
+Chapter 4 established the complete architectural and engineering blueprint of SAMVADA. The three-tier decoupled architecture guarantees that heavy artificial intelligence computations are completely isolated from real-time WebRTC media streams and client rendering threads. 
 
 Through formal DFDs (Levels 0, 1, and 2) and UML diagrams (Use Case, Class, Sequence, Component, and Deployment), every interaction and boundary was rigorously defined. The mathematical formulations for RMS Voice Activity Detection, silence gating, and audio ducking provide the theoretical grounding for the platform's four core algorithms. 
 
@@ -2053,7 +2063,7 @@ The empirical test execution matrix verified that all 15 core functional scenari
 
 ## 5.1 Outputs & Outcomes
 
-The comprehensive evaluation of LinguaMeet was performed through empirical benchmarking, system telemetry profiling, and live conversational sessions involving multi-lingual speaker dyads and triads. The experimental trials validated that LinguaMeet successfully eliminates the language barrier in live video conferencing while preserving high video quality, conversational naturalness, and robust auditory comprehension.
+The comprehensive evaluation of SAMVADA was performed through empirical benchmarking, system telemetry profiling, and live conversational sessions involving multi-lingual speaker dyads and triads. The experimental trials validated that SAMVADA successfully eliminates the language barrier in live video conferencing while preserving high video quality, conversational naturalness, and robust auditory comprehension.
 
 ```
 [DIAGRAM PLACEHOLDER: Figure 5.1]
@@ -2145,22 +2155,32 @@ Figure 5.3: Translation Quality (BLEU Score) Across 12 Evaluated Language Pairs
 ```
 
 > **IMAGE GENERATION PROMPT (Figure 5.3)**:
-> *"A multi-colored horizontal bar chart illustrating the BLEU translation accuracy scores for 12 language pairs translated by Meta NLLB-200-distilled-600M in the LinguaMeet system. Languages include English to Spanish (41.5), English to French (39.8), English to Hindi (34.2), English to German (36.1), English to Japanese (31.4), Hindi to English (35.6), Spanish to English (42.0), French to English (40.4), German to English (37.2), and Japanese to English (32.1). An annotated vertical line indicates the threshold of 'High Quality Translation' at 30.0 BLEU. Clean publication design, distinct color palette, white background."*
+> *"A multi-colored horizontal bar chart illustrating the BLEU translation accuracy scores for 12 language pairs translated by Meta NLLB-200-distilled-600M in the SAMVADA system. Languages include English to Spanish (41.5), English to French (39.8), English to Hindi (34.2), English to German (36.1), English to Japanese (31.4), Hindi to English (35.6), Spanish to English (42.0), French to English (40.4), German to English (37.2), and Japanese to English (32.1). An annotated vertical line indicates the threshold of 'High Quality Translation' at 30.0 BLEU. Clean publication design, distinct color palette, white background."*
 
 **Table 5.3: Translation Quality Evaluation (BLEU & chrF++ Scores Across Language Pairs)**
 
 | Source Language | Target Language | Syntactic Typology Shift | BLEU Score (0–100) | chrF++ Score (0–100) | Perceptual Accuracy Rating |
 |---|---|---|---|---|---|
-| **English (`en`)** | **Spanish (`es`)** | SVO $ightarrow$ SVO | **41.5** | **64.2** | Excellent (Native Fluency) |
-| **English (`en`)** | **French (`fr`)** | SVO $ightarrow$ SVO | **39.8** | **62.8** | Excellent (Native Fluency) |
-| **English (`en`)** | **German (`de`)** | SVO $ightarrow$ SOV (V2) | **36.1** | **61.4** | Very Good (Grammatically Intact) |
-| **English (`en`)** | **Hindi (`hi`)** | SVO $ightarrow$ SOV | **34.2** | **59.6** | Very Good (Accurate Semantics) |
-| **English (`en`)** | **Japanese (`ja`)**| SVO $ightarrow$ SOV | **31.4** | **55.8** | Good (Minor Honorific Variance) |
-| **Hindi (`hi`)** | **English (`en`)** | SOV $ightarrow$ SVO | **35.6** | **60.1** | Very Good (Accurate Semantics) |
-| **Spanish (`es`)** | **English (`en`)** | SVO $ightarrow$ SVO | **42.0** | **65.1** | Excellent (Native Fluency) |
-| **French (`fr`)** | **English (`en`)** | SVO $ightarrow$ SVO | **40.4** | **63.5** | Excellent (Native Fluency) |
-| **German (`de`)** | **English (`en`)** | SOV $ightarrow$ SVO | **37.2** | **62.0** | Very Good (Grammatically Intact) |
-| **Japanese (`ja`)**| **English (`en`)** | SOV $ightarrow$ SVO | **32.1** | **56.4** | Good (Accurate Meaning) |
+| **English (`en`)** | **Spanish (`es`)** | SVO $
+ightarrow$ SVO | **41.5** | **64.2** | Excellent (Native Fluency) |
+| **English (`en`)** | **French (`fr`)** | SVO $
+ightarrow$ SVO | **39.8** | **62.8** | Excellent (Native Fluency) |
+| **English (`en`)** | **German (`de`)** | SVO $
+ightarrow$ SOV (V2) | **36.1** | **61.4** | Very Good (Grammatically Intact) |
+| **English (`en`)** | **Hindi (`hi`)** | SVO $
+ightarrow$ SOV | **34.2** | **59.6** | Very Good (Accurate Semantics) |
+| **English (`en`)** | **Japanese (`ja`)**| SVO $
+ightarrow$ SOV | **31.4** | **55.8** | Good (Minor Honorific Variance) |
+| **Hindi (`hi`)** | **English (`en`)** | SOV $
+ightarrow$ SVO | **35.6** | **60.1** | Very Good (Accurate Semantics) |
+| **Spanish (`es`)** | **English (`en`)** | SVO $
+ightarrow$ SVO | **42.0** | **65.1** | Excellent (Native Fluency) |
+| **French (`fr`)** | **English (`en`)** | SVO $
+ightarrow$ SVO | **40.4** | **63.5** | Excellent (Native Fluency) |
+| **German (`de`)** | **English (`en`)** | SOV $
+ightarrow$ SVO | **37.2** | **62.0** | Very Good (Grammatically Intact) |
+| **Japanese (`ja`)**| **English (`en`)** | SOV $
+ightarrow$ SVO | **32.1** | **56.4** | Good (Accurate Meaning) |
 
 The evaluation demonstrates that Meta's NLLB-200 model maintains robust translation quality across diverse language pairs. High-resource European language pairs (English-Spanish, English-French) achieve BLEU scores near or above 40.0. Crucially, challenging SVO-to-SOV language pairs involving Indian and Asian languages (English-Hindi, English-Japanese) maintain high semantic integrity with BLEU scores of 34.2 and 31.4 respectively, far exceeding the baseline threshold of 25.0 required for coherent human comprehension.
 
@@ -2203,10 +2223,10 @@ These safeguards successfully eliminated 99.4% of neural hallucinations in live 
 
 ## 5.3 Discussion of Results & Limitations of the System
 
-While LinguaMeet achieves its primary goal of real-time speech-to-speech video conferencing, several architectural and infrastructural trade-offs were identified during stress testing:
+While SAMVADA achieves its primary goal of real-time speech-to-speech video conferencing, several architectural and infrastructural trade-offs were identified during stress testing:
 
 ### 5.3.1 Full-Mesh WebRTC Scaling Limits
-LinguaMeet utilizes a decentralized Full-Mesh WebRTC topology where each participant establishes an independent, direct bidirectional media peer connection with every other participant. In a room with $N$ participants, the total number of peer connections scales quadratically:
+SAMVADA utilizes a decentralized Full-Mesh WebRTC topology where each participant establishes an independent, direct bidirectional media peer connection with every other participant. In a room with $N$ participants, the total number of peer connections scales quadratically:
 $$C = rac{N(N - 1)}{2}$$
 
 For $N = 3$, $C = 3$; for $N = 5$, $C = 10$; for $N = 8$, $C = 28$. Beyond 5–6 participants, client uplink bandwidth and CPU consumption (encoding multiple video streams simultaneously) degrade significantly. For enterprise-scale deployments exceeding 10 participants, the media layer must migrate to a **Selective Forwarding Unit (SFU)** media server architecture (e.g., mediasoup or LiveKit).
@@ -2223,7 +2243,7 @@ In our experimental testbed, the cloud GPU microservice was exposed via an Ngrok
 
 ## 6.1 Summary of Work Completed
 
-The LinguaMeet project successfully engineered, benchmarked, and validated an autonomous, full-stack, real-time speech-to-speech translation video conferencing platform operating entirely within standard web browsers.
+The SAMVADA project successfully engineered, benchmarked, and validated an autonomous, full-stack, real-time speech-to-speech translation video conferencing platform operating entirely within standard web browsers.
 
 ### Key Technical Accomplishments:
 1. **Decoupled Three-Tier Architecture**: Successfully integrated a React 19 single-page application, an asynchronous Node.js / Socket.IO application and signaling server, and a high-performance Python FastAPI AI microservice running on cloud GPU infrastructure.
@@ -2237,7 +2257,7 @@ The LinguaMeet project successfully engineered, benchmarked, and validated an au
 
 ## 6.2 Future Scope
 
-The successful implementation of LinguaMeet lays a robust foundation for numerous advanced engineering enhancements:
+The successful implementation of SAMVADA lays a robust foundation for numerous advanced engineering enhancements:
 
 ### 1. Transition to Selective Forwarding Unit (SFU) Architecture
 To overcome the $O(N^2)$ scaling bottleneck of WebRTC full-mesh topologies, the media transport layer can be upgraded to an open-source SFU (such as **mediasoup**, **LiveKit**, or **Janus**). In an SFU architecture, each client uploads its video and audio stream exactly once to the media server, which intelligently routes media packets to other peers, scaling room capacity to 50+ concurrent participants.
@@ -2246,13 +2266,15 @@ To overcome the $O(N^2)$ scaling bottleneck of WebRTC full-mesh topologies, the 
 Future iterations will incorporate low-latency voice cloning models (such as an optimized, distilled variant of **XTTS-v2** or **VoiceCraft**). By extracting a 3-second speaker acoustic embedding directly from the source audio chunk, the neural vocoder will synthesize translated speech in the target language that retains the exact vocal pitch, timbre, accent, and emotional resonance of the original speaker.
 
 ### 3. Unified End-to-End Streaming Speech-to-Speech (SeamlessStreaming)
-As foundational AI models evolve, the three-stage cascade (ASR $ightarrow$ NMT $ightarrow$ TTS) can be replaced with a unified multimodal transformer model such as **Meta SeamlessStreaming** or **SeamlessM4T v2**. Unified models translate speech directly from acoustic representations to target speech tokens, eliminating intermediate text representation and potentially reducing end-to-end turnaround latency below 1.2 seconds.
+As foundational AI models evolve, the three-stage cascade (ASR $
+ightarrow$ NMT $
+ightarrow$ TTS) can be replaced with a unified multimodal transformer model such as **Meta SeamlessStreaming** or **SeamlessM4T v2**. Unified models translate speech directly from acoustic representations to target speech tokens, eliminating intermediate text representation and potentially reducing end-to-end turnaround latency below 1.2 seconds.
 
 ### 4. AudioWorklet Raw PCM Streaming Pipeline
 Replacing the browser's `MediaRecorder` API with a custom `AudioWorklet` streaming raw 16 kHz Float32 PCM audio frames over a persistent binary WebSocket pipeline will eliminate WebM containerization overhead, enabling sub-chunk streaming ASR and further trimming 200ms from the latency budget.
 
 ### 5. Mobile Native Cross-Platform Clients
-Developing dedicated native mobile applications for iOS and Android using React Native WebRTC and Flutter will extend LinguaMeet's real-time translation capabilities to mobile workforces, humanitarian field workers, and emergency first responders worldwide.
+Developing dedicated native mobile applications for iOS and Android using React Native WebRTC and Flutter will extend SAMVADA's real-time translation capabilities to mobile workforces, humanitarian field workers, and emergency first responders worldwide.
 
 ---
 
@@ -2356,10 +2378,10 @@ Developing dedicated native mobile applications for iOS and Android using React 
 
 # APPENDIX C: LIST OF PUBLICATIONS
 
-The research, engineering innovations, and empirical benchmarking derived from the LinguaMeet platform have been compiled into a formal academic manuscript formatted according to IEEE conference standards:
+The research, engineering innovations, and empirical benchmarking derived from the SAMVADA platform have been compiled into a formal academic manuscript formatted according to IEEE conference standards:
 
 ### Manuscript Details:
-- **Title**: *LinguaMeet: An Optimized Cascaded Speech-to-Speech Translation Architecture for Low-Latency Web Video Conferencing*
+- **Title**: *SAMVADA: An Optimized Cascaded Speech-to-Speech Translation Architecture for Low-Latency Web Video Conferencing*
 - **Authors**: [Name of Student 1], [Name of Student 2], [Name of Student 3], and [Name of Guide]
 - **Target Venue**: IEEE International Conference on Communication, Information & Computing Technology (ICCICT-2027) / International Conference on Computing, Communication, Control and Automation (ICCUBEA-2027)
 - **Status**: Manuscript Draft Prepared for Review and Institutional Submission
@@ -2367,7 +2389,7 @@ The research, engineering innovations, and empirical benchmarking derived from t
 ### IEEE Reference Citation Format:
 ```
 [1] [Author 1], [Author 2], [Author 3], and [Guide Name], 
-    "LinguaMeet: An Optimized Cascaded Speech-to-Speech Translation Architecture 
+    "SAMVADA: An Optimized Cascaded Speech-to-Speech Translation Architecture 
     for Low-Latency Web Video Conferencing," in Proc. IEEE International 
     Conference on Communication, Information & Computing Technology (ICCICT), 
     Mumbai, India, 2027 (Under Review).

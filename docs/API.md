@@ -1,6 +1,6 @@
 # API.md — API Reference
 
-# LinguaMeet — API Reference
+# SAMVADA — API Reference
 
 **Version**: 1.0-draft  
 **Date**: 2026-09-11  
@@ -25,7 +25,7 @@
 ```json
 {
   "status": "ok",
-  "service": "linguameet-server",
+  "service": "samvada-server",
   "timestamp": "2026-09-11T10:30:00.000Z"
 }
 ```
@@ -369,7 +369,7 @@
 }
 ```
 
-**Notes**: Proxies to `https://linguameet.metered.live/api/v1/turn/credentials?apiKey=<METERED_API_KEY>`. This keeps the Metered API key server-side.
+**Notes**: Proxies to `https://samvada.metered.live/api/v1/turn/credentials?apiKey=<METERED_API_KEY>`. This keeps the Metered API key server-side.
 
 ---
 
@@ -388,7 +388,7 @@
 ```json
 {
   "status": "ok",
-  "service": "linguameet-ai-service",
+  "service": "samvada-ai-service",
   "whisper_model": "small",
   "nllb_model": "facebook/nllb-200-distilled-600M",
   "tts_engine": "edge_tts",

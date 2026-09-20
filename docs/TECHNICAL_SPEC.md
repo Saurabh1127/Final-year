@@ -1,6 +1,6 @@
 # TECHNICAL_SPEC.md — Technical Specification
 
-# LinguaMeet — Technical Specification
+# SAMVADA — Technical Specification
 
 **Version**: 1.0-draft  
 **Date**: 2026-09-11  
@@ -82,7 +82,7 @@ client/
 
 ### 2.2 State Management
 
-LinguaMeet uses React Context for global state and hook-local state for component-scoped concerns. No external state management library is used.
+SAMVADA uses React Context for global state and hook-local state for component-scoped concerns. No external state management library is used.
 
 | Context | Provider Location | State |
 |---|---|---|
@@ -149,7 +149,7 @@ Connection flow:
 
 TURN Configuration:
   - Provider: Metered (metered.ca)
-  - Fetch: GET https://linguameet.metered.live/api/v1/turn/credentials?apiKey=<KEY>
+  - Fetch: GET https://samvada.metered.live/api/v1/turn/credentials?apiKey=<KEY>
   - Returns: Array of { urls, username, credential } TURN/STUN servers
   - BUG: API key is currently hardcoded in client-side code
 ```

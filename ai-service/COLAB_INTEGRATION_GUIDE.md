@@ -1,6 +1,6 @@
-# 🚀 LinguaMeet AI — Google Colab Setup & MERN Integration Guide
+# 🚀 SAMVADA AI — Google Colab Setup & MERN Integration Guide
 
-Welcome to **LinguaMeet AI** — A Real-Time Multi-Lingual Speech-to-Speech Translation & Meeting Platform.
+Welcome to **SAMVADA AI** — A Real-Time Multi-Lingual Speech-to-Speech Translation & Meeting Platform.
 
 This guide provides a **step-by-step walkthrough** for:
 1. Setting up the GPU-accelerated **FastAPI AI Microservice** in Google Colab (Tesla T4 GPU).
@@ -97,7 +97,7 @@ print(f"🌐 PUBLIC FASTAPI URL: {tunnel.public_url}")
 
 ## 🧠 Part 2: How the AI Microservice Pipeline Works
 
-The LinguaMeet AI microservice utilizes a **Cascaded Speech-to-Speech Translation (S2ST) Architecture**:
+The SAMVADA AI microservice utilizes a **Cascaded Speech-to-Speech Translation (S2ST) Architecture**:
 
 ```
 [ 🎙️ Audio Input (WebM/WAV) ]

@@ -1,5 +1,5 @@
 """
-LinguaMeet AI Service — Production-Ready FastAPI Server
+SAMVADA AI Service — Production-Ready FastAPI Server
 
 Endpoints:
   GET  /health               — Service health + loaded model info
@@ -171,7 +171,7 @@ async def lifespan(app: "FastAPI"):  # type: ignore[valid-type]
 # ─────────────────────────────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="LinguaMeet AI Service",
+    title="SAMVADA AI Service",
     description=(
         "Unified Speech-to-Speech Translation Pipeline — "
         "Whisper-small (STT) · NLLB-200-600M (NMT) · gTTS / XTTS-v2 (TTS)"
@@ -200,7 +200,7 @@ async def health_check() -> HealthResponse:
     """Return service health and loaded model configuration."""
     return HealthResponse(
         status="ok",
-        service="linguameet-ai-service",
+        service="samvada-ai-service",
         whisper_model=os.getenv("WHISPER_MODEL", "small"),
         nllb_model=os.getenv("NLLB_MODEL", "facebook/nllb-200-distilled-600M"),
         tts_engine="sarvam_ai" if os.getenv("USE_SARVAM", "false").lower() == "true" else ("xtts_v2" if os.getenv("USE_XTTS", "false").lower() == "true" else "edge_tts"),
@@ -382,7 +382,7 @@ async def demo_dashboard() -> Any:
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>LinguaMeet — AI Test Dashboard</title>
+<title>SAMVADA — AI Test Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
@@ -454,7 +454,7 @@ audio{{width:100%;margin-top:7px;border-radius:8px}}
 </head>
 <body>
 <header>
-  <h1>🌐 LinguaMeet AI Service</h1>
+  <h1>🌐 SAMVADA AI Service</h1>
   <p class="sub">Test Dashboard — Whisper-small · NLLB-200-600M · gTTS <span class="badge">v2.0</span></p>
 </header>
 <div class="grid">

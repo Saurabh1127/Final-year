@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════════════
-# LinguaMeet AI Service — Google Colab Test Notebook
+# SAMVADA AI Service — Google Colab Test Notebook
 # ═══════════════════════════════════════════════════════════════════
 # Instructions for New Users / Evaluators:
 #   1. Open a NEW Google Colab notebook (Runtime → Change runtime type → T4 GPU)
@@ -167,7 +167,7 @@ try:
     public_url = tunnel.public_url
 
     print("\n" + "═"*65)
-    print("🌐  LINGUAMEET AI SERVICE IS LIVE & EXPOSED TO REACT FRONTE N D!")
+    print("🌐  SAMVADA AI SERVICE IS LIVE & EXPOSED TO REACT FRONTE N D!")
     print("═"*65)
     print(f"\n  FastAPI Public URL → {public_url}")
     print(f"  Interactive Docs   → {public_url}/docs")

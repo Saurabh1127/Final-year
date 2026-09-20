@@ -37,7 +37,7 @@ const PreJoinScreen = ({ roomCode, userName, localStream, isMuted, isVideoOff, t
               <path d="M10 16C10 12.5 13 9 16 9C19 9 22 12.5 22 16C22 19.5 19 23 16 23" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" />
               <circle cx="16" cy="16" r="3" fill="var(--color-accent)" />
             </svg>
-            <span>LinguaMeet</span>
+            <span>SAMVADA</span>
           </div>
           <h2>Ready to join?</h2>
           <p className="prejoin-room-label">

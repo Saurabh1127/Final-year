@@ -1,6 +1,6 @@
 # ARCHITECTURE.md — System Architecture
 
-# LinguaMeet — System Architecture Document
+# SAMVADA — System Architecture Document
 
 **Version**: 1.0-draft  
 **Date**: 2026-09-11  
@@ -10,7 +10,7 @@
 
 ## 1. Architecture Overview
 
-LinguaMeet is a three-tier distributed system using a cascaded AI pipeline for speech-to-speech translation:
+SAMVADA is a three-tier distributed system using a cascaded AI pipeline for speech-to-speech translation:
 
 ```
 ┌───────────────────────────────────────┐

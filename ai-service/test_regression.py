@@ -1,5 +1,5 @@
 """
-LinguaMeet AI Pipeline — Regression Test Script
+SAMVADA AI Pipeline — Regression Test Script
 ================================================
 Run from Colab or any machine with access to the AI service URL.
 
@@ -53,7 +53,7 @@ def generate_wav(duration_s: float = 2.0, sample_rate: int = 16000, freq: float 
 
 def run_test(base_url: str):
     print(f"\n{'='*65}")
-    print(f"🔬 LinguaMeet Regression Test")
+    print(f"🔬 SAMVADA Regression Test")
     print(f"   AI Service: {base_url}")
     print(f"{'='*65}\n")
 

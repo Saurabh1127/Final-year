@@ -1,4 +1,4 @@
-"""Pydantic response/request models for the LinguaMeet AI Service."""
+"""Pydantic response/request models for the SAMVADA AI Service."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-# LinguaMeet — Technical Documentation Index
+# SAMVADA — Technical Documentation Index
 
 **Generated**: 2026-09-11  
 **Repository**: `c:\Final Year\Final-year\`

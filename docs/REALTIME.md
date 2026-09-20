@@ -1,6 +1,6 @@
 # REALTIME.md — Real-Time Communication Protocol
 
-# LinguaMeet — Real-Time Communication Specification
+# SAMVADA — Real-Time Communication Specification
 
 **Version**: 1.0-draft  
 **Date**: 2026-09-11  

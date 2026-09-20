@@ -1,1 +1,1 @@
-"""LinguaMeet AI Service — App Package"""
+"""SAMVADA AI Service — App Package"""

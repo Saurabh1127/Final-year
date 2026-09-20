@@ -1,8 +1,8 @@
 {
-  "name": "linguameet-server",
+  "name": "samvada-server",
   "version": "1.0.0",
   "type": "module",
-  "description": "LinguaMeet Node.js backend — REST API + Socket.IO signaling",
+  "description": "SAMVADA Node.js backend — REST API + Socket.IO signaling",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",

@@ -1,10 +1,10 @@
-# LinguaMeet Real-Time Speech-to-Speech Architecture Study
+# SAMVADA Real-Time Speech-to-Speech Architecture Study
 
 ---
 
 ## 1. Executive Summary
 
-This report is the result of a deep inspection of the LinguaMeet repository, extensive research into the current state of real-time speech-to-speech translation (S2ST) technology, and a first-principles analysis of the latency budget required to deliver a natural conversational translation experience.
+This report is the result of a deep inspection of the SAMVADA repository, extensive research into the current state of real-time speech-to-speech translation (S2ST) technology, and a first-principles analysis of the latency budget required to deliver a natural conversational translation experience.
 
 **Key findings:**
 
@@ -320,7 +320,7 @@ Simultaneous translation is fundamentally different from "fast batch translation
 - **Retranslation**: Translate partial input, then re-translate when more context arrives. Shows "updating" text to user. Used by Google in early Meet translation.
 - **Local Agreement**: Compare hypotheses from overlapping windows. Only emit tokens where consecutive windows agree (stable prefix). Used by Whisper-Streaming.
 
-**Implication for LinguaMeet:** The current system does *none* of this. It waits for a complete chunk, processes it as a batch, and returns the result. This is "offline translation with small files," not simultaneous translation.
+**Implication for SAMVADA:** The current system does *none* of this. It waits for a complete chunk, processes it as a batch, and returns the result. This is "offline translation with small files," not simultaneous translation.
 
 ### Evaluation Metrics (from SimulST research)
 
@@ -328,7 +328,7 @@ Simultaneous translation is fundamentally different from "fast batch translation
 - **Average Proportion (AP)**: Fraction of source consumed before each target token is emitted. 0.5 = perfectly simultaneous.
 - **Consecutive Wait (CW)**: Maximum number of consecutive source tokens read without emitting a target. Lower = smoother output.
 
-**Implication for LinguaMeet:** Current system has AL ≈ ∞ (waits for entire chunk). Any streaming approach would dramatically improve this.
+**Implication for SAMVADA:** Current system has AL ≈ ∞ (waits for entire chunk). Any streaming approach would dramatically improve this.
 
 ---
 
@@ -427,7 +427,7 @@ Mic → 160ms audio frames → SeamlessStreaming (EMMA)
 | **Control** | Full (tune each component) | Limited (single model) | Limited |
 | **License** | ✅ All open/free | ⚠️ CC-BY-NC-4.0 | ⚠️ CC-BY-NC-4.0 |
 
-**Verdict:** Option B (Streaming Cascade) is recommended for LinguaMeet because:
+**Verdict:** Option B (Streaming Cascade) is recommended for SAMVADA because:
 1. It fits comfortably on T4 with room for concurrent speakers
 2. Edge Neural TTS produces significantly more natural voice than SeamlessM4T's unit vocoder
 3. Indian language support via NLLB is strong
@@ -1421,7 +1421,7 @@ The single most important architectural change is: **Stop treating this as a bat
 
 ---
 
-# IF I WERE BUILDING LINGUAMEET TODAY
+# IF I WERE BUILDING SAMVADA TODAY
 
 If given this repository today with the sole objective of creating the best practical real-time multilingual speech-to-speech meeting experience:
 
@@ -1477,7 +1477,7 @@ The streaming architecture processes audio as a continuous flow: frames arrive c
 
 ### Primary Papers
 
-| # | Title | Authors/Org | Year | Link | Relevance to LinguaMeet |
+| # | Title | Authors/Org | Year | Link | Relevance to SAMVADA |
 |---|-------|-------------|------|------|------------------------|
 | 1 | SeamlessM4T: Massively Multilingual & Multimodal Machine Translation | Meta FAIR | 2023 | [arXiv:2308.11596](https://arxiv.org/abs/2308.11596) | Unified S2ST architecture. Demonstrates that single-model approach can replace cascaded pipeline. 100 languages. |
 | 2 | Seamless: Multilingual Expressive and Streaming Speech Translation | Meta FAIR | 2023 | [arXiv:2312.05187](https://arxiv.org/abs/2312.05187) | Introduces SeamlessStreaming (EMMA), SeamlessExpressive. ~2s streaming latency. Key reference for streaming S2ST. |

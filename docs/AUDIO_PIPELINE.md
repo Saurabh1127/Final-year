@@ -1,6 +1,6 @@
 # AUDIO_PIPELINE.md — Audio Capture, Transport & Playback
 
-# LinguaMeet — Audio Pipeline Specification
+# SAMVADA — Audio Pipeline Specification
 
 **Version**: 1.0-draft  
 **Date**: 2026-09-11  

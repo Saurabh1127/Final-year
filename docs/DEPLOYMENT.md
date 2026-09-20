@@ -1,6 +1,6 @@
 # DEPLOYMENT.md — Deployment & Operations Guide
 
-# LinguaMeet — Deployment & Operations
+# SAMVADA — Deployment & Operations
 
 **Version**: 1.0-draft  
 **Date**: 2026-09-11  
@@ -10,7 +10,7 @@
 
 ## 1. Services Overview
 
-LinguaMeet consists of three independently deployable services:
+SAMVADA consists of three independently deployable services:
 
 | Service | Runtime | Port | GPU Required | Stateful |
 |---|---|---|---|---|
@@ -133,7 +133,7 @@ npm run dev
 | Variable | Required | Example | Description |
 |---|---|---|---|
 | `PORT` | No | `5000` | HTTP server port |
-| `MONGO_URI` | Yes | `mongodb+srv://user:pass@cluster.mongodb.net/linguameet` | MongoDB connection string |
+| `MONGO_URI` | Yes | `mongodb+srv://user:pass@cluster.mongodb.net/samvada` | MongoDB connection string |
 | `JWT_SECRET` | Yes | `a3f8c2...` (64-byte hex) | JWT signing secret |
 | `AI_SERVICE_URL` | Yes | `https://abc123.ngrok-free.app` | AI service URL |
 | `GEMINI_API_KEY` | Yes | `AIza...` | Google Gemini API key |
@@ -236,10 +236,10 @@ Serve with any static file server (Nginx, Caddy, Cloudflare Pages, Vercel).
 npm install -g pm2
 
 # Start
-pm2 start server.js --name linguameet-server
+pm2 start server.js --name samvada-server
 
 # Cluster mode (multiple instances)
-pm2 start server.js --name linguameet-server -i max
+pm2 start server.js --name samvada-server -i max
 
 # Auto-restart on crash
 pm2 startup
@@ -250,7 +250,7 @@ pm2 save
 ```javascript
 module.exports = {
   apps: [{
-    name: 'linguameet-server',
+    name: 'samvada-server',
     script: 'server.js',
     instances: 1,           // Single instance for Socket.IO (no Redis)
     exec_mode: 'fork',
@@ -324,7 +324,7 @@ Set `AI_SERVICE_URL=http://localhost:8000` in both client and server `.env`.
 2. Create a free M0 cluster
 3. Create a database user with password
 4. Whitelist IP addresses (or `0.0.0.0/0` for development)
-5. Get connection string: `mongodb+srv://<user>:<password>@<cluster>.mongodb.net/linguameet`
+5. Get connection string: `mongodb+srv://<user>:<password>@<cluster>.mongodb.net/samvada`
 6. Set as `MONGO_URI` in `server/.env`
 
 **M0 Limits**:
@@ -349,7 +349,7 @@ No manual collection creation required.
 ### 7.1 Setup
 
 1. Create account at [metered.ca](https://www.metered.ca)
-2. Create an application (e.g., "linguameet")
+2. Create an application (e.g., "samvada")
 3. Get API key from dashboard
 4. Set as `METERED_API_KEY` in `server/.env` (after Phase 0 moves it from client)
 
@@ -402,7 +402,7 @@ No manual collection creation required.
 |---|---|---|
 | Client | Browser developer console | F12 → Console tab |
 | Server | stdout/stderr (console.log) | Terminal running `npm run dev` |
-| Server (PM2) | `~/.pm2/logs/` | `pm2 logs linguameet-server` |
+| Server (PM2) | `~/.pm2/logs/` | `pm2 logs samvada-server` |
 | AI Service | stdout (uvicorn) | Terminal or Colab output cell |
 | MongoDB | Atlas Dashboard → Activity tab | MongoDB Atlas web UI |
 

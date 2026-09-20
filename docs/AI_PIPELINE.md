@@ -1,6 +1,6 @@
 # AI_PIPELINE.md — AI/ML Pipeline Specification
 
-# LinguaMeet — AI Pipeline Specification
+# SAMVADA — AI Pipeline Specification
 
 **Version**: 1.0-draft  
 **Date**: 2026-09-11  

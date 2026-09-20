@@ -1,6 +1,6 @@
 # DATABASE.md — Database Schema & Design
 
-# LinguaMeet — Database Schema & Design
+# SAMVADA — Database Schema & Design
 
 **Version**: 1.0-draft  
 **Date**: 2026-09-11  

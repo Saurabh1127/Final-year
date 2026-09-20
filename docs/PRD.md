@@ -1,6 +1,6 @@
 # PRD.md — Product Requirements Document
 
-# LinguaMeet — Real-Time Speech-to-Speech Translation Meeting Platform
+# SAMVADA — Real-Time Speech-to-Speech Translation Meeting Platform
 
 **Version**: 1.0-draft  
 **Date**: 2026-09-11  
@@ -10,11 +10,11 @@
 
 ## 1. Product Overview
 
-LinguaMeet is a web-based video conferencing platform that provides **real-time speech-to-speech translation** during meetings. Participants speak in their native languages and hear other speakers translated into their preferred language, with both translated audio playback and on-screen subtitles.
+SAMVADA is a web-based video conferencing platform that provides **real-time speech-to-speech translation** during meetings. Participants speak in their native languages and hear other speakers translated into their preferred language, with both translated audio playback and on-screen subtitles.
 
 ### 1.1 Problem Statement
 
-Multilingual meetings require either a shared lingua franca (limiting participation for non-fluent speakers) or professional interpreters (expensive and limited in availability). LinguaMeet automates this by using AI-driven speech recognition, machine translation, and speech synthesis to deliver translations in near real-time.
+Multilingual meetings require either a shared lingua franca (limiting participation for non-fluent speakers) or professional interpreters (expensive and limited in availability). SAMVADA automates this by using AI-driven speech recognition, machine translation, and speech synthesis to deliver translations in near real-time.
 
 ### 1.2 Target Users
 

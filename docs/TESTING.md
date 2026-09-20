@@ -1,6 +1,6 @@
 # TESTING.md — Test Strategy & Plan
 
-# LinguaMeet — Test Strategy & Plan
+# SAMVADA — Test Strategy & Plan
 
 **Version**: 1.0-draft  
 **Date**: 2026-09-11  

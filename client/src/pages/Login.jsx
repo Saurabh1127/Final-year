@@ -43,7 +43,7 @@ const Login = () => {
                 <circle cx="16" cy="16" r="3" fill="var(--color-accent)" />
               </svg>
             </div>
-            <h1>LinguaMeet</h1>
+            <h1>SAMVADA</h1>
           </div>
           <p className="auth-subtitle">Real-time translated meetings</p>
         </div>
