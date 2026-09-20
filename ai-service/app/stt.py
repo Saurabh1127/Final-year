@@ -132,9 +132,12 @@ def transcribe_audio(
     """
     model = get_model()
 
-    beam_size = int(os.getenv("WHISPER_BEAM_SIZE", "2"))
+    # beam_size=5 is the recommended setting for large-v3-turbo.
+    # beam_size=2 (the old default) causes poor word selection on large models,
+    # producing hallucinated/garbled words. Only use 2 for small/medium models.
+    beam_size = int(os.getenv("WHISPER_BEAM_SIZE", "5"))
     vad_params = dict(
-        threshold=0.4,
+        threshold=0.5,              # raised from 0.4 — filters out more borderline noise segments
         min_speech_duration_ms=150,
         min_silence_duration_ms=800,
     )
@@ -150,14 +153,15 @@ def transcribe_audio(
                 opts["language"] = source_language
 
             segments, info = model.transcribe(
-                audio_array, 
-                beam_size=beam_size, 
-                vad_filter=True, 
+                audio_array,
+                beam_size=beam_size,
+                vad_filter=True,
                 vad_parameters=vad_params,
-                condition_on_previous_text=False, 
+                condition_on_previous_text=True,   # re-enabled: large-v3-turbo uses this for intra-chunk coherence
+                repetition_penalty=1.1,            # guards against hallucination loops that condition_on_previous_text can cause
                 **opts
             )
-            
+
             segment_list = list(segments)
             text = " ".join([seg.text for seg in segment_list]).strip()
 
@@ -194,14 +198,15 @@ def transcribe_audio(
             opts["language"] = source_language
 
         segments, info = model.transcribe(
-            tmp_path, 
-            beam_size=beam_size, 
-            vad_filter=True, 
+            tmp_path,
+            beam_size=beam_size,
+            vad_filter=True,
             vad_parameters=vad_params,
-            condition_on_previous_text=False, 
+            condition_on_previous_text=True,
+            repetition_penalty=1.1,
             **opts
         )
-        
+
         segment_list = list(segments)
         text = " ".join([seg.text for seg in segment_list]).strip()
 

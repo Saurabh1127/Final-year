@@ -456,20 +456,15 @@ class SpeechToSpeechEngine:
 
         # ── Step 2: NMT — Text → Translations (NLLB-200) ──────────────────────
         t0 = time.time()
-        # Context injection: ONLY attach history when the current fragment is short
-        # (< 8 words) — i.e. it was likely VAD-cut mid-sentence and needs prior context
-        # to resolve pronouns/tense correctly. For full sentences NLLB handles them
-        # independently without a penalty. This avoids tripling token count on every call.
-        word_count = len(original_text.split())
-        if word_count < 8:
-            context = _get_context(user_id)
-            text_for_nmt = _build_context_prompt(original_text, context)
-            print(f"🧠 [NMT] Short fragment ({word_count}w) — context injected.")
-        else:
-            text_for_nmt = original_text
+        # NOTE: Context injection via [Context: ...] prefix does NOT work with NLLB-200.
+        # NLLB is a pure sequence-to-sequence MT model — it translates the entire input
+        # string verbatim, which caused "[Context: Do it] Do it" to appear in subtitles
+        # and be read aloud by TTS. Context prefixes only work with instruction-following
+        # LLMs (GPT-4, Claude). Passing original_text directly.
         translations = await asyncio.to_thread(
-            translate_to_multiple, text_for_nmt, detected_lang, target_languages
+            translate_to_multiple, original_text, detected_lang, target_languages
         )
+
 
         nmt_s = round(time.time() - t0, 3)
         print(f"🌐 NMT [{nmt_s}s]: translated to {list(translations.keys())}")
