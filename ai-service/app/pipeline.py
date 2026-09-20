@@ -149,7 +149,12 @@ def _is_hallucination(text: str) -> bool:
     3. Normalised text is a substring of a blocklist entry (fuzzy)
     4. A blocklist entry is a substring of the normalised text (fuzzy reverse)
     5. Repetition loop detected (same phrase 3+ times in a row)
-    6. Text is fewer than 2 meaningful words after normalisation
+
+    NOTE: Single-word utterances are NOT rejected here. All known single-word
+    noise artifacts ("ah", "um", "hmm", "you", etc.) are already enumerated in
+    _HALLUCINATION_BLOCKLIST and are caught by check 2. Blocking ALL single-word
+    outputs would silently discard valid short speech ("Haan", "Yes", "Theek",
+    "Namaste") that was VAD-cut from a longer utterance.
     """
     # 1. Noise tags
     if _NOISE_TAG_RE.search(text):
@@ -158,9 +163,9 @@ def _is_hallucination(text: str) -> bool:
 
     norm = _normalize(text)
 
-    # 6. Too short (single word or empty — not useful in a meeting)
-    if len(norm.split()) < 2:
-        print(f"🚫 [Filter] Too short after normalisation: \"{norm}\" → rejected.")
+    # Empty / pure whitespace after normalisation
+    if not norm:
+        print(f"🚫 [Filter] Empty after normalisation → rejected.")
         return True
 
     # 2. Exact blocklist match
@@ -206,7 +211,7 @@ def _get_context(user_id: str) -> str | None:
 def _update_context(user_id: str, sentence: str) -> None:
     """Add a confirmed transcription to the speaker's context buffer."""
     if user_id not in _context_buffer:
-        _context_buffer[user_id] = deque(maxlen=2)
+        _context_buffer[user_id] = deque(maxlen=1)  # keep only the last sentence to cap NMT token overhead
     _context_buffer[user_id].append(sentence.strip())
 
 
@@ -451,9 +456,21 @@ class SpeechToSpeechEngine:
 
         # ── Step 2: NMT — Text → Translations (NLLB-200) ──────────────────────
         t0 = time.time()
+        # Context injection: ONLY attach history when the current fragment is short
+        # (< 8 words) — i.e. it was likely VAD-cut mid-sentence and needs prior context
+        # to resolve pronouns/tense correctly. For full sentences NLLB handles them
+        # independently without a penalty. This avoids tripling token count on every call.
+        word_count = len(original_text.split())
+        if word_count < 8:
+            context = _get_context(user_id)
+            text_for_nmt = _build_context_prompt(original_text, context)
+            print(f"🧠 [NMT] Short fragment ({word_count}w) — context injected.")
+        else:
+            text_for_nmt = original_text
         translations = await asyncio.to_thread(
-            translate_to_multiple, original_text, detected_lang, target_languages
+            translate_to_multiple, text_for_nmt, detected_lang, target_languages
         )
+
         nmt_s = round(time.time() - t0, 3)
         print(f"🌐 NMT [{nmt_s}s]: translated to {list(translations.keys())}")
         log_gpu_stats("after-NMT")
