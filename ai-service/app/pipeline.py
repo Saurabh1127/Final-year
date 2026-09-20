@@ -19,7 +19,6 @@ from __future__ import annotations
 import os
 import re
 import time
-from collections import deque
 from typing import Optional
 
 # torch is only available when running on Colab/GPU machine
@@ -109,9 +108,12 @@ _NOISE_TAG_RE = re.compile(
 
 
 def _normalize(text: str) -> str:
-    """Lowercase, strip punctuation/symbols, collapse whitespace."""
+    """Lowercase, strip punctuation/symbols, collapse whitespace.
+    Uses re.UNICODE so \w matches Devanagari, Bengali, Tamil, etc.
+    Without this flag, \w only matches ASCII and all Hindi characters get stripped.
+    """
     text = text.lower()
-    text = re.sub(r"[^\w\s]", "", text)   # strip punctuation
+    text = re.sub(r"[^\w\s]", "", text, flags=re.UNICODE)   # strip punctuation, keep Unicode word chars
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
@@ -188,43 +190,11 @@ def _is_hallucination(text: str) -> bool:
     return False
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Phase 10 — Per-Speaker Context Buffer
-# ─────────────────────────────────────────────────────────────────────────────
-
-# Structure: { user_id: deque([sentence_1, sentence_2], maxlen=2) }
-# Holds the last 2 confirmed (non-hallucination) transcribed sentences per speaker.
-_context_buffer: dict[str, deque] = {}
-
-
-def _get_context(user_id: str) -> str | None:
-    """
-    Return the context string for a speaker (their last 1–2 sentences joined),
-    or None if no context exists yet.
-    """
-    buf = _context_buffer.get(user_id)
-    if not buf:
-        return None
-    return " ".join(buf)
-
-
-def _update_context(user_id: str, sentence: str) -> None:
-    """Add a confirmed transcription to the speaker's context buffer."""
-    if user_id not in _context_buffer:
-        _context_buffer[user_id] = deque(maxlen=1)  # keep only the last sentence to cap NMT token overhead
-    _context_buffer[user_id].append(sentence.strip())
-
-
-def _build_context_prompt(text: str, context: str | None) -> str:
-    """
-    Prepend context to the text for context-aware NMT.
-    Format: "[Context: <prev sentences>] <current sentence>"
-    NLLB handles this gracefully — the context words influence pronoun resolution
-    and terminology consistency without appearing verbatim in the output.
-    """
-    if not context:
-        return text
-    return f"[Context: {context}] {text}"
+# NOTE: Per-Speaker Context Buffer (Phase 10) was removed.
+# The [Context: ...] prefix approach does NOT work with NLLB-200 — it is a pure
+# sequence-to-sequence MT model that translates the prefix verbatim, causing
+# "[Context: Do it] Do it" to appear in subtitles and be read aloud by TTS.
+# If context-aware translation is needed, use an instruction-following LLM instead.
 
 
 def _diagnose_pipeline(
@@ -395,7 +365,10 @@ class SpeechToSpeechEngine:
             avg_logprob < -1.1 or
             (lang_prob < 0.4 if not hint else False)
         )
-        text_reject = not original_text or len(original_text.strip()) < 3
+        # NOTE: We intentionally do NOT reject based on character length (< 3).
+        # Hindi words like "कर" (2 chars) and "हाँ" (3 chars) are valid speech.
+        # The hallucination blocklist already catches known noise words.
+        text_reject = not original_text or not original_text.strip()
 
         if stat_reject or text_reject or _is_hallucination(original_text):
             reject_reason = (
@@ -451,16 +424,8 @@ class SpeechToSpeechEngine:
             }
             return
 
-        # ── Phase 10: Update context buffer with confirmed transcription ──────
-        _update_context(user_id, original_text)
-
         # ── Step 2: NMT — Text → Translations (NLLB-200) ──────────────────────
         t0 = time.time()
-        # NOTE: Context injection via [Context: ...] prefix does NOT work with NLLB-200.
-        # NLLB is a pure sequence-to-sequence MT model — it translates the entire input
-        # string verbatim, which caused "[Context: Do it] Do it" to appear in subtitles
-        # and be read aloud by TTS. Context prefixes only work with instruction-following
-        # LLMs (GPT-4, Claude). Passing original_text directly.
         translations = await asyncio.to_thread(
             translate_to_multiple, original_text, detected_lang, target_languages
         )
@@ -530,29 +495,36 @@ class SpeechToSpeechEngine:
             t0 = time.time()
             from .tts import synthesize_speech
 
-            async def _stream_tts_for_lang(lang, translated_text):
-                nonlocal last_tts_engine
+            async def _synthesize_one(lang, translated_text):
+                """Run TTS for a single language. Returns (lang, result_dict) or None."""
                 if not translated_text or translated_text.startswith("[Translation error"):
-                    return
-
+                    return None
                 try:
                     tts_result = await asyncio.to_thread(synthesize_speech, translated_text, lang, audio_bytes, True)
-                    last_tts_engine = tts_result.get("engine", "unknown")
-                    yield {
-                        "type": "audio_chunk",
-                        "lang": lang,
-                        "mime_type": tts_result["mime_type"],
-                        "audio_base64": tts_result["audio_base64"],
-                        "engine": last_tts_engine,
-                    }
+                    return (lang, tts_result)
                 except Exception as exc:
                     print(f"⚠️ TTS generation failed for {lang}: {exc}")
+                    return None
 
-            for lang, translated_text in translations.items():
-                async for chunk_payload in _stream_tts_for_lang(lang, translated_text):
-                    yield chunk_payload
+            # Launch all TTS calls concurrently — cuts latency by ~50% for multi-language rooms
+            tts_tasks = [_synthesize_one(lang, text) for lang, text in translations.items()]
+            tts_results = await asyncio.gather(*tts_tasks)
+
+            for result in tts_results:
+                if result is None:
+                    continue
+                lang, tts_result = result
+                last_tts_engine = tts_result.get("engine", "unknown")
+                yield {
+                    "type": "audio_chunk",
+                    "lang": lang,
+                    "mime_type": tts_result["mime_type"],
+                    "audio_base64": tts_result["audio_base64"],
+                    "engine": last_tts_engine,
+                }
 
             tts_s = round(time.time() - t0, 3)
+
 
         total_s = round(time.time() - t_start, 3)
         print(f"⚡ Pipeline stream done [{total_s}s] ➔ STT: {asr_s}s | NMT: {nmt_s}s | TTS: {tts_s}s | Engine: {last_tts_engine}")

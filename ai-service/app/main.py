@@ -342,6 +342,7 @@ async def websocket_process_audio(websocket: WebSocket) -> None:
                 speaker_name=payload.get("speaker_name", "Anonymous"),
                 meeting_id=payload.get("meeting_id", "unknown"),
                 include_audio=payload.get("include_audio", True),
+                mime_type=payload.get("mime_type"),
             ):
                 # Inject job_id into every chunk before sending
                 await websocket.send_json({**chunk, "job_id": job_id})

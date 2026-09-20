@@ -195,9 +195,6 @@ const useSpeechTranslation = ({
   // ── VAD: called for every ~20ms worklet frame ──────────────────────────────
   const processFrame = useCallback(
     (samples /* Float32Array */) => {
-      // Accumulate frame
-      framesRef.current.push(samples);
-
       // Compute RMS energy for this frame
       let sum = 0;
       for (let i = 0; i < samples.length; i++) sum += samples[i] * samples[i];
@@ -220,8 +217,18 @@ const useSpeechTranslation = ({
             }
           }, VAD_CONFIG.MAX_CHUNK_MS);
         }
+
+        // Only accumulate frames once speech has started
+        framesRef.current.push(samples);
       } else {
         silenceMsRef.current += VAD_CONFIG.FRAME_MS;
+
+        // If speech is active, keep accumulating silence (it's a mid-sentence pause)
+        if (speechStartRef.current) {
+          framesRef.current.push(samples);
+        }
+        // If speech hasn't started, DON'T accumulate — avoids sending seconds of
+        // leading silence to Whisper which wastes processing time and inflates no_speech_prob.
 
         if (
           silenceMsRef.current >= VAD_CONFIG.SILENCE_DURATION_MS &&
@@ -230,10 +237,6 @@ const useSpeechTranslation = ({
         ) {
           console.log('🔇 [VAD] Silence detected — flushing chunk');
           flushChunk();
-        } else if (!speechStartRef.current && framesRef.current.length > 150) {
-          // Bounded silence cycling: drop accumulated silence frames (keeps memory flat)
-          // 150 frames × 20ms = 3 seconds of silence buffer cap
-          framesRef.current = framesRef.current.slice(-50); // keep last 1s as context
         }
       }
     },
