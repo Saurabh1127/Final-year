@@ -230,10 +230,9 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
   console.log(`🎤 [Orchestrator] Processing chunk from ${speakerName} in room ${roomCode} (${nodeBuffer.byteLength} bytes)`);
 
   // ── Phase 7: Subtitle-First — emit "Translating..." immediately ──────────────
-  // Broadcast to ALL participants in the room (except the speaker) so listeners
-  // see a "Translating…" indicator the moment processing starts — well before
-  // Whisper/NLLB/TTS finishes (~500–800ms later).
-  io.to(roomCode).emit('translation-pending', {
+  // Broadcast to other participants in the room (excluding the speaker) so listeners
+  // see a "Translating…" indicator the moment processing starts.
+  socket.to(roomCode).emit('translation-pending', {
     speakerId,
     speakerName,
     timestamp: Date.now(),
@@ -321,7 +320,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
       console.warn('⚠️  [Orchestrator] Failed to persist transcript:', saveErr.message);
     }
 
-    // Broadcast new-transcript to ALL participants
+    // Broadcast new-transcript to ALL participants for the sidebar
     io.to(roomCode).emit('new-transcript', {
       speakerId,
       speakerName,
@@ -334,23 +333,22 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
       diagnostics: diagnostics || null,
     });
 
-    // In multi-person meetings, send subtitle feedback to the speaker immediately (they receive no audio).
-    // In solo test mode, the speaker receives translation-audio, so the subtitle is synchronized with the audio.
+    // In multi-person meetings, send private speech-to-text feedback to the speaker (in their own spoken words).
     if (!isSoloTest) {
-      const firstTargetLang = targetLanguages[0];
       socket.emit('speaker-subtitle', {
         speakerName: 'You',
         originalText: original_text,
-        translatedText: translations?.[firstTargetLang] || original_text,
-        lang: firstTargetLang,
+        translatedText: original_text,
+        lang: source_language,
+        isSelf: true,
         timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null },
         diagnostics: diagnostics || null,
       });
     }
 
-    // ── Emit translation-result (Text) per language ──────
+    // ── Emit private translation-result (Text) per language exclusively to registered receivers ──────
     for (const [lang, receiverSocketIds] of languageToReceivers.entries()) {
-      const translatedText = translations?.[lang] || '';
+      const translatedText = translations?.[lang] || original_text;
       const textPayload = {
         speakerId,
         speakerName,
@@ -358,6 +356,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
         sourceLanguage: source_language,
         translatedText,
         lang,
+        isSelf: false,
         timestamp,
         sequenceNumber,
         timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime, aiLatency: null },
@@ -379,7 +378,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
 
     if (audio_base64) {
       const audioBuffer = Buffer.from(audio_base64, 'base64');
-      const translatedText = textResult?.translations?.[lang] || '';
+      const translatedText = textResult?.translations?.[lang] || textResult?.original_text || '';
       const audioMetadata = {
         speakerId,
         speakerName: isSoloTest ? 'You' : speakerName,
@@ -387,6 +386,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
         translatedText,
         sequenceNumber,
         lang,
+        isSelf: isSoloTest,
         mimeType: mime_type || 'audio/mp3',
         timing: { captureStartTime, flushTime, serverReceiveTime, serverAiReturnTime: Date.now() },
         diagnostics: textResult?.diagnostics || null,

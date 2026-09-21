@@ -748,8 +748,17 @@ const MeetingRoom = ({ roomCode }) => {
           id="subtitle-overlay"
           aria-live="polite"
         >
-          <div className="flex items-center justify-center gap-2 mb-1">
+          <div className="flex items-center justify-center gap-2 mb-1.5 flex-wrap">
             <span className="text-xs font-bold text-[#00d4b2]">{subtitle.speakerName}</span>
+            {subtitle.isSelf ? (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                You (Spoken)
+              </span>
+            ) : subtitle.lang && (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#00d4b2]/20 text-[#00d4b2] font-bold uppercase border border-[#00d4b2]/30">
+                {subtitle.lang} Subtitle
+              </span>
+            )}
             {subtitle.displayLatency && (
               <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-white/[0.08] text-slate-300 flex items-center gap-1">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#00d4b2]">
@@ -775,14 +784,21 @@ const MeetingRoom = ({ roomCode }) => {
               </button>
             )}
           </div>
-          <p className="text-xs text-slate-400">
-            {subtitle.originalText}
-          </p>
-          {subtitle.translatedText && subtitle.translatedText !== subtitle.originalText && (
-            <p className="text-sm sm:text-base font-semibold text-white mt-0.5">
-              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#00d4b2]/20 text-[#00d4b2] mr-1.5">{subtitle.lang?.toUpperCase()}</span>
-              {subtitle.translatedText}
+          {subtitle.isSelf ? (
+            <p className="text-sm sm:text-base font-medium text-slate-200">
+              "{subtitle.originalText}"
             </p>
+          ) : (
+            <>
+              {subtitle.originalText && subtitle.originalText !== subtitle.translatedText && (
+                <p className="text-xs text-slate-400 mb-0.5 italic">
+                  "{subtitle.originalText}"
+                </p>
+              )}
+              <p className="text-sm sm:text-base font-semibold text-white">
+                {subtitle.translatedText || subtitle.originalText}
+              </p>
+            </>
           )}
         </div>
       )}

@@ -83,13 +83,14 @@ const useTranslationReceiver = ({
 
     audio.onplay = () => {
       duck();
-      // ⚡ SIMULTANEOUS: Show subtitle exactly ONCE when voice starts speaking ⚡
+      // ⚡ SIMULTANEOUS: Show private subtitle in user's target language when voice starts speaking ⚡
       if (onSubtitle && (translatedText || originalText)) {
         onSubtitle({
           speakerName: speakerName || 'Speaker',
           originalText: originalText || '',
           translatedText: translatedText || originalText,
           lang,
+          isSelf: item.isSelf || false,
           isPending: false,
           timing,
         }, 0); // 0 = keep alive while voice is speaking — cleared manually in onDone
@@ -208,7 +209,7 @@ const useTranslationReceiver = ({
         });
       }
 
-      // Fallback: If audio does NOT arrive within 4s (e.g. TTS disabled or network issue),
+      // Fallback: If audio does NOT arrive within 1.5s (e.g. TTS disabled or network issue),
       // show subtitle so the user does not miss what was said.
       clearTimeout(fallbackSubtitleTimeoutRef.current);
       fallbackSubtitleTimeoutRef.current = setTimeout(() => {
@@ -218,11 +219,12 @@ const useTranslationReceiver = ({
             originalText: payload.originalText,
             translatedText: payload.translatedText,
             lang: payload.lang,
+            isSelf: false,
             isPending: false,
             timing: payload.timing,
           }, 4000);
         }
-      }, 4000);
+      }, 1500);
     };
 
     const handleTranslationAudio = (audioBuffer, metadata) => {
@@ -250,6 +252,7 @@ const useTranslationReceiver = ({
         originalText: metadata.originalText,
         translatedText: metadata.translatedText,
         lang: metadata.lang,
+        isSelf: metadata.isSelf || false,
         sequenceNumber,
         timing: metadata.timing
       });

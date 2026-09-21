@@ -37,37 +37,83 @@ const ParticipantTile = ({ participant, stream, isLocal, onRename }) => {
 
   const videoRef = useRef(null);
   const audioRef = useRef(null);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+  const [hasLiveVideoTrack, setHasLiveVideoTrack] = useState(false);
 
-  const hasVideo = stream && !participant.isVideoOff;
+  // Monitor stream for live video tracks (crucial when video track arrives after initial audio track)
+  useEffect(() => {
+    if (!stream) {
+      setHasLiveVideoTrack(false);
+      return;
+    }
 
+    const checkVideo = () => {
+      const vTracks = stream.getVideoTracks();
+      setHasLiveVideoTrack(vTracks.length > 0 && vTracks.some(t => t.enabled && t.readyState !== 'ended'));
+    };
+
+    checkVideo();
+    stream.addEventListener('addtrack', checkVideo);
+    stream.addEventListener('removetrack', checkVideo);
+    return () => {
+      stream.removeEventListener('addtrack', checkVideo);
+      stream.removeEventListener('removetrack', checkVideo);
+    };
+  }, [stream]);
+
+  const hasVideo = stream && hasLiveVideoTrack && !participant.isVideoOff;
+
+  // Video element playback
   useEffect(() => {
     const videoEl = videoRef.current;
     if (videoEl && stream) {
-      videoEl.srcObject = stream;
-      videoEl.play().catch(e => console.warn('Video play blocked by browser:', e));
+      if (videoEl.srcObject !== stream) {
+        videoEl.srcObject = stream;
+      }
+      videoEl.play()
+        .then(() => setAutoplayBlocked(false))
+        .catch(e => {
+          console.warn('Video play blocked by browser:', e.message);
+          if (!isLocal) setAutoplayBlocked(true);
+        });
     }
     return () => {
       if (videoEl) {
         videoEl.srcObject = null;
       }
     };
-  }, [stream, hasVideo]);
+  }, [stream, hasVideo, isLocal]);
 
+  // Audio element playback (fallback for remote participants when video is hidden)
   useEffect(() => {
     const audioEl = audioRef.current;
-    if (audioEl && stream) {
-      audioEl.srcObject = stream;
-      audioEl.play().catch(e => console.warn('Audio play blocked by browser:', e));
+    if (audioEl && stream && !isLocal) {
+      if (audioEl.srcObject !== stream) {
+        audioEl.srcObject = stream;
+      }
+      audioEl.play()
+        .then(() => setAutoplayBlocked(false))
+        .catch(e => {
+          console.warn('Audio play blocked by browser:', e.message);
+          setAutoplayBlocked(true);
+        });
     }
     return () => {
       if (audioEl) {
         audioEl.srcObject = null;
       }
     };
-  }, [stream]);
+  }, [stream, isLocal]);
+
+  const handleManualPlay = () => {
+    if (videoRef.current) videoRef.current.play().catch(() => {});
+    if (audioRef.current) audioRef.current.play().catch(() => {});
+    setAutoplayBlocked(false);
+  };
 
   return (
     <div
+      onClick={autoplayBlocked ? handleManualPlay : undefined}
       className={`relative w-full h-full rounded-2xl overflow-hidden bg-[#10121a] border border-white/[0.08] flex items-center justify-center transition-all duration-300 ${
         actuallySpeaking
           ? 'ring-2 ring-[#00d4b2] shadow-[0_0_24px_rgba(0,212,178,0.25)]'
@@ -79,12 +125,13 @@ const ParticipantTile = ({ participant, stream, isLocal, onRename }) => {
         ref={videoRef}
         autoPlay
         playsInline
+        webkit-playsinline="true"
         muted={isLocal}
         className={`w-full h-full object-cover ${isLocal ? 'scale-x-[-1]' : ''}`}
         style={{ display: hasVideo ? 'block' : 'none' }}
       />
 
-      {/* Avatar overlay */}
+      {/* Avatar overlay when video is off or loading */}
       {!hasVideo && (
         <div className="flex flex-col items-center justify-center">
           <div className="w-20 h-20 rounded-full bg-[#00d4b2]/10 border border-[#00d4b2]/25 text-[#00d4b2] flex items-center justify-center text-3xl font-bold mb-2">
@@ -94,10 +141,24 @@ const ParticipantTile = ({ participant, stream, isLocal, onRename }) => {
         </div>
       )}
 
-      {/* Hidden audio for remote participants */}
+      {/* Tap-to-play overlay if browser blocked autoplay (common on mobile) */}
+      {autoplayBlocked && !isLocal && (
+        <button
+          onClick={handleManualPlay}
+          className="absolute inset-0 z-20 bg-black/70 flex flex-col items-center justify-center gap-2 text-white p-4 text-center cursor-pointer"
+        >
+          <div className="w-12 h-12 rounded-full bg-[#00d4b2] text-black flex items-center justify-center font-bold text-xl shadow-lg">
+            ▶
+          </div>
+          <span className="text-sm font-semibold">Tap to enable audio & video</span>
+        </button>
+      )}
+
+      {/* Hidden audio for remote participants when video is hidden */}
       {!isLocal && (
         <audio ref={audioRef} autoPlay playsInline style={{ display: 'none' }} />
       )}
+
 
       {/* Participant info overlay at bottom */}
       <div className="absolute bottom-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">

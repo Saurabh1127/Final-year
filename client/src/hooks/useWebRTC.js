@@ -1,11 +1,34 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSocket } from '../context/SocketContext';
+import api from '../services/api';
 
-// Fallback STUN-only config (used while fetching TURN credentials)
+// Instant STUN & TURN config (Metered global relays) — ensures cross-device (Phone <-> PC)
+// connectivity works immediately without waiting for async API fetch or being blocked by cellular NAT
 const FALLBACK_ICE = {
   iceServers: [
+    { urls: 'stun:stun.relay.metered.ca:80' },
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
+    {
+      urls: 'turn:global.relay.metered.ca:80',
+      username: 'a7784dcb1d241ac5c93e0f42',
+      credential: 'wHN9npHCpjrGOJMD'
+    },
+    {
+      urls: 'turn:global.relay.metered.ca:80?transport=tcp',
+      username: 'a7784dcb1d241ac5c93e0f42',
+      credential: 'wHN9npHCpjrGOJMD'
+    },
+    {
+      urls: 'turn:global.relay.metered.ca:443',
+      username: 'a7784dcb1d241ac5c93e0f42',
+      credential: 'wHN9npHCpjrGOJMD'
+    },
+    {
+      urls: 'turns:global.relay.metered.ca:443?transport=tcp',
+      username: 'a7784dcb1d241ac5c93e0f42',
+      credential: 'wHN9npHCpjrGOJMD'
+    }
   ]
 };
 
@@ -16,23 +39,18 @@ export const useWebRTC = (localStream, userId) => {
   const localStreamRef = useRef(localStream);
   const iceConfigRef = useRef(FALLBACK_ICE);
 
-  // Fetch TURN credentials from Metered on mount
+  // Fetch dynamic TURN credentials from backend on mount (refreshes if needed)
   useEffect(() => {
     const fetchTurnCredentials = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('/api/turn/credentials', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        if (!res.ok) throw new Error('Failed to fetch credentials');
-        const iceServers = await res.json();
-        console.log('📡 [WebRTC] ✅ Got TURN credentials from Metered:', iceServers.length, 'servers');
-        iceConfigRef.current = { iceServers };
+        const res = await api.get('/turn/credentials');
+        const iceServers = res.data;
+        if (Array.isArray(iceServers) && iceServers.length > 0) {
+          console.log('📡 [WebRTC] ✅ Got fresh TURN credentials from Metered:', iceServers.length, 'servers');
+          iceConfigRef.current = { iceServers };
+        }
       } catch (err) {
-        console.warn('📡 [WebRTC] ⚠️ Failed to fetch TURN credentials, using STUN-only fallback:', err.message);
+        console.warn('📡 [WebRTC] ℹ️ Using built-in Metered TURN servers:', err.message);
       }
     };
     fetchTurnCredentials();
@@ -89,7 +107,17 @@ export const useWebRTC = (localStream, userId) => {
         pc.addTrack(track, stream);
       });
     } else {
-      console.warn('⚠️ [WebRTC] No local stream available!');
+      console.warn('⚠️ [WebRTC] No local stream available yet!');
+    }
+
+    // Explicitly add transceivers to receive both audio and video even if local tracks aren't active yet
+    const hasAudio = stream?.getAudioTracks().length > 0;
+    const hasVideo = stream?.getVideoTracks().length > 0;
+    if (!hasAudio) {
+      try { pc.addTransceiver('audio', { direction: 'recvonly' }); } catch (e) {}
+    }
+    if (!hasVideo) {
+      try { pc.addTransceiver('video', { direction: 'recvonly' }); } catch (e) {}
     }
 
     // ICE candidate → relay to remote peer
@@ -116,15 +144,30 @@ export const useWebRTC = (localStream, userId) => {
       }
     };
 
-    // Remote tracks received → store the stream
+    // Remote tracks received → store the stream, preserving both audio and video
     pc.ontrack = (event) => {
-      console.log(`📡 [WebRTC] ✅ Received remote ${event.track.kind} from ${targetUserId}`);
-      const remoteStream = event.streams[0] || new MediaStream([event.track]);
-      setRemoteStreams(prev => ({
-        ...prev,
-        [targetUserId]: remoteStream
-      }));
+      console.log(`📡 [WebRTC] ✅ Received remote ${event.track.kind} track from ${targetUserId}`);
+      setRemoteStreams(prev => {
+        const existing = prev[targetUserId];
+        let streamToUse;
+        if (event.streams && event.streams[0]) {
+          streamToUse = event.streams[0];
+        } else if (existing) {
+          // Add track to existing stream rather than replacing it
+          if (!existing.getTracks().some(t => t.id === event.track.id)) {
+            existing.addTrack(event.track);
+          }
+          streamToUse = new MediaStream(existing.getTracks());
+        } else {
+          streamToUse = new MediaStream([event.track]);
+        }
+        return {
+          ...prev,
+          [targetUserId]: streamToUse
+        };
+      });
     };
+
 
     pc.onconnectionstatechange = () => {
       console.log(`📡 [WebRTC] Connection: ${pc.connectionState} for ${targetUserId}`);
