@@ -510,97 +510,157 @@ const MeetingRoom = ({ roomCode }) => {
   const participantCount = 1 + participants.length; // self + remotes
 
   return (
-    <div className="meeting-room">
-      <div className="meeting-header">
-        <div className="meeting-info">
-          <h2>{meeting.title}</h2>
+    <div className="relative flex flex-col h-screen w-screen overflow-hidden bg-[#090a0f] text-slate-100 font-sans">
+      {/* ── Header ────────────────────────────────────────────────────────── */}
+      <header className="z-30 w-full shrink-0 p-3 sm:p-4">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          <div className="bg-black/70 backdrop-blur-xl px-3.5 py-2 rounded-2xl flex items-center gap-3 border border-white/10 shadow-lg shrink-0">
+            <h2 className="text-sm font-semibold text-white truncate max-w-[120px] sm:max-w-[200px]">{meeting.title}</h2>
 
-          {/* ── Room code + Copy Link ─────────────────────────────────────── */}
-          <span
-            className="meeting-code-badge meeting-code-copyable"
-            onClick={handleCopyLink}
-            title="Click to copy meeting link"
-            id="btn-copy-link"
-          >
-            {roomCode}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14" style={{ marginLeft: '6px', verticalAlign: 'middle' }}>
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-          </span>
-          {copyToast && (
-            <span className="copy-toast animate-fade-in" id="copy-toast">✓ Copied!</span>
-          )}
+            {/* Room code + Copy Link */}
+            <span
+              className="font-mono text-xs px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 text-slate-200 cursor-pointer flex items-center gap-1.5 transition select-none"
+              onClick={handleCopyLink}
+              title="Click to copy meeting link"
+              id="btn-copy-link"
+            >
+              {roomCode}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </span>
+            {copyToast && (
+              <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 animate-fade-in flex items-center gap-1" id="copy-toast">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>Copied!</span>
+              </span>
+            )}
 
-          {/* ── Participant Count ─────────────────────────────────────────── */}
-          <span className="participant-count-badge" id="participant-count">
-            👥 {participantCount}
-          </span>
+            {/* Participant Count */}
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#00d4b2]/15 text-[#00d4b2] border border-[#00d4b2]/30 flex items-center gap-1.5" id="participant-count">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <span>{participantCount}</span>
+            </span>
 
-          {/* ── Network Indicator ─────────────────────────────────────────── */}
-          <span className={`network-indicator ${connected ? 'network-good' : 'network-bad'}`} id="network-indicator">
-            <span className="network-dot"></span>
-            {connected ? '' : 'Reconnecting…'}
-          </span>
+            {/* Network Indicator */}
+            <span className="flex items-center gap-1.5 text-[11px]" id="network-indicator">
+              <span className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-rose-500'}`}></span>
+              {connected ? '' : <span className="text-rose-400 hidden sm:inline">Reconnecting…</span>}
+            </span>
+          </div>
+
+          {/* Translation & Diagnostics Toggles */}
+          <div className="flex items-center gap-2 flex-wrap bg-black/60 backdrop-blur-xl p-1.5 sm:p-2 rounded-2xl border border-white/10 shadow-lg">
+            <LanguageSelector
+              currentLanguage={sourceLanguage}
+              onChange={setSourceLanguage}
+              disabled={isTranslating}
+              label="Speaking:"
+              includeAuto={true}
+            />
+            <LanguageSelector
+              currentLanguage={targetLanguage}
+              onChange={handleLanguageChange}
+              disabled={isTranslating}
+              label="To:"
+            />
+            <button
+              id="btn-toggle-translation"
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-md whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
+                translationEnabled 
+                  ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/30' 
+                  : 'bg-[#00d4b2] hover:bg-[#33e0c4] text-slate-950 shadow-[#00d4b2]/20'
+              }`}
+              onClick={() => setTranslationEnabled(prev => !prev)}
+              title={translationEnabled ? 'Stop live translation' : 'Start live AI translation'}
+            >
+              {isTranslating ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                  <span>Sending…</span>
+                </>
+              ) : isPending ? (
+                <>
+                  <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <span>Translating…</span>
+                </>
+              ) : isReceiving ? (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  </svg>
+                  <span>Playing…</span>
+                </>
+              ) : translationEnabled ? (
+                <>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="4" y="4" width="16" height="16" rx="2" />
+                  </svg>
+                  <span>Stop</span>
+                </>
+              ) : (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                  </svg>
+                  <span>Translate</span>
+                </>
+              )}
+            </button>
+            <button
+              id="btn-toggle-transcript"
+              className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 text-white whitespace-nowrap shrink-0 flex items-center gap-1.5"
+              onClick={() => setShowTranscript(prev => !prev)}
+              title="Toggle transcript sidebar"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span>Transcript {transcriptLog.length > 0 ? `(${transcriptLog.length})` : ''}</span>
+            </button>
+            <button
+              id="btn-toggle-diagnostics"
+              className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 text-slate-300 hover:text-white whitespace-nowrap shrink-0 flex items-center gap-1.5"
+              onClick={() => {
+                setSelectedDiagnostics(latestDiagnostics || {
+                  speakerName: displayName,
+                  originalText: 'No utterances analyzed yet.',
+                  diagnostics: {
+                    status: 'healthy',
+                    primary_remedy: 'Speak into your microphone with live translation enabled to see stage-by-stage diagnostics.',
+                    warnings: [],
+                    stt: {},
+                    nmt: {},
+                    tts: {},
+                    vad: {}
+                  }
+                });
+                setShowDiagnosticsModal(true);
+              }}
+              title="Inspect Translation Pipeline Diagnostics"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+              <span className="hidden sm:inline">Diagnostics</span>
+            </button>
+          </div>
         </div>
+      </header>
 
-        {/* Translation & Transcript Toggles */}
-        <div className="meeting-header-actions">
-          <LanguageSelector
-            currentLanguage={sourceLanguage}
-            onChange={setSourceLanguage}
-            disabled={isTranslating}
-            label="Speaking in:"
-            includeAuto={true}
-          />
-          <LanguageSelector
-            currentLanguage={targetLanguage}
-            onChange={handleLanguageChange}
-            disabled={isTranslating}
-          />
-          <button
-            id="btn-toggle-translation"
-            className={`btn btn-sm ${translationEnabled ? 'btn-danger' : 'btn-primary'}`}
-            onClick={() => setTranslationEnabled(prev => !prev)}
-            title={translationEnabled ? 'Stop live translation' : 'Start live AI translation'}
-          >
-          {isTranslating ? '🔴 Sending...' : isPending ? '⏳ Translating...' : isReceiving ? '🔊 Playing...' : translationEnabled ? '⏹ Stop Translation' : '🌐 Start Translation'}
-          </button>
-          <button
-            id="btn-toggle-transcript"
-            className={`btn btn-sm ${showTranscript ? 'btn-secondary' : 'btn-outline'}`}
-            onClick={() => setShowTranscript(prev => !prev)}
-            title="Toggle transcript sidebar"
-          >
-            📝 Transcript {transcriptLog.length > 0 && `(${transcriptLog.length})`}
-          </button>
-          <button
-            id="btn-toggle-diagnostics"
-            className="btn btn-sm btn-outline"
-            onClick={() => {
-              setSelectedDiagnostics(latestDiagnostics || {
-                speakerName: displayName,
-                originalText: 'No utterances analyzed yet.',
-                diagnostics: {
-                  status: 'healthy',
-                  primary_remedy: 'Speak into your microphone with live translation enabled to see stage-by-stage diagnostics.',
-                  warnings: [],
-                  stt: {},
-                  nmt: {},
-                  tts: {},
-                  vad: {}
-                }
-              });
-              setShowDiagnosticsModal(true);
-            }}
-            title="Inspect Translation Pipeline Diagnostics (STT, NMT, TTS, VAD)"
-          >
-            🩺 Diagnostics
-          </button>
-        </div>
-      </div>
-
-      <div className="meeting-content">
+      {/* ── Main Meeting Content ────────────────────────────────────────── */}
+      <div className="flex-1 flex pb-24 px-3 sm:px-6 overflow-hidden relative">
         <ParticipantGrid 
           participants={participants} 
           remoteStreams={remoteStreams} 
@@ -609,50 +669,60 @@ const MeetingRoom = ({ roomCode }) => {
           onRename={handleRename}
         />
 
-        {/* ── Live Transcript Sidebar ───────────────────────────────────────── */}
+        {/* Live Transcript Sidebar */}
         {showTranscript && (
-          <aside className="transcript-sidebar" id="transcript-sidebar">
-            <div className="transcript-sidebar-header">
-              <h3>📝 Live Transcript</h3>
+          <aside className="w-80 sm:w-96 bg-[#0e1017]/95 border-l border-white/10 backdrop-blur-2xl flex flex-col fixed right-0 top-0 bottom-0 z-40 shadow-2xl animate-fade-in" id="transcript-sidebar">
+            <div className="p-4 border-b border-white/10 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#00d4b2]">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                <span>Live Meeting Transcript</span>
+              </h3>
               <button
-                className="transcript-sidebar-close"
+                className="w-7 h-7 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-slate-400 hover:text-white flex items-center justify-center transition"
                 onClick={() => setShowTranscript(false)}
                 aria-label="Close transcript"
               >
-                ✕
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
-            <div className="transcript-sidebar-body">
+            <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-3">
               {transcriptLog.length === 0 ? (
-                <p className="transcript-empty">Transcript will appear here as people speak…</p>
+                <p className="text-xs text-slate-500 text-center py-8">Transcript will appear here as participants speak…</p>
               ) : (
                 transcriptLog.map((entry, idx) => (
-                  <div key={idx} className="transcript-entry">
-                    <div className="transcript-entry-header">
-                      <span className="transcript-speaker">{entry.speakerName}</span>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <div key={idx} className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                    <div className="flex items-center justify-between mb-1.5 text-xs">
+                      <span className="font-bold text-[#00d4b2]">{entry.speakerName}</span>
+                      <div className="flex items-center gap-2">
                         {entry.diagnostics && (
                           <button
                             type="button"
-                            className="transcript-diag-btn"
+                            className="text-xs opacity-70 hover:opacity-100 transition p-1 text-slate-400 hover:text-[#00d4b2]"
                             onClick={() => {
                               setSelectedDiagnostics(entry);
                               setShowDiagnosticsModal(true);
                             }}
                             title="Inspect pipeline diagnostics"
                           >
-                            🩺
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                            </svg>
                           </button>
                         )}
-                        <span className="transcript-time">
+                        <span className="text-[11px] text-slate-500">
                           {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                     </div>
-                    <p className="transcript-original">{entry.originalText}</p>
+                    <p className="text-xs text-slate-200 mb-1">{entry.originalText}</p>
                     {entry.translations && Object.entries(entry.translations).map(([lang, text]) => (
-                      <p key={lang} className="transcript-translated">
-                        <span className="transcript-lang-badge">{lang.toUpperCase()}</span> {text}
+                      <p key={lang} className="text-xs text-slate-400 pl-2 border-l border-white/10 mt-1">
+                        <span className="font-mono text-[10px] text-[#38bdf8] uppercase font-bold mr-1">[{lang}]</span> {text}
                       </p>
                     ))}
                   </div>
@@ -663,48 +733,54 @@ const MeetingRoom = ({ roomCode }) => {
         )}
       </div>
 
-      {/* ── Translating indicator — separate pill, does NOT touch the subtitle ── */}
+      {/* ── Translating Indicator ────────────────────────────────────────── */}
       {translatingFor && (
-        <div className="translating-indicator" id="translating-indicator" aria-live="polite">
-          <span className="translating-dot" />
+        <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 rounded-full bg-[#00d4b2]/15 border border-[#00d4b2]/30 text-[#00d4b2] text-xs font-semibold backdrop-blur-md flex items-center gap-2 animate-pulse shadow-lg" id="translating-indicator" aria-live="polite">
+          <span className="w-2 h-2 rounded-full bg-[#00d4b2]" />
           <span>{translatingFor} is translating…</span>
         </div>
       )}
 
-      {/* ── Live Subtitle Overlay — stays visible until voice finishes ─────────── */}
+      {/* ── Subtitle Overlay ────────────────────────────────────────────── */}
       {subtitle && (
         <div
-          className="subtitle-overlay"
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-30 max-w-2xl w-[90%] px-5 py-3 rounded-2xl bg-black/85 backdrop-blur-xl border border-white/10 shadow-2xl text-center pointer-events-auto animate-fade-in"
           id="subtitle-overlay"
           aria-live="polite"
         >
-          <div className="subtitle-speaker">
-            <span>{subtitle.speakerName}</span>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              {subtitle.displayLatency && (
-                <span className="subtitle-latency-badge">⚡ {subtitle.displayLatency}</span>
-              )}
-              {subtitle.diagnostics && (
-                <button
-                  type="button"
-                  className="subtitle-diag-btn"
-                  onClick={() => {
-                    setSelectedDiagnostics(subtitle);
-                    setShowDiagnosticsModal(true);
-                  }}
-                  title="Inspect translation pipeline diagnostics for this speech"
-                >
-                  🩺 Inspect
-                </button>
-              )}
-            </div>
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <span className="text-xs font-bold text-[#00d4b2]">{subtitle.speakerName}</span>
+            {subtitle.displayLatency && (
+              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-white/[0.08] text-slate-300 flex items-center gap-1">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#00d4b2]">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                <span>{subtitle.displayLatency}</span>
+              </span>
+            )}
+            {subtitle.diagnostics && (
+              <button
+                type="button"
+                className="text-xs text-slate-400 hover:text-white transition ml-1 flex items-center gap-1"
+                onClick={() => {
+                  setSelectedDiagnostics(subtitle);
+                  setShowDiagnosticsModal(true);
+                }}
+                title="Inspect translation pipeline diagnostics"
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+                <span>Inspect</span>
+              </button>
+            )}
           </div>
-          <p className="subtitle-original">
+          <p className="text-xs text-slate-400">
             {subtitle.originalText}
           </p>
           {subtitle.translatedText && subtitle.translatedText !== subtitle.originalText && (
-            <p className="subtitle-translated">
-              <span className="subtitle-lang-badge">{subtitle.lang?.toUpperCase()}</span>
+            <p className="text-sm sm:text-base font-semibold text-white mt-0.5">
+              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#00d4b2]/20 text-[#00d4b2] mr-1.5">{subtitle.lang?.toUpperCase()}</span>
               {subtitle.translatedText}
             </p>
           )}
@@ -724,26 +800,26 @@ const MeetingRoom = ({ roomCode }) => {
         isHost={isHost}
       />
 
-      {/* ── Leave / End Meeting Confirmation Modal ────────────────────────────── */}
+      {/* ── Leave / End Meeting Confirmation Modal ─────────────────────── */}
       {showLeaveModal && (
-        <div className="leave-modal-overlay" id="leave-modal">
-          <div className="leave-modal animate-fade-in">
-            <h3>{isHost ? 'Leave or End Meeting?' : 'Leave this meeting?'}</h3>
-            <p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in" id="leave-modal">
+          <div className="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-[#0e1017] border border-white/10 shadow-2xl text-slate-100 mx-auto">
+            <h3 className="text-lg font-bold text-white mb-2">{isHost ? 'Leave or End Meeting?' : 'Leave this meeting?'}</h3>
+            <p className="text-sm text-slate-400 mb-6 leading-relaxed">
               {isHost
                 ? 'As host, you can leave the meeting or end it for all participants.'
                 : "You'll be redirected to the meeting summary page."}
             </p>
-            <div className="leave-modal-actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-2">
               <button
-                className="btn btn-secondary"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 transition shrink-0"
                 onClick={handleLeaveCancel}
                 id="btn-leave-cancel"
               >
                 Cancel
               </button>
               <button
-                className="btn btn-outline"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-white transition shrink-0"
                 onClick={handleLeaveConfirm}
                 id="btn-leave-confirm"
               >
@@ -751,7 +827,7 @@ const MeetingRoom = ({ roomCode }) => {
               </button>
               {isHost && (
                 <button
-                  className="btn btn-danger"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30 transition shrink-0"
                   onClick={handleEndMeetingForAll}
                   id="btn-end-meeting-all"
                 >
@@ -763,7 +839,7 @@ const MeetingRoom = ({ roomCode }) => {
         </div>
       )}
 
-      {/* ── Translation Pipeline Diagnostics Inspector Modal ──────────────── */}
+      {/* ── Translation Pipeline Diagnostics Inspector Modal ───────────── */}
       <PipelineInspectorModal
         isOpen={showDiagnosticsModal}
         onClose={() => setShowDiagnosticsModal(false)}

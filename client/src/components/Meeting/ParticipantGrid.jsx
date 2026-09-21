@@ -15,9 +15,22 @@ const ParticipantGrid = ({ participants = [], remoteStreams = {}, localParticipa
   }
 
   const uniqueRemoteParticipants = Array.from(uniqueRemoteMap.values());
+  const totalCount = uniqueRemoteParticipants.length + (localParticipant ? 1 : 0);
+
+  // Dynamic grid column calculation for optimal video tile aspect ratio
+  const gridColumns = totalCount === 1 
+    ? 'minmax(0, 1fr)' 
+    : totalCount === 2 
+    ? 'repeat(2, minmax(0, 1fr))' 
+    : 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))';
 
   return (
-    <div className="participant-grid">
+    <div
+      className={`flex-1 grid gap-4 items-center justify-center w-full h-full mx-auto p-2 ${
+        totalCount === 1 ? 'max-w-4xl max-h-[75vh]' : 'max-w-7xl'
+      }`}
+      style={{ gridTemplateColumns: gridColumns }}
+    >
       {localParticipant && (
         <ParticipantTile 
           key={localId || 'local-participant'}
@@ -41,4 +54,3 @@ const ParticipantGrid = ({ participants = [], remoteStreams = {}, localParticipa
 };
 
 export default ParticipantGrid;
-

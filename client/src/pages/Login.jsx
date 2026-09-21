@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import './Auth.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -32,31 +31,45 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-container animate-fade-in">
-        <div className="auth-header">
-          <div className="auth-logo">
-            <div className="logo-icon">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                <circle cx="16" cy="16" r="14" stroke="var(--color-accent)" strokeWidth="2" />
-                <path d="M10 16C10 12.5 13 9 16 9C19 9 22 12.5 22 16C22 19.5 19 23 16 23" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="16" cy="16" r="3" fill="var(--color-accent)" />
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#090a0f] p-4 sm:p-6 font-sans">
+      {/* Subtle modern ambient background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-[#00d4b2]/[0.04] rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-72 h-72 bg-[#38bdf8]/[0.03] rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="w-full max-w-md p-8 sm:p-10 bg-[#12151e]/90 border border-white/[0.08] rounded-3xl backdrop-blur-2xl shadow-2xl shadow-black/80 relative z-10 animate-fade-in my-auto">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-[#00d4b2]/10 border border-[#00d4b2]/20 flex items-center justify-center text-[#00d4b2]">
+              <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                <circle cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="2" />
+                <path d="M10 16C10 12.5 13 9 16 9C19 9 22 12.5 22 16C22 19.5 19 23 16 23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <circle cx="16" cy="16" r="3" fill="currentColor" />
               </svg>
             </div>
-            <h1>SAMVADA</h1>
+            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-[#00d4b2] bg-clip-text text-transparent">
+              SAMVADA
+            </h1>
           </div>
-          <p className="auth-subtitle">Real-time translated meetings</p>
+          <p className="text-sm text-slate-400">Real-time multilingual video meetings</p>
         </div>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
-          {error && <div className="alert alert-error">{error}</div>}
+        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+          {error && (
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-medium animate-fade-in text-center">
+              {error}
+            </div>
+          )}
 
-          <div className="input-group">
-            <label htmlFor="email">Email</label>
+          <div>
+            <label htmlFor="email" className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              Email Address
+            </label>
             <input
               id="email"
               type="email"
-              className="input"
+              className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#00d4b2] focus:ring-1 focus:ring-[#00d4b2] transition text-sm"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -65,12 +78,14 @@ const Login = () => {
             />
           </div>
 
-          <div className="input-group">
-            <label htmlFor="password">Password</label>
+          <div>
+            <label htmlFor="password" className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              Password
+            </label>
             <input
               id="password"
               type="password"
-              className="input"
+              className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#00d4b2] focus:ring-1 focus:ring-[#00d4b2] transition text-sm"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -81,22 +96,19 @@ const Login = () => {
 
           <button
             type="submit"
-            className="btn btn-primary btn-lg auth-submit"
+            className="w-full py-3.5 px-4 bg-[#00d4b2] hover:bg-[#33e0c4] text-slate-950 font-bold rounded-xl transition shadow-lg shadow-[#00d4b2]/20 disabled:opacity-50 disabled:cursor-not-allowed text-sm mt-1 active:scale-[0.99]"
             disabled={loading}
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 
-        <p className="auth-footer">
-          Don't have an account? <Link to="/register">Create one</Link>
-        </p>
-      </div>
-
-      <div className="auth-decoration">
-        <div className="decoration-orb orb-1"></div>
-        <div className="decoration-orb orb-2"></div>
-        <div className="decoration-orb orb-3"></div>
+        <div className="mt-8 pt-4 border-t border-white/[0.06] text-center text-sm text-slate-400">
+          Don't have an account?{' '}
+          <Link to="/register" className="text-[#00d4b2] hover:text-[#33e0c4] font-semibold transition ml-1">
+            Create account
+          </Link>
+        </div>
       </div>
     </div>
   );

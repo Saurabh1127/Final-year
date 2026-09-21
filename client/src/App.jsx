@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import './index.css';
-import './App.css';
 
 // Pages (will be created in subsequent phases)
 import Login from './pages/Login';

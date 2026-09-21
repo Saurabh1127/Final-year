@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useAudioVolume } from '../../hooks/useAudioVolume';
 
 const ParticipantTile = ({ participant, stream, isLocal, onRename }) => {
@@ -38,8 +38,6 @@ const ParticipantTile = ({ participant, stream, isLocal, onRename }) => {
   const videoRef = useRef(null);
   const audioRef = useRef(null);
 
-  // Attach stream to video element whenever stream changes OR video toggles back on.
-  // The video element is always mounted (just hidden), so the ref is always valid.
   const hasVideo = stream && !participant.isVideoOff;
 
   useEffect(() => {
@@ -55,8 +53,6 @@ const ParticipantTile = ({ participant, stream, isLocal, onRename }) => {
     };
   }, [stream, hasVideo]);
 
-  // Always attach stream to the hidden audio element for remote participants.
-  // This runs on mount and whenever stream changes, ensuring audio is never lost.
   useEffect(() => {
     const audioEl = audioRef.current;
     if (audioEl && stream) {
@@ -71,79 +67,95 @@ const ParticipantTile = ({ participant, stream, isLocal, onRename }) => {
   }, [stream]);
 
   return (
-    <div className={`participant-tile ${isLocal ? 'local-tile' : ''} ${actuallySpeaking ? 'speaking' : ''}`}>
-      {/* Video element is ALWAYS rendered but hidden when video is off.
-          This preserves srcObject across camera toggles so it re-appears instantly. */}
-      <video 
-        ref={videoRef} 
-        autoPlay 
-        playsInline 
-        muted={isLocal} 
-        className={`participant-video ${isLocal ? 'mirror-video' : ''}`}
+    <div
+      className={`relative w-full h-full rounded-2xl overflow-hidden bg-[#10121a] border border-white/[0.08] flex items-center justify-center transition-all duration-300 ${
+        actuallySpeaking
+          ? 'ring-2 ring-[#00d4b2] shadow-[0_0_24px_rgba(0,212,178,0.25)]'
+          : ''
+      }`}
+    >
+      {/* Video element */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted={isLocal}
+        className={`w-full h-full object-cover ${isLocal ? 'scale-x-[-1]' : ''}`}
         style={{ display: hasVideo ? 'block' : 'none' }}
       />
 
-      {/* Avatar overlay shown when video is off */}
+      {/* Avatar overlay */}
       {!hasVideo && (
-        <div className="participant-avatar-wrapper">
-          <div className="participant-avatar">
+        <div className="flex flex-col items-center justify-center">
+          <div className="w-20 h-20 rounded-full bg-[#00d4b2]/10 border border-[#00d4b2]/25 text-[#00d4b2] flex items-center justify-center text-3xl font-bold mb-2">
             {participant.displayName?.charAt(0).toUpperCase()}
           </div>
+          <span className="text-xs text-slate-400 font-medium">{participant.displayName}</span>
         </div>
       )}
-      
-      {/* Always render hidden audio for remote participants so audio plays
-          regardless of whether video is on or off */}
+
+      {/* Hidden audio for remote participants */}
       {!isLocal && (
         <audio ref={audioRef} autoPlay playsInline style={{ display: 'none' }} />
       )}
 
-      <div className="participant-info">
-        {/* ── Name with inline rename for local participant ─────────────────── */}
-        {isLocal && isEditing ? (
-          <input
-            ref={inputRef}
-            className="rename-input"
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-            onBlur={handleRenameSubmit}
-            onKeyDown={handleKeyDown}
-            maxLength={50}
-            id="rename-input"
-          />
-        ) : (
-          <span
-            className={`participant-name ${isLocal ? 'participant-name-editable' : ''}`}
-            onClick={() => {
-              if (isLocal) {
-                setEditName(participant.displayName || '');
-                setIsEditing(true);
-              }
-            }}
-            title={isLocal ? 'Click to rename' : undefined}
-          >
-            {participant.displayName} {isLocal ? '(You)' : ''}
-            {isLocal && (
-              <span className="rename-icon" aria-label="Rename">
-                ✏️
-              </span>
-            )}
-          </span>
-        )}
+      {/* Participant info overlay at bottom */}
+      <div className="absolute bottom-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-xs font-medium text-white pointer-events-auto">
+          {isLocal && isEditing ? (
+            <input
+              ref={inputRef}
+              className="px-1.5 py-0.5 bg-black/40 border border-[#00d4b2] rounded text-white text-xs outline-none w-28"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onBlur={handleRenameSubmit}
+              onKeyDown={handleKeyDown}
+              maxLength={50}
+              id="rename-input"
+            />
+          ) : (
+            <span
+              className={`flex items-center gap-1.5 ${isLocal ? 'cursor-pointer hover:text-[#00d4b2] transition' : ''}`}
+              onClick={() => {
+                if (isLocal) {
+                  setEditName(participant.displayName || '');
+                  setIsEditing(true);
+                }
+              }}
+              title={isLocal ? 'Click to rename' : undefined}
+            >
+              <span>{participant.displayName} {isLocal ? '(You)' : ''}</span>
+              {isLocal && (
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="opacity-70 inline-block ml-1">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                </svg>
+              )}
+            </span>
+          )}
 
-        {participant.isMuted && (
-          <span className="participant-muted-icon" style={{ marginLeft: '4px', fontSize: '0.8rem' }}>
-            🔇
+          {participant.isMuted && (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-400 shrink-0" title="Muted">
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+              <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+              <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          )}
+
+          {actuallySpeaking && (
+            <span className="text-[#00d4b2] text-[10px] font-bold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00d4b2] animate-ping"></span>
+              Speaking
+            </span>
+          )}
+        </div>
+
+        {participant.targetLanguage && (
+          <span className="font-mono text-[10px] font-bold px-2 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-[#00d4b2] uppercase pointer-events-auto">
+            {participant.targetLanguage}
           </span>
         )}
-        {actuallySpeaking && (
-          <span className="participant-speaking-indicator" style={{ marginLeft: '6px', fontSize: '0.75rem', color: 'var(--color-accent)', fontWeight: 'bold' }}>
-            🎤 Active
-          </span>
-        )}
-        <span className="participant-lang-badge" style={{ marginLeft: 'auto' }}>
-          {participant.targetLanguage}
-        </span>
       </div>
     </div>
   );

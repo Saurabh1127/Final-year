@@ -1,12 +1,11 @@
 import { useParams } from 'react-router-dom';
 import MeetingRoom from '../components/Meeting/MeetingRoom';
-import './Meeting.css';
 
 const Meeting = () => {
   const { roomCode } = useParams();
 
   return (
-    <div className="meeting-page">
+    <div className="min-h-screen bg-[#090a0f] text-slate-100 font-sans overflow-hidden">
       <MeetingRoom roomCode={roomCode} />
     </div>
   );
