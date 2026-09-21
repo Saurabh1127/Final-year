@@ -92,12 +92,46 @@ _HALLUCINATION_BLOCKLIST: frozenset[str] = frozenset({
     # Repeated punctuation / symbols (normalised away, but kept for safety)
     "...",
     "…",
-    # Misc
+    # Misc English
     "movistar",
     "www",
     "this video is brought to you by",
     "sponsored by",
     "ad",
+    # ── Phase 12: Hindi / Indic phantom phrases ──────────────────────────────
+    # Whisper commonly hallucinates these Hindi phrases on silence/noise when
+    # processing Indian-language audio streams.
+    "सब्सक्राइब",                   # "subscribe"
+    "सब्सक्राइब करें",             # "subscribe kare"
+    "शुक्रिया",                      # "shukriya"
+    "धन्यवाद",                      # "dhanyavaad"
+    "नमस्कार",                      # "namaskar"
+    "आपका बहुत बहुत धन्यवाद",     # "aapka bahut bahut dhanyavaad"
+    "आप देख रहे हैं",               # "aap dekh rahe hain"
+    "देखते रहिये",                  # "dekhte rahiye"
+    "लाइक और सब्सक्राइब",         # "like aur subscribe"
+    "बेल आइकॉन",                    # "bell icon"
+    "अगली वीडियो में",              # "agali video mein"
+    "आपका स्वागत है",             # "aapka swaagat hai"
+    "आमीन",                          # "aameen" (prayer noise)
+    # ── Additional English patterns (Phase 12) ──────────────────────────────
+    "thank you",
+    "thanks",
+    "okay",
+    "alright",
+    "so",
+    "yeah",
+    "yes",
+    "no",
+    "hello",
+    "hi",
+    "hey",
+    "right",
+    "the",
+    "a",
+    "i",
+    "it",
+    "is",
 })
 
 # Regex: detect [MUSIC], [APPLAUSE], ♪ etc. — common Whisper noise tags
@@ -369,6 +403,15 @@ class SpeechToSpeechEngine:
         # Hindi words like "कर" (2 chars) and "हाँ" (3 chars) are valid speech.
         # The hallucination blocklist already catches known noise words.
         text_reject = not original_text or not original_text.strip()
+
+        # ── Phase 12: Word-count filter ──────────────────────────────────────
+        # If Whisper produces only 1 word token from a chunk, it's almost always
+        # a hallucination artifact ("you", "the", "so", etc.) or a misfire.
+        # Skip this check when user provided an explicit language hint, because
+        # valid Hindi responses like "हाँ" may be 1 token.
+        word_count = len(original_text.split()) if original_text else 0
+        if word_count == 1 and not hint:
+            text_reject = True
 
         if stat_reject or text_reject or _is_hallucination(original_text):
             reject_reason = (

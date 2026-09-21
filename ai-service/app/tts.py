@@ -25,6 +25,15 @@ try:
 except ImportError:
     _EDGE_TTS_AVAILABLE = False
 
+# Kokoro TTS (local, instant fallback)
+try:
+    from kokoro import KPipeline  # type: ignore
+    import soundfile as sf  # type: ignore
+    import numpy as np # type: ignore
+    _KOKORO_AVAILABLE = True
+except ImportError:
+    _KOKORO_AVAILABLE = False
+
 # gTTS fallback
 try:
     from gtts import gTTS  # type: ignore
@@ -92,6 +101,28 @@ GTTS_LANG_MAP: dict[str, str] = {
     "gu": "gu", "kn": "kn", "ml": "ml", "pl": "pl", "uk": "uk",
     "sw": "sw", "th": "th",
 }
+
+# ── Kokoro-82M Local Voice Map ──────────────────────────────────────────────
+KOKORO_LANG_MAP: dict[str, str] = {
+    "en": "a", "hi": "h", "es": "e", "fr": "f", 
+    "it": "i", "pt": "p", "ja": "j", "zh": "z"
+}
+
+KOKORO_VOICE_MAP: dict[str, str] = {
+    "en": "am_michael", "hi": "hm_omega", "es": "em_alex", "fr": "fm_matthew", 
+    "it": "im_nicola", "pt": "pm_alex", "ja": "jm_kento", "zh": "zm_yunjian"
+}
+
+_kokoro_pipelines = {}
+
+def get_kokoro_pipeline(lang: str):
+    global _kokoro_pipelines
+    if lang not in _kokoro_pipelines:
+        if not _KOKORO_AVAILABLE:
+            raise RuntimeError("Kokoro not installed.")
+        print(f"🌐 Loading Kokoro TTS pipeline for lang '{lang}'...")
+        _kokoro_pipelines[lang] = KPipeline(lang_code=lang)
+    return _kokoro_pipelines[lang]
 
 
 def synthesize_sarvam_tts(text: str, target_lang: str, api_key: Optional[str] = None) -> bytes:
@@ -221,6 +252,34 @@ def synthesize_gtts(text: str, target_lang: str) -> bytes:
     return buf.read()
 
 
+def synthesize_kokoro_tts(text: str, target_lang: str) -> bytes:
+    """Synthesise speech via local Kokoro-82M model."""
+    if not _KOKORO_AVAILABLE:
+        raise RuntimeError("Kokoro not installed.")
+        
+    k_lang = KOKORO_LANG_MAP.get(target_lang, "a")
+    voice = KOKORO_VOICE_MAP.get(target_lang, "am_michael")
+    
+    pipeline = get_kokoro_pipeline(k_lang)
+    generator = pipeline(text, voice=voice, speed=1.0, split_pattern=r'\n+')
+    
+    # Generate all chunks and concatenate
+    all_audio = []
+    sample_rate = 24000
+    for i, (gs, ps, audio) in enumerate(generator):
+        all_audio.append(audio)
+        
+    if not all_audio:
+        raise RuntimeError("Kokoro generated empty audio.")
+        
+    full_audio = np.concatenate(all_audio)
+    
+    buf = io.BytesIO()
+    sf.write(buf, full_audio, sample_rate, format='WAV')
+    buf.seek(0)
+    return buf.read()
+
+
 def synthesize_speech(
     text: str,
     target_lang: str,
@@ -252,9 +311,17 @@ def synthesize_speech(
             raw = synthesize_edge_tts(text, target_lang)
             mime, engine_name = "audio/mp3", f"🎙️ Microsoft Edge Neural Speech ({EDGE_VOICE_MAP_MALE.get(target_lang, 'default')})"
         except Exception as exc:
-            print(f"⚠️ Edge TTS failed for '{target_lang}': {exc} — Fallback to gTTS")
+            print(f"⚠️ Edge TTS failed for '{target_lang}': {exc} — Fallback to Kokoro")
 
-    # Option 3: Google TTS Fallback
+    # Option 3: Kokoro-82M Local Fallback
+    if raw is None and target_lang in KOKORO_LANG_MAP:
+        try:
+            raw = synthesize_kokoro_tts(text, target_lang)
+            mime, engine_name = "audio/wav", f"🤖 Kokoro-82M Local ({KOKORO_VOICE_MAP.get(target_lang)})"
+        except Exception as exc:
+            print(f"⚠️ Kokoro TTS failed for '{target_lang}': {exc} — Fallback to gTTS")
+
+    # Option 4: Google TTS Fallback
     if raw is None:
         raw = synthesize_gtts(text, target_lang)
         mime, engine_name = "audio/mp3", "gTTS Fallback"

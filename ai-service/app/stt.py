@@ -138,7 +138,7 @@ def transcribe_audio(
     beam_size = int(os.getenv("WHISPER_BEAM_SIZE", "5"))
     vad_params = dict(
         threshold=0.5,              # raised from 0.4 — filters out more borderline noise segments
-        min_speech_duration_ms=150,
+        min_speech_duration_ms=250,  # raised from 150 — rejects ultra-short noise bursts (<250ms)
         min_silence_duration_ms=800,
     )
 
@@ -157,8 +157,8 @@ def transcribe_audio(
                 beam_size=beam_size,
                 vad_filter=True,
                 vad_parameters=vad_params,
-                condition_on_previous_text=True,   # re-enabled: large-v3-turbo uses this for intra-chunk coherence
-                repetition_penalty=1.1,            # guards against hallucination loops that condition_on_previous_text can cause
+                condition_on_previous_text=False,  # Phase 12: DISABLED — causes hallucination feedback loops in real-time meetings
+                repetition_penalty=1.1,            # guards against remaining repetition patterns
                 **opts
             )
 
@@ -202,7 +202,7 @@ def transcribe_audio(
             beam_size=beam_size,
             vad_filter=True,
             vad_parameters=vad_params,
-            condition_on_previous_text=True,
+            condition_on_previous_text=False,  # Phase 12: DISABLED — breaks hallucination feedback loops
             repetition_penalty=1.1,
             **opts
         )
