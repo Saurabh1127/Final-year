@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { Button, Input, Divider, useToast } from '../components/ui';
 import './Auth.css';
@@ -13,7 +14,7 @@ export function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { register, isAuthenticated } = useAuth();
+  const { register, googleLogin, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -58,8 +59,37 @@ export function Register() {
     }
   };
 
+  const handleGoogleAuth = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setError('');
+      setLoading(true);
+      try {
+        await googleLogin({ accessToken: tokenResponse.access_token });
+        toast.success('Account created with Google! Welcome to Samvada.');
+        navigate('/');
+      } catch (err) {
+        setError(err.response?.data?.message || 'Google registration failed. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: (err) => {
+      console.error('Google sign-up error:', err);
+      setError('Google registration was cancelled or encountered an error.');
+    },
+  });
+
   const handleSocialLogin = (provider) => {
-    toast.info(`${provider} sign-up is coming soon.`);
+    if (provider === 'Google') {
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      if (!clientId) {
+        toast.info('Google Client ID not set yet. Please configure VITE_GOOGLE_CLIENT_ID in client/.env');
+        return;
+      }
+      handleGoogleAuth();
+    } else {
+      toast.info(`${provider} sign-up is coming soon.`);
+    }
   };
 
   return (

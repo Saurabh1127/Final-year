@@ -52,6 +52,17 @@ export const AuthProvider = ({ children }) => {
     return newUser;
   };
 
+  const googleLogin = async (authPayload) => {
+    const payload = typeof authPayload === 'string' ? { credential: authPayload } : authPayload;
+    const res = await api.post('/auth/google', payload);
+    const { token: newToken, user: newUser } = res.data;
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('user', JSON.stringify(newUser));
+    setToken(newToken);
+    setUser(newUser);
+    return newUser;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -66,6 +77,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: !!token && !!user,
     register,
     login,
+    googleLogin,
     logout,
   };
 

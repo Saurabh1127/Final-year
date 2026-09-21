@@ -40,12 +40,30 @@ class AuthController {
     }
   }
 
+  async googleAuth(req, res) {
+    try {
+      const { credential, accessToken } = req.body;
+
+      if (!credential && !accessToken) {
+        return res.status(400).json({ message: 'Google credential or access token is required.' });
+      }
+
+      const result = await authService.googleAuth({ credential, accessToken });
+      res.json(result);
+    } catch (error) {
+      console.error('Google auth error:', error);
+      res.status(error.status || 500).json({ message: error.message || 'Server error during Google authentication.' });
+    }
+  }
+
   async getMe(req, res) {
     res.json({
       user: {
         id: req.user._id,
         name: req.user.name,
         email: req.user.email,
+        avatar: req.user.avatar,
+        authProvider: req.user.authProvider,
         preferredLanguage: req.user.preferredLanguage,
       },
     });

@@ -1,9 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { ToastProvider } from './components/ui';
 import AppShell from './components/Layout/AppShell';
 import './index.css';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 // Pages
 import Landing from './pages/Landing';
@@ -44,75 +47,77 @@ function RootRoute() {
 
 function App() {
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <ToastProvider>
-          <Router>
-            <Routes>
-              {/* Public Marketing & Auth Routes */}
-              <Route path="/" element={<RootRoute />} />
-              <Route path="/landing" element={<Landing />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || 'placeholder'}>
+      <AuthProvider>
+        <SocketProvider>
+          <ToastProvider>
+            <Router>
+              <Routes>
+                {/* Public Marketing & Auth Routes */}
+                <Route path="/" element={<RootRoute />} />
+                <Route path="/landing" element={<Landing />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
 
-              {/* Fullscreen Meeting Route (No AppShell) */}
-              <Route
-                path="/meeting/:roomCode"
-                element={
-                  <ProtectedRoute>
-                    <Meeting />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/meetings"
-                element={
-                  <ProtectedRoute>
-                    <AppShell>
-                      <MeetingHistory />
-                    </AppShell>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/transcripts"
-                element={
-                  <ProtectedRoute>
-                    <AppShell>
-                      <Transcripts />
-                    </AppShell>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <AppShell>
-                      <Settings />
-                    </AppShell>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/summary/:roomCode"
-                element={
-                  <ProtectedRoute>
-                    <AppShell>
-                      <SummaryPage />
-                    </AppShell>
-                  </ProtectedRoute>
-                }
-              />
+                {/* Fullscreen Meeting Route (No AppShell) */}
+                <Route
+                  path="/meeting/:roomCode"
+                  element={
+                    <ProtectedRoute>
+                      <Meeting />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/meetings"
+                  element={
+                    <ProtectedRoute>
+                      <AppShell>
+                        <MeetingHistory />
+                      </AppShell>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/transcripts"
+                  element={
+                    <ProtectedRoute>
+                      <AppShell>
+                        <Transcripts />
+                      </AppShell>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <AppShell>
+                        <Settings />
+                      </AppShell>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/summary/:roomCode"
+                  element={
+                    <ProtectedRoute>
+                      <AppShell>
+                        <SummaryPage />
+                      </AppShell>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Router>
-        </ToastProvider>
-      </SocketProvider>
-    </AuthProvider>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Router>
+          </ToastProvider>
+        </SocketProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 

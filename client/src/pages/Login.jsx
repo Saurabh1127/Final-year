@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { Button, Input, Divider, useToast } from '../components/ui';
 import './Auth.css';
@@ -11,7 +12,7 @@ export function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login, isAuthenticated } = useAuth();
+  const { login, googleLogin, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -42,8 +43,37 @@ export function Login() {
     }
   };
 
+  const handleGoogleAuth = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setError('');
+      setLoading(true);
+      try {
+        await googleLogin({ accessToken: tokenResponse.access_token });
+        toast.success('Signed in with Google! Welcome to Samvada.');
+        navigate('/');
+      } catch (err) {
+        setError(err.response?.data?.message || 'Google sign-in failed. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: (err) => {
+      console.error('Google sign-in error:', err);
+      setError('Google sign-in was cancelled or encountered an error.');
+    },
+  });
+
   const handleSocialLogin = (provider) => {
-    toast.info(`${provider} sign-in is coming soon.`);
+    if (provider === 'Google') {
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      if (!clientId) {
+        toast.info('Google Client ID not set yet. Please configure VITE_GOOGLE_CLIENT_ID in client/.env');
+        return;
+      }
+      handleGoogleAuth();
+    } else {
+      toast.info(`${provider} sign-in is coming soon.`);
+    }
   };
 
   return (
