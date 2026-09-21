@@ -1,9 +1,20 @@
 import React from 'react';
 import ParticipantTile from './ParticipantTile';
 
-const ParticipantGrid = ({ participants = [], remoteStreams = {}, localParticipant, localStream, onRename }) => {
-  // Defensive deduplication: ensure local participant is never rendered as remote,
-  // and each remote participant has exactly one unique tile
+/**
+ * ParticipantGrid
+ * Responsive multi-participant video grid.
+ * Dynamically scales layout from single-speaker spotlight (1)
+ * to 2-way conversation (2) to 2x2 multi-mesh grid (3-4) and beyond.
+ */
+export function ParticipantGrid({
+  participants = [],
+  remoteStreams = {},
+  localParticipant,
+  localStream,
+  onRename,
+  sourceLanguage = 'auto',
+}) {
   const localId = localParticipant?.userId?.toString();
   const uniqueRemoteMap = new Map();
 
@@ -17,40 +28,41 @@ const ParticipantGrid = ({ participants = [], remoteStreams = {}, localParticipa
   const uniqueRemoteParticipants = Array.from(uniqueRemoteMap.values());
   const totalCount = uniqueRemoteParticipants.length + (localParticipant ? 1 : 0);
 
-  // Dynamic grid column calculation for optimal video tile aspect ratio
-  const gridColumns = totalCount === 1 
-    ? 'minmax(0, 1fr)' 
-    : totalCount === 2 
-    ? 'repeat(2, minmax(0, 1fr))' 
-    : 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))';
+  const gridLayoutClass =
+    totalCount <= 1
+      ? 'sam-participant-grid--single'
+      : totalCount === 2
+      ? 'sam-participant-grid--duo'
+      : totalCount <= 4
+      ? 'sam-participant-grid--quad'
+      : 'sam-participant-grid--multi';
 
   return (
-    <div
-      className={`flex-1 grid gap-4 items-center justify-center w-full h-full mx-auto p-2 ${
-        totalCount === 1 ? 'max-w-4xl max-h-[75vh]' : 'max-w-7xl'
-      }`}
-      style={{ gridTemplateColumns: gridColumns }}
-    >
+    <div className={`sam-participant-grid ${gridLayoutClass}`} id="participant-grid">
       {localParticipant && (
-        <ParticipantTile 
+        <ParticipantTile
           key={localId || 'local-participant'}
           participant={localParticipant}
           stream={localStream}
           isLocal={true}
           onRename={onRename}
+          sourceLanguage={sourceLanguage}
         />
       )}
-      
-      {uniqueRemoteParticipants.map(p => (
-        <ParticipantTile 
-          key={p.userId?.toString()}
-          participant={p}
-          stream={remoteStreams[p.userId?.toString()] || remoteStreams[p.userId]}
-          isLocal={false}
-        />
-      ))}
+
+      {uniqueRemoteParticipants.map((p) => {
+        const remoteStream = remoteStreams[p.userId?.toString()] || remoteStreams[p.userId];
+        return (
+          <ParticipantTile
+            key={p.userId?.toString()}
+            participant={p}
+            stream={remoteStream}
+            isLocal={false}
+          />
+        );
+      })}
     </div>
   );
-};
+}
 
 export default ParticipantGrid;

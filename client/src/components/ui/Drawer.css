@@ -1,0 +1,124 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Drawer Component Styles
+   ═══════════════════════════════════════════ */
+
+.sam-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(9, 10, 15, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: var(--lm-z-modal, 500);
+  animation: fadeIn var(--lm-duration-fast, 120ms) ease-out forwards;
+}
+
+.sam-drawer {
+  position: fixed;
+  background-color: var(--lm-bg-surface, #12151E);
+  border-color: var(--lm-border, rgba(255, 255, 255, 0.08));
+  box-shadow: var(--lm-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  color: var(--lm-text-primary, #F8FAFC);
+  z-index: calc(var(--lm-z-modal, 500) + 1);
+  transition: transform var(--lm-duration-slow, 350ms) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Positions ── */
+.sam-drawer--right {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border-left: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  animation: slideInRight var(--lm-duration-base, 200ms) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.sam-drawer--left {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  border-right: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  transform: translateX(0);
+}
+
+.sam-drawer--bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 85vh;
+  border-top: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--lm-radius-lg, 12px) var(--lm-radius-lg, 12px) 0 0;
+  animation: slideInBottom var(--lm-duration-base, 200ms) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Sizes (for side drawers) ── */
+.sam-drawer--right.sam-drawer--sm,
+.sam-drawer--left.sam-drawer--sm {
+  width: 320px;
+}
+
+.sam-drawer--right.sam-drawer--md,
+.sam-drawer--left.sam-drawer--md {
+  width: 400px;
+}
+
+.sam-drawer--right.sam-drawer--lg,
+.sam-drawer--left.sam-drawer--lg {
+  width: 520px;
+}
+
+@media (max-width: 640px) {
+  .sam-drawer--right,
+  .sam-drawer--left {
+    width: 100% !important;
+  }
+}
+
+/* ── Header ── */
+.sam-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--lm-space-4, 16px) var(--lm-space-5, 20px);
+  border-bottom: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+}
+
+.sam-drawer-title {
+  margin: 0;
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-size: var(--lm-text-md, 1rem);
+  font-weight: 600;
+  color: var(--lm-text-primary, #F8FAFC);
+}
+
+.sam-drawer-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--lm-text-secondary, #94A3B8);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--lm-radius-sm, 4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--lm-duration-fast, 120ms) ease;
+}
+
+.sam-drawer-close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--lm-text-primary, #F8FAFC);
+}
+
+/* ── Body ── */
+.sam-drawer-body {
+  padding: var(--lm-space-5, 20px);
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ── Footer ── */
+.sam-drawer-footer {
+  padding: var(--lm-space-4, 16px) var(--lm-space-5, 20px);
+  border-top: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  background-color: rgba(14, 16, 24, 0.4);
+}

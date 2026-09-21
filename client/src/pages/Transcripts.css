@@ -1,0 +1,349 @@
+/* ═════════════════════════════════════════════════════════════════════════════════
+   SAMVADA TRANSCRIPTS BROWSER DESIGN SYSTEM
+   Tokens: #090A0F, #0E1017, #00D4B2 (Mint), #38BDF8 (Cyan)
+   ═════════════════════════════════════════════════════════════════════════════════ */
+
+.sam-transcripts-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  .sam-transcripts-page {
+    padding: 32px 28px 64px;
+  }
+}
+
+.sam-transcripts-container {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Page Header ── */
+.sam-transcripts-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sam-transcripts-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sam-transcripts-icon-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background-color: rgba(0, 212, 178, 0.1);
+  border: 1px solid rgba(0, 212, 178, 0.25);
+  color: var(--lm-accent, #00d4b2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sam-transcripts-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.sam-transcripts-subtitle {
+  font-size: 0.875rem;
+  color: var(--lm-text-secondary, #94a3b8);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Search & Lookup Bar ── */
+.sam-transcripts-search-card {
+  padding: 18px 20px;
+  border-radius: var(--lm-radius-2xl, 16px);
+  background: rgba(18, 21, 30, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+@media (min-width: 640px) {
+  .sam-transcripts-search-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+.sam-transcripts-input-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.sam-transcripts-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+}
+
+.sam-transcripts-input {
+  width: 100%;
+  padding: 10px 14px 10px 40px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-family: var(--lm-font-mono, monospace);
+  outline: none;
+  transition: all var(--lm-transition-fast, 150ms ease);
+}
+
+.sam-transcripts-input:focus {
+  background-color: rgba(255, 255, 255, 0.07);
+  border-color: rgba(0, 212, 178, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 212, 178, 0.15);
+}
+
+.sam-transcripts-search-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  background-color: var(--lm-accent, #00d4b2);
+  color: #090a0f;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 212, 178, 0.25);
+  transition: all var(--lm-transition-fast, 150ms ease);
+  white-space: nowrap;
+}
+
+.sam-transcripts-search-btn:hover:not(:disabled) {
+  background-color: #33e0c4;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 212, 178, 0.35);
+}
+
+.sam-transcripts-search-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Result Meeting Banner ── */
+.sam-transcripts-meta-card {
+  padding: 18px 22px;
+  border-radius: 14px;
+  background: rgba(18, 21, 30, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .sam-transcripts-meta-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.sam-transcripts-meta-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sam-transcripts-room-badge {
+  font-family: var(--lm-font-mono, monospace);
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background-color: rgba(0, 212, 178, 0.1);
+  border: 1px solid rgba(0, 212, 178, 0.25);
+  color: var(--lm-accent, #00d4b2);
+}
+
+.sam-transcripts-count-label {
+  font-size: 0.8125rem;
+  color: var(--lm-text-secondary, #94a3b8);
+}
+
+.sam-transcripts-meta-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sam-transcripts-action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--lm-transition-fast, 150ms ease);
+}
+
+.sam-transcripts-action-link:hover {
+  background-color: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.sam-transcripts-action-link--summary {
+  background-color: rgba(0, 212, 178, 0.1);
+  border-color: rgba(0, 212, 178, 0.25);
+  color: var(--lm-accent, #00d4b2);
+}
+
+.sam-transcripts-action-link--summary:hover {
+  background-color: rgba(0, 212, 178, 0.18);
+  border-color: #00d4b2;
+}
+
+/* ── Feed Container ── */
+.sam-transcripts-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sam-transcripts-entry-card {
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(18, 21, 30, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 3px solid var(--lm-accent, #00d4b2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all var(--lm-transition-fast, 150ms ease);
+}
+
+.sam-transcripts-entry-card:hover {
+  background: rgba(18, 21, 30, 0.88);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.sam-transcripts-entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sam-transcripts-entry-speaker {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.sam-transcripts-entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.6875rem;
+  font-family: var(--lm-font-mono, monospace);
+  color: var(--lm-text-tertiary, #64748b);
+}
+
+.sam-transcripts-entry-original {
+  font-size: 0.875rem;
+  color: #e2e8f0;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.sam-transcripts-entry-trans {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 10px;
+  border-left: 2px solid rgba(56, 189, 248, 0.4);
+}
+
+.sam-transcripts-entry-trans-item {
+  font-size: 0.8125rem;
+  color: var(--lm-text-secondary, #94a3b8);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.sam-transcripts-tag {
+  font-family: var(--lm-font-mono, monospace);
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--lm-telemetry, #38bdf8);
+  margin-right: 6px;
+}
+
+/* ── Empty State ── */
+.sam-transcripts-empty {
+  padding: 64px 24px;
+  border-radius: var(--lm-radius-2xl, 16px);
+  background: rgba(18, 21, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.sam-transcripts-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: rgba(0, 212, 178, 0.1);
+  border: 1px solid rgba(0, 212, 178, 0.25);
+  color: var(--lm-accent, #00d4b2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.sam-transcripts-empty-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.sam-transcripts-empty-desc {
+  font-size: 0.875rem;
+  color: var(--lm-text-secondary, #94a3b8);
+  max-width: 440px;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}

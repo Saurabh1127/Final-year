@@ -1,0 +1,165 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Button Component Styles
+   ═══════════════════════════════════════════ */
+
+.sam-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lm-space-2, 8px);
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-weight: 600;
+  border-radius: var(--lm-radius-md, 8px);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  position: relative;
+  text-decoration: none;
+  transition: all var(--lm-duration-base, 200ms) var(--lm-easing-default, ease);
+  outline: none;
+}
+
+.sam-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--lm-bg-base, #090A0F), 0 0 0 4px var(--lm-border-focus, rgba(0, 212, 178, 0.5));
+}
+
+.sam-btn--disabled,
+.sam-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.sam-btn--full {
+  width: 100%;
+}
+
+/* ── Sizes ── */
+.sam-btn--sm {
+  height: 32px;
+  padding: 0 var(--lm-space-3, 12px);
+  font-size: var(--lm-text-xs, 0.75rem);
+  border-radius: var(--lm-radius-sm, 4px);
+}
+
+.sam-btn--md {
+  height: 40px;
+  padding: 0 var(--lm-space-4, 16px);
+  font-size: var(--lm-text-sm, 0.8125rem);
+}
+
+.sam-btn--lg {
+  height: 48px;
+  padding: 0 var(--lm-space-6, 24px);
+  font-size: var(--lm-text-base, 0.875rem);
+  border-radius: var(--lm-radius-lg, 12px);
+}
+
+/* ── Variants ── */
+/* Primary: Electric Mint */
+.sam-btn--primary {
+  background-color: var(--lm-accent, #00D4B2);
+  color: var(--lm-text-inverse, #0F172A);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.sam-btn--primary:hover:not(:disabled) {
+  background-color: var(--lm-accent-hover, #00E8C4);
+  box-shadow: 0 0 20px rgba(0, 212, 178, 0.35);
+  transform: translateY(-1px);
+}
+
+.sam-btn--primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Secondary: Subtle obsidian card with crisp border */
+.sam-btn--secondary {
+  background-color: var(--lm-bg-surface, #12151E);
+  color: var(--lm-text-primary, #F8FAFC);
+  border-color: var(--lm-border, rgba(255, 255, 255, 0.08));
+}
+
+.sam-btn--secondary:hover:not(:disabled) {
+  background-color: var(--lm-bg-surface-hover, #1A1D2B);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.sam-btn--secondary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Outline: Transparent with mint / border accent */
+.sam-btn--outline {
+  background-color: transparent;
+  color: var(--lm-accent, #00D4B2);
+  border-color: rgba(0, 212, 178, 0.4);
+}
+
+.sam-btn--outline:hover:not(:disabled) {
+  background-color: var(--lm-accent-muted, rgba(0, 212, 178, 0.15));
+  border-color: var(--lm-accent, #00D4B2);
+  transform: translateY(-1px);
+}
+
+.sam-btn--outline:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Ghost: Seamless minimal action */
+.sam-btn--ghost {
+  background-color: transparent;
+  color: var(--lm-text-secondary, #94A3B8);
+}
+
+.sam-btn--ghost:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--lm-text-primary, #F8FAFC);
+}
+
+.sam-btn--ghost:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Danger: Semantic Red for end call / destructive actions */
+.sam-btn--danger {
+  background-color: var(--lm-danger, #F87171);
+  color: #FFFFFF;
+}
+
+.sam-btn--danger:hover:not(:disabled) {
+  background-color: #EF4444;
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.35);
+  transform: translateY(-1px);
+}
+
+.sam-btn--danger:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Icon-only */
+.sam-btn--icon-only.sam-btn--sm {
+  width: 32px;
+  padding: 0;
+}
+.sam-btn--icon-only.sam-btn--md {
+  width: 40px;
+  padding: 0;
+}
+.sam-btn--icon-only.sam-btn--lg {
+  width: 48px;
+  padding: 0;
+}
+
+/* Spinner */
+.sam-btn__spinner {
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}

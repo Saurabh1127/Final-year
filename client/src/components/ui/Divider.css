@@ -1,0 +1,53 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Divider Component Styles
+   ═══════════════════════════════════════════ */
+
+.sam-divider {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* ── Horizontal ── */
+.sam-divider--horizontal {
+  width: 100%;
+  margin: var(--lm-space-4, 16px) 0;
+}
+
+.sam-divider--horizontal::before,
+.sam-divider--horizontal::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--lm-border, rgba(255, 255, 255, 0.08));
+}
+
+.sam-divider--horizontal.sam-divider--align-left::before {
+  max-width: 24px;
+}
+
+.sam-divider--horizontal.sam-divider--align-right::after {
+  max-width: 24px;
+}
+
+.sam-divider__label {
+  padding: 0 var(--lm-space-3, 12px);
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-size: var(--lm-text-xs, 0.75rem);
+  font-weight: 500;
+  color: var(--lm-text-secondary, #94A3B8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* ── Vertical ── */
+.sam-divider--vertical {
+  display: inline-flex;
+  height: 100%;
+  min-height: 16px;
+  width: 1px;
+  background-color: var(--lm-border, rgba(255, 255, 255, 0.08));
+  margin: 0 var(--lm-space-3, 12px);
+  align-self: stretch;
+}

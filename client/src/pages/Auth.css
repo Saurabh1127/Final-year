@@ -1,0 +1,226 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Authentication Screens Styles
+   ═══════════════════════════════════════════ */
+
+.sam-auth-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--lm-bg-base, #090A0F);
+  padding: var(--lm-space-4, 16px);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+}
+
+/* ── Ambient Background Glow ── */
+.sam-auth-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sam-auth-ambient__glow-1 {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 580px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(0, 212, 178, 0.05) 0%, transparent 70%);
+  filter: blur(60px);
+}
+
+.sam-auth-ambient__glow-2 {
+  position: absolute;
+  bottom: 8%;
+  right: 12%;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.035) 0%, transparent 70%);
+  filter: blur(70px);
+}
+
+/* ── Card Container ── */
+.sam-auth-card {
+  width: 100%;
+  max-width: 440px;
+  background-color: rgba(18, 21, 30, 0.92);
+  border: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--lm-radius-xl, 16px);
+  padding: var(--lm-space-8, 32px) var(--lm-space-6, 24px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 32px rgba(0, 212, 178, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  position: relative;
+  z-index: 1;
+  animation: scaleIn var(--lm-duration-base, 200ms) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  margin: auto;
+}
+
+@media (min-width: 640px) {
+  .sam-auth-card {
+    padding: var(--lm-space-10, 40px) var(--lm-space-8, 32px);
+  }
+}
+
+@media (max-width: 480px) {
+  .sam-auth-page {
+    padding: 16px 12px;
+    align-items: flex-start;
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .sam-auth-card {
+    max-width: 100%;
+    border-radius: 14px;
+    padding: 24px 16px;
+  }
+}
+
+/* ── Header / Brand ── */
+.sam-auth-header {
+  text-align: center;
+  margin-bottom: var(--lm-space-6, 24px);
+}
+
+.sam-auth-logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lm-space-2, 8px);
+  margin-bottom: var(--lm-space-3, 12px);
+  text-decoration: none;
+}
+
+.sam-auth-logo-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--lm-radius-md, 8px);
+  background-color: rgba(0, 212, 178, 0.1);
+  border: 1px solid rgba(0, 212, 178, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(0, 212, 178, 0.15);
+}
+
+.sam-auth-brand-name {
+  font-family: var(--lm-font-display, 'Plus Jakarta Sans', sans-serif);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+  color: #FFFFFF;
+}
+
+.sam-auth-title {
+  margin: 0;
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-size: var(--lm-text-xl, 1.5rem);
+  font-weight: 700;
+  color: var(--lm-text-primary, #F8FAFC);
+  letter-spacing: -0.02em;
+}
+
+.sam-auth-subtitle {
+  margin: var(--lm-space-1, 4px) 0 0 0;
+  font-size: var(--lm-text-sm, 0.8125rem);
+  color: var(--lm-text-secondary, #94A3B8);
+  line-height: 1.5;
+}
+
+/* ── Form Rows ── */
+.sam-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lm-space-4, 16px);
+}
+
+.sam-auth-row-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--lm-text-xs, 0.75rem);
+}
+
+.sam-auth-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--lm-text-secondary, #94A3B8);
+  cursor: pointer;
+  user-select: none;
+}
+
+.sam-auth-checkbox-label input[type="checkbox"] {
+  accent-color: var(--lm-accent, #00D4B2);
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.sam-auth-link {
+  color: var(--lm-accent, #00D4B2);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--lm-duration-fast, 120ms) ease;
+}
+
+.sam-auth-link:hover {
+  color: var(--lm-accent-hover, #00E8C4);
+  text-decoration: underline;
+}
+
+/* ── Social Buttons ── */
+.sam-auth-social-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--lm-space-3, 12px);
+}
+
+.sam-social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lm-space-2, 8px);
+  padding: 10px 16px;
+  border-radius: var(--lm-radius-md, 8px);
+  background-color: var(--lm-bg-input, #0E1018);
+  border: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  color: var(--lm-text-primary, #F8FAFC);
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-size: var(--lm-text-sm, 0.8125rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--lm-duration-fast, 120ms) ease;
+}
+
+.sam-social-btn:hover:not(:disabled) {
+  background-color: var(--lm-bg-surface-hover, #1A1D2B);
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.sam-social-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sam-social-btn svg {
+  flex-shrink: 0;
+}
+
+/* ── Footer Link ── */
+.sam-auth-footer {
+  margin-top: var(--lm-space-6, 24px);
+  padding-top: var(--lm-space-4, 16px);
+  border-top: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  text-align: center;
+  font-size: var(--lm-text-sm, 0.8125rem);
+  color: var(--lm-text-secondary, #94A3B8);
+}

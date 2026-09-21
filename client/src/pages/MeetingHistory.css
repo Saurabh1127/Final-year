@@ -1,0 +1,370 @@
+/* ═════════════════════════════════════════════════════════════════════════════════
+   SAMVADA MEETING HISTORY DESIGN SYSTEM
+   Tokens: #090A0F (Obsidian), #0E1017 (Surface), #00D4B2 (Mint), #38BDF8 (Cyan)
+   ═════════════════════════════════════════════════════════════════════════════════ */
+
+.sam-history-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  .sam-history-page {
+    padding: 32px 28px 64px;
+  }
+}
+
+.sam-history-container {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Top Header ── */
+.sam-history-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .sam-history-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.sam-history-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sam-history-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background-color: rgba(0, 212, 178, 0.1);
+  border: 1px solid rgba(0, 212, 178, 0.25);
+  color: var(--lm-accent, #00d4b2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sam-history-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.sam-history-subtitle {
+  font-size: 0.875rem;
+  color: var(--lm-text-secondary, #94a3b8);
+  margin: 2px 0 0 0;
+  line-height: 1.5;
+}
+
+.sam-history-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 10px;
+  background-color: var(--lm-accent, #00d4b2);
+  color: #090a0f;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 212, 178, 0.25);
+  transition: all var(--lm-transition-fast, 150ms ease);
+  white-space: nowrap;
+}
+
+.sam-history-cta-btn:hover {
+  background-color: #33e0c4;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 212, 178, 0.35);
+}
+
+/* ── Search & Filter Controls Card ── */
+.sam-history-controls-card {
+  padding: 18px 20px;
+  border-radius: var(--lm-radius-2xl, 16px);
+  background: rgba(18, 21, 30, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.sam-history-search-row {
+  position: relative;
+  width: 100%;
+}
+
+.sam-history-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+}
+
+.sam-history-search-input {
+  width: 100%;
+  padding: 10px 14px 10px 42px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all var(--lm-transition-fast, 150ms ease);
+}
+
+.sam-history-search-input:focus {
+  background-color: rgba(255, 255, 255, 0.07);
+  border-color: rgba(0, 212, 178, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 212, 178, 0.15);
+}
+
+.sam-history-filters-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sam-history-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--lm-text-secondary, #94a3b8);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--lm-transition-fast, 150ms ease);
+}
+
+.sam-history-filter-pill:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.sam-history-filter-pill--active {
+  background-color: rgba(0, 212, 178, 0.12);
+  border-color: rgba(0, 212, 178, 0.35);
+  color: var(--lm-accent, #00d4b2);
+}
+
+.sam-history-filter-count {
+  font-size: 0.6875rem;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: inherit;
+}
+
+/* ── Meeting Cards Grid ── */
+.sam-history-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .sam-history-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.sam-history-card {
+  padding: 20px;
+  border-radius: 14px;
+  background: rgba(18, 21, 30, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all var(--lm-transition-fast, 150ms ease);
+}
+
+.sam-history-card:hover {
+  background: rgba(18, 21, 30, 0.9);
+  border-color: rgba(255, 255, 255, 0.14);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
+.sam-history-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sam-history-card__title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sam-history-card__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.sam-history-card__date {
+  font-size: 0.75rem;
+  color: var(--lm-text-tertiary, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sam-history-card__room-pill {
+  font-family: var(--lm-font-mono, monospace);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background-color: rgba(0, 212, 178, 0.1);
+  border: 1px solid rgba(0, 212, 178, 0.25);
+  color: var(--lm-accent, #00d4b2);
+  white-space: nowrap;
+}
+
+.sam-history-card__details {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.75rem;
+}
+
+.sam-history-card__detail-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--lm-text-secondary, #94a3b8);
+}
+
+.sam-history-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sam-history-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--lm-text-secondary, #94a3b8);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--lm-transition-fast, 150ms ease);
+}
+
+.sam-history-btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
+}
+
+.sam-history-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background-color: rgba(0, 212, 178, 0.1);
+  border: 1px solid rgba(0, 212, 178, 0.3);
+  color: var(--lm-accent, #00d4b2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--lm-transition-fast, 150ms ease);
+}
+
+.sam-history-btn-primary:hover {
+  background-color: rgba(0, 212, 178, 0.2);
+  border-color: #00d4b2;
+}
+
+/* ── Empty State ── */
+.sam-history-empty {
+  padding: 64px 24px;
+  border-radius: var(--lm-radius-2xl, 16px);
+  background: rgba(18, 21, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.sam-history-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: rgba(0, 212, 178, 0.1);
+  border: 1px solid rgba(0, 212, 178, 0.25);
+  color: var(--lm-accent, #00d4b2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.sam-history-empty-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.sam-history-empty-desc {
+  font-size: 0.875rem;
+  color: var(--lm-text-secondary, #94a3b8);
+  max-width: 440px;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}

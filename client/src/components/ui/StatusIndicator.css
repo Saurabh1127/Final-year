@@ -1,0 +1,76 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: StatusIndicator Component Styles
+   ═══════════════════════════════════════════ */
+
+.sam-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+}
+
+.sam-status-dot-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sam-status-dot {
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+/* ── Sizes ── */
+.sam-status-indicator--sm .sam-status-dot { width: 6px; height: 6px; }
+.sam-status-indicator--md .sam-status-dot { width: 8px; height: 8px; }
+.sam-status-indicator--lg .sam-status-dot { width: 12px; height: 12px; }
+
+.sam-status-indicator--sm .sam-status-label { font-size: var(--lm-text-xs, 0.75rem); }
+.sam-status-indicator--md .sam-status-label { font-size: var(--lm-text-sm, 0.8125rem); }
+.sam-status-indicator--lg .sam-status-label { font-size: var(--lm-text-base, 0.875rem); }
+
+/* ── Status Variants ── */
+.sam-status-indicator--online .sam-status-dot {
+  background-color: var(--lm-success, #34D399);
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+}
+
+.sam-status-indicator--offline .sam-status-dot {
+  background-color: var(--lm-offline, #64748B);
+}
+
+.sam-status-indicator--warning .sam-status-dot {
+  background-color: var(--lm-warning, #FBBF24);
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+}
+
+.sam-status-indicator--degraded .sam-status-dot {
+  background-color: var(--lm-degraded, #FB923C);
+}
+
+.sam-status-indicator--busy .sam-status-dot {
+  background-color: var(--lm-danger, #F87171);
+}
+
+.sam-status-indicator--speaking .sam-status-dot {
+  background-color: var(--lm-accent, #00D4B2);
+  box-shadow: 0 0 10px rgba(0, 212, 178, 0.8);
+}
+
+/* ── Pulse Ping Animation ── */
+.sam-status-dot--pulse::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  background-color: inherit;
+  opacity: 0.6;
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.sam-status-label {
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-weight: 500;
+  color: var(--lm-text-secondary, #94A3B8);
+}

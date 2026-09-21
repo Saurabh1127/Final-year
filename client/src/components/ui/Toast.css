@@ -1,0 +1,119 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Toast Notification Styles
+   ═══════════════════════════════════════════ */
+
+.sam-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: var(--lm-z-toast, 600);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lm-space-2, 8px);
+  pointer-events: none;
+  max-width: calc(100vw - 40px);
+  width: 360px;
+}
+
+@media (max-width: 640px) {
+  .sam-toast-container {
+    top: auto;
+    bottom: 20px;
+    right: 20px;
+    left: 20px;
+    width: auto;
+  }
+}
+
+.sam-toast {
+  pointer-events: auto;
+  background-color: var(--lm-bg-elevated, #1E2130);
+  border: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--lm-radius-md, 8px);
+  box-shadow: var(--lm-shadow-lg);
+  padding: var(--lm-space-3, 12px) var(--lm-space-4, 16px);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--lm-space-3, 12px);
+  color: var(--lm-text-primary, #F8FAFC);
+  position: relative;
+  overflow: hidden;
+  animation: slideInRight var(--lm-duration-base, 200ms) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Variants ── */
+.sam-toast--success {
+  border-left: 3px solid var(--lm-success, #34D399);
+}
+.sam-toast--success .sam-toast__icon {
+  color: var(--lm-success, #34D399);
+}
+
+.sam-toast--error {
+  border-left: 3px solid var(--lm-danger, #F87171);
+}
+.sam-toast--error .sam-toast__icon {
+  color: var(--lm-danger, #F87171);
+}
+
+.sam-toast--warning {
+  border-left: 3px solid var(--lm-warning, #FBBF24);
+}
+.sam-toast--warning .sam-toast__icon {
+  color: var(--lm-warning, #FBBF24);
+}
+
+.sam-toast--info {
+  border-left: 3px solid var(--lm-telemetry, #38BDF8);
+}
+.sam-toast--info .sam-toast__icon {
+  color: var(--lm-telemetry, #38BDF8);
+}
+
+/* ── Icon & Content ── */
+.sam-toast__icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+}
+
+.sam-toast__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.sam-toast__message {
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-size: var(--lm-text-sm, 0.8125rem);
+  font-weight: 600;
+  color: var(--lm-text-primary, #F8FAFC);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.sam-toast__desc {
+  font-size: var(--lm-text-xs, 0.75rem);
+  color: var(--lm-text-secondary, #94A3B8);
+  margin: 4px 0 0 0;
+  line-height: 1.4;
+}
+
+/* ── Close Button ── */
+.sam-toast__close {
+  background: transparent;
+  border: none;
+  color: var(--lm-text-disabled, #475569);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--lm-radius-sm, 4px);
+  margin-top: -2px;
+  margin-right: -4px;
+  transition: color var(--lm-duration-fast, 120ms) ease;
+}
+
+.sam-toast__close:hover {
+  color: var(--lm-text-primary, #F8FAFC);
+}

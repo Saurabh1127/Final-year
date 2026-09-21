@@ -1,0 +1,251 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Dashboard Component Styles
+   ═══════════════════════════════════════════ */
+
+.sam-dashboard {
+  flex: 1;
+  padding: var(--lm-space-8, 32px);
+  max-width: 1320px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lm-space-8, 32px);
+}
+
+@media (max-width: 640px) {
+  .sam-dashboard {
+    padding: var(--lm-space-5, 20px) var(--lm-space-4, 16px);
+    gap: var(--lm-space-6, 24px);
+  }
+}
+
+@media (max-width: 480px) {
+  .sam-dashboard {
+    padding: 16px 12px;
+    gap: 20px;
+  }
+
+  .sam-dashboard__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .sam-dashboard__header-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sam-dashboard__header-actions > * {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+/* ── Greeting Header ── */
+.sam-dashboard__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--lm-space-4, 16px);
+}
+
+.sam-dashboard__greeting-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sam-dashboard__greeting-title {
+  font-family: var(--lm-font-display, 'Plus Jakarta Sans', sans-serif);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  color: #FFFFFF;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.sam-dashboard__greeting-sub {
+  font-size: var(--lm-text-sm, 0.8125rem);
+  color: var(--lm-text-secondary, #94A3B8);
+  margin: 0;
+}
+
+.sam-dashboard__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--lm-space-3, 12px);
+}
+
+/* ── Quick Actions Grid ── */
+.sam-dashboard__quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--lm-space-5, 20px);
+}
+
+@media (max-width: 960px) {
+  .sam-dashboard__quick-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sam-qa-card {
+  padding: var(--lm-space-6, 24px);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  cursor: pointer;
+}
+
+.sam-qa-card--disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+.sam-qa-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--lm-space-4, 16px);
+}
+
+.sam-qa-card__icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--lm-radius-lg, 12px);
+  background-color: rgba(0, 212, 178, 0.1);
+  border: 1px solid rgba(0, 212, 178, 0.25);
+  color: var(--lm-accent, #00D4B2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(0, 212, 178, 0.15);
+}
+
+.sam-qa-card__icon-wrap--blue {
+  background-color: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.25);
+  color: var(--lm-telemetry, #38BDF8);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.15);
+}
+
+.sam-qa-card__icon-wrap--muted {
+  background-color: rgba(148, 163, 184, 0.08);
+  border-color: rgba(148, 163, 184, 0.15);
+  color: var(--lm-text-secondary, #94A3B8);
+  box-shadow: none;
+}
+
+.sam-qa-card__title {
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-size: var(--lm-text-md, 1rem);
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 var(--lm-space-1, 4px) 0;
+}
+
+.sam-qa-card__desc {
+  font-size: var(--lm-text-sm, 0.8125rem);
+  color: var(--lm-text-secondary, #94A3B8);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sam-qa-card__arrow {
+  margin-top: auto;
+  padding-top: var(--lm-space-4, 16px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--lm-text-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--lm-accent, #00D4B2);
+}
+
+/* ── Content Grid (Main + Side) ── */
+.sam-dashboard__grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--lm-space-6, 24px);
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .sam-dashboard__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Section Title Row ── */
+.sam-dashboard__sec-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--lm-space-4, 16px);
+}
+
+.sam-dashboard__sec-title {
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-size: var(--lm-text-lg, 1.125rem);
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+/* ── Language Preferences Card ── */
+.sam-lang-card {
+  padding: var(--lm-space-6, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lm-space-5, 20px);
+}
+
+.sam-lang-card__item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sam-lang-card__label {
+  font-size: var(--lm-text-xs, 0.75rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--lm-text-secondary, #94A3B8);
+}
+
+.sam-lang-card__val {
+  font-size: var(--lm-text-base, 0.875rem);
+  font-weight: 600;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Pipeline Telemetry Card ── */
+.sam-telemetry-card {
+  padding: var(--lm-space-5, 20px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lm-space-3, 12px);
+}
+
+.sam-telemetry-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--lm-text-xs, 0.75rem);
+  color: var(--lm-text-secondary, #94A3B8);
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sam-telemetry-item:last-child {
+  border-bottom: none;
+}

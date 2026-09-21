@@ -1,0 +1,59 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Skeleton Component Styles
+   ═══════════════════════════════════════════ */
+
+.sam-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+  display: block;
+  user-select: none;
+}
+
+/* ── Variants ── */
+.sam-skeleton--text {
+  height: 14px;
+  border-radius: var(--lm-radius-sm, 4px);
+  margin-bottom: 6px;
+  width: 100%;
+}
+
+.sam-skeleton--text:last-child {
+  margin-bottom: 0;
+  width: 70%;
+}
+
+.sam-skeleton--circular {
+  border-radius: 9999px;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.sam-skeleton--rectangular {
+  border-radius: var(--lm-radius-md, 8px);
+  width: 100%;
+  height: 120px;
+}
+
+.sam-skeleton--card {
+  border-radius: var(--lm-radius-lg, 12px);
+  border: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  background-color: var(--lm-bg-surface, #12151E);
+  padding: var(--lm-space-5, 20px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lm-space-3, 12px);
+}
+
+.sam-skeleton-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}

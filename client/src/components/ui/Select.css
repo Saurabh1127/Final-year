@@ -1,0 +1,121 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Select Component Styles
+   ═══════════════════════════════════════════ */
+
+.sam-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lm-space-1, 4px);
+  width: 100%;
+}
+
+.sam-select-label {
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-size: var(--lm-text-sm, 0.8125rem);
+  font-weight: 500;
+  color: var(--lm-text-secondary, #94A3B8);
+}
+
+.sam-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: var(--lm-bg-input, #0E1018);
+  border: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--lm-radius-md, 8px);
+  transition: all var(--lm-duration-fast, 120ms) ease;
+}
+
+.sam-select-wrapper:hover:not(.sam-select-wrapper--disabled) {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.sam-select-wrapper:focus-within:not(.sam-select-wrapper--disabled) {
+  border-color: var(--lm-accent, #00D4B2);
+  box-shadow: 0 0 0 3px var(--lm-border-focus, rgba(0, 212, 178, 0.25));
+  background-color: rgba(14, 16, 24, 0.95);
+}
+
+.sam-select-wrapper--error {
+  border-color: var(--lm-danger, #F87171) !important;
+}
+
+.sam-select-wrapper--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sam-select {
+  appearance: none;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--lm-text-primary, #F8FAFC);
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-size: var(--lm-text-base, 0.875rem);
+  outline: none;
+  padding: 0 var(--lm-space-8, 32px) 0 var(--lm-space-3, 12px);
+  cursor: pointer;
+  min-width: 0;
+}
+
+.sam-select option {
+  background-color: var(--lm-bg-elevated, #1E2130);
+  color: var(--lm-text-primary, #F8FAFC);
+  padding: 8px 12px;
+}
+
+.sam-select:disabled {
+  cursor: not-allowed;
+}
+
+/* ── Sizes ── */
+.sam-select-wrapper--sm {
+  height: 32px;
+}
+.sam-select-wrapper--sm .sam-select {
+  font-size: var(--lm-text-xs, 0.75rem);
+}
+
+.sam-select-wrapper--md {
+  height: 40px;
+}
+
+.sam-select-wrapper--lg {
+  height: 48px;
+}
+.sam-select-wrapper--lg .sam-select {
+  font-size: 1rem;
+}
+
+.sam-select-wrapper--compact {
+  width: auto;
+  display: inline-flex;
+}
+
+/* ── Prefix & Chevron ── */
+.sam-select-prefix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: var(--lm-space-3, 12px);
+  color: var(--lm-text-secondary, #94A3B8);
+  flex-shrink: 0;
+}
+
+.sam-select-chevron {
+  position: absolute;
+  right: var(--lm-space-3, 12px);
+  pointer-events: none;
+  color: var(--lm-text-secondary, #94A3B8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sam-select-error {
+  font-size: var(--lm-text-xs, 0.75rem);
+  color: var(--lm-danger, #F87171);
+  margin-top: 2px;
+}

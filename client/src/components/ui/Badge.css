@@ -1,0 +1,107 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Badge Component Styles
+   ═══════════════════════════════════════════ */
+
+.sam-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-weight: 600;
+  border-radius: var(--lm-radius-full, 9999px);
+  border: 1px solid transparent;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  letter-spacing: 0.02em;
+}
+
+/* ── Sizes ── */
+.sam-badge--sm {
+  padding: 3px 8px;
+  font-size: var(--lm-text-xs, 0.75rem);
+}
+
+.sam-badge--md {
+  padding: 4px 12px;
+  font-size: var(--lm-text-sm, 0.8125rem);
+}
+
+/* ── Variants ── */
+/* Mint */
+.sam-badge--mint {
+  background-color: var(--lm-accent-muted, rgba(0, 212, 178, 0.15));
+  border-color: rgba(0, 212, 178, 0.3);
+  color: var(--lm-accent, #00D4B2);
+}
+
+/* Blue / Telemetry */
+.sam-badge--blue {
+  background-color: var(--lm-telemetry-muted, rgba(56, 189, 248, 0.15));
+  border-color: rgba(56, 189, 248, 0.3);
+  color: var(--lm-telemetry, #38BDF8);
+}
+
+/* Red / Danger / Live */
+.sam-badge--red {
+  background-color: var(--lm-danger-muted, rgba(248, 113, 113, 0.15));
+  border-color: rgba(248, 113, 113, 0.35);
+  color: var(--lm-danger, #F87171);
+}
+
+/* Amber / Warning */
+.sam-badge--amber {
+  background-color: var(--lm-warning-muted, rgba(251, 191, 36, 0.15));
+  border-color: rgba(251, 191, 36, 0.3);
+  color: var(--lm-warning, #FBBF24);
+}
+
+/* Gray / Offline */
+.sam-badge--gray {
+  background-color: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.2);
+  color: var(--lm-text-secondary, #94A3B8);
+}
+
+/* Purple */
+.sam-badge--purple {
+  background-color: rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.3);
+  color: #C084FC;
+}
+
+/* ── Dot Indicator ── */
+.sam-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--lm-radius-full, 9999px);
+  background-color: currentColor;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sam-badge__dot--pulse::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 9999px;
+  background-color: currentColor;
+  opacity: 0.75;
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.sam-badge__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

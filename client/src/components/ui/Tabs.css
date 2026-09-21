@@ -1,0 +1,126 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Tabs Component Styles
+   ═══════════════════════════════════════════ */
+
+.sam-tabs-list {
+  display: flex;
+  align-items: center;
+  gap: var(--lm-space-2, 8px);
+  user-select: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.sam-tabs-list::-webkit-scrollbar {
+  display: none;
+}
+
+.sam-tabs-list--full {
+  width: 100%;
+}
+
+.sam-tabs-list--full .sam-tab-btn {
+  flex: 1;
+}
+
+/* ── Base Tab Button ── */
+.sam-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lm-space-2, 8px);
+  background: transparent;
+  border: none;
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--lm-duration-fast, 120ms) ease;
+  position: relative;
+  outline: none;
+  color: var(--lm-text-secondary, #94A3B8);
+}
+
+.sam-tab-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--lm-border-focus, rgba(0, 212, 178, 0.5));
+  border-radius: var(--lm-radius-sm, 4px);
+}
+
+.sam-tab-btn:disabled,
+.sam-tab-btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Variant: Default (Underline) ── */
+.sam-tabs-list--default {
+  border-bottom: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  gap: var(--lm-space-6, 24px);
+}
+
+.sam-tabs-list--default .sam-tab-btn {
+  padding: var(--lm-space-3, 12px) 0;
+  font-size: var(--lm-text-sm, 0.8125rem);
+}
+
+.sam-tabs-list--default .sam-tab-btn:hover:not(:disabled) {
+  color: var(--lm-text-primary, #F8FAFC);
+}
+
+.sam-tabs-list--default .sam-tab-btn--active {
+  color: var(--lm-accent, #00D4B2);
+  font-weight: 600;
+}
+
+.sam-tabs-list--default .sam-tab-btn--active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--lm-accent, #00D4B2);
+  border-radius: 2px 2px 0 0;
+  box-shadow: 0 0 10px rgba(0, 212, 178, 0.5);
+}
+
+/* ── Variant: Pills ── */
+.sam-tabs-list--pills {
+  background-color: var(--lm-bg-input, #0E1018);
+  border: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--lm-radius-md, 8px);
+  padding: 3px;
+  gap: 3px;
+}
+
+.sam-tabs-list--pills .sam-tab-btn {
+  padding: 6px 14px;
+  border-radius: var(--lm-radius-sm, 4px);
+  font-size: var(--lm-text-xs, 0.75rem);
+}
+
+.sam-tabs-list--pills .sam-tab-btn:hover:not(:disabled) {
+  color: var(--lm-text-primary, #F8FAFC);
+}
+
+.sam-tabs-list--pills .sam-tab-btn--active {
+  background-color: var(--lm-bg-elevated, #1E2130);
+  color: var(--lm-accent, #00D4B2);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Tab Badge / Count ── */
+.sam-tab-count {
+  padding: 1px 6px;
+  font-size: 11px;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--lm-text-secondary, #94A3B8);
+}
+
+.sam-tab-btn--active .sam-tab-count {
+  background-color: var(--lm-accent-muted, rgba(0, 212, 178, 0.15));
+  color: var(--lm-accent, #00D4B2);
+}

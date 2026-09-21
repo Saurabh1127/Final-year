@@ -1,0 +1,153 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Input Component Styles
+   ═══════════════════════════════════════════ */
+
+.sam-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lm-space-1, 4px);
+  width: 100%;
+}
+
+.sam-input-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sam-input-label {
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-size: var(--lm-text-sm, 0.8125rem);
+  font-weight: 500;
+  color: var(--lm-text-secondary, #94A3B8);
+}
+
+.sam-input-required {
+  color: var(--lm-accent, #00D4B2);
+  margin-left: 2px;
+}
+
+.sam-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: var(--lm-bg-input, #0E1018);
+  border: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--lm-radius-md, 8px);
+  transition: all var(--lm-duration-fast, 120ms) ease;
+}
+
+.sam-input-wrapper:hover:not(.sam-input-wrapper--disabled) {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.sam-input-wrapper:focus-within:not(.sam-input-wrapper--disabled) {
+  border-color: var(--lm-accent, #00D4B2);
+  box-shadow: 0 0 0 3px var(--lm-border-focus, rgba(0, 212, 178, 0.25));
+  background-color: rgba(14, 16, 24, 0.95);
+}
+
+.sam-input-wrapper--error {
+  border-color: var(--lm-danger, #F87171) !important;
+}
+
+.sam-input-wrapper--error:focus-within {
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.25) !important;
+}
+
+.sam-input-wrapper--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sam-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--lm-text-primary, #F8FAFC);
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-size: var(--lm-text-base, 0.875rem);
+  outline: none;
+  padding: 0 var(--lm-space-3, 12px);
+  min-width: 0;
+}
+
+.sam-input::placeholder {
+  color: var(--lm-text-disabled, #475569);
+}
+
+.sam-input:disabled {
+  cursor: not-allowed;
+}
+
+/* ── Sizes ── */
+.sam-input-wrapper--sm {
+  height: 32px;
+}
+.sam-input-wrapper--sm .sam-input {
+  font-size: var(--lm-text-xs, 0.75rem);
+}
+
+.sam-input-wrapper--md {
+  height: 40px;
+}
+
+.sam-input-wrapper--lg {
+  height: 48px;
+}
+.sam-input-wrapper--lg .sam-input {
+  font-size: 1rem;
+}
+
+/* ── Affixes ── */
+.sam-input-prefix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: var(--lm-space-3, 12px);
+  color: var(--lm-text-secondary, #94A3B8);
+  flex-shrink: 0;
+}
+
+.sam-input-suffix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: var(--lm-space-3, 12px);
+  color: var(--lm-text-secondary, #94A3B8);
+  flex-shrink: 0;
+}
+
+.sam-input-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--lm-text-secondary, #94A3B8);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--lm-radius-sm, 4px);
+  transition: color var(--lm-duration-fast, 120ms) ease;
+}
+
+.sam-input-toggle-btn:hover {
+  color: var(--lm-text-primary, #F8FAFC);
+}
+
+/* ── Helper & Error Text ── */
+.sam-input-helper {
+  font-size: var(--lm-text-xs, 0.75rem);
+  color: var(--lm-text-secondary, #94A3B8);
+  margin-top: 2px;
+}
+
+.sam-input-error {
+  font-size: var(--lm-text-xs, 0.75rem);
+  color: var(--lm-danger, #F87171);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}

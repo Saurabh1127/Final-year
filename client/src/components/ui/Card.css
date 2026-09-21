@@ -1,0 +1,71 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Card Component Styles
+   ═══════════════════════════════════════════ */
+
+.sam-card {
+  border-radius: var(--lm-radius-lg, 12px);
+  position: relative;
+  transition: all var(--lm-duration-base, 200ms) var(--lm-easing-default, ease);
+  color: var(--lm-text-primary, #F8FAFC);
+  overflow: hidden;
+}
+
+/* ── Variants ── */
+.sam-card--surface {
+  background-color: var(--lm-bg-surface, #12151E);
+}
+
+.sam-card--elevated {
+  background-color: var(--lm-bg-elevated, #1E2130);
+  box-shadow: var(--lm-shadow-md);
+}
+
+.sam-card--glass {
+  background-color: rgba(18, 21, 30, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.sam-card--interactive {
+  background-color: var(--lm-bg-surface, #12151E);
+  cursor: pointer;
+  user-select: none;
+}
+
+.sam-card--interactive:hover {
+  background-color: var(--lm-bg-surface-hover, #1A1D2B);
+  border-color: rgba(0, 212, 178, 0.35) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(0, 212, 178, 0.1);
+}
+
+.sam-card--interactive:active {
+  transform: translateY(0) scale(0.995);
+}
+
+/* ── Borders & Glow ── */
+.sam-card--bordered {
+  border: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+}
+
+.sam-card--glow {
+  box-shadow: 0 0 24px rgba(0, 212, 178, 0.15);
+  border-color: rgba(0, 212, 178, 0.3) !important;
+}
+
+/* ── Padding ── */
+.sam-card--p-none {
+  padding: 0;
+}
+
+.sam-card--p-sm {
+  padding: var(--lm-space-3, 12px);
+}
+
+.sam-card--p-md {
+  padding: var(--lm-space-5, 20px);
+}
+
+.sam-card--p-lg {
+  padding: var(--lm-space-8, 32px);
+}

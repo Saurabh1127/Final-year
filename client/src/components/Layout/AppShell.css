@@ -1,0 +1,470 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: AppShell & Navigation Layout
+   ═══════════════════════════════════════════ */
+
+.sam-app-shell {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--lm-bg-base, #090A0F);
+  color: var(--lm-text-primary, #F8FAFC);
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════ */
+
+.sam-sidebar {
+  width: 240px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--lm-bg-surface, #12151E);
+  border-right: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  z-index: var(--lm-z-sidebar, 200);
+  transition: width var(--lm-duration-base, 200ms) var(--lm-easing-default, ease);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* ── Brand / Header ── */
+.sam-sidebar__brand {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: var(--lm-space-3, 12px);
+  padding: 0 var(--lm-space-5, 20px);
+  border-bottom: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+}
+
+.sam-sidebar__logo-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--lm-radius-md, 8px);
+  background-color: rgba(0, 212, 178, 0.1);
+  border: 1px solid rgba(0, 212, 178, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 16px rgba(0, 212, 178, 0.15);
+}
+
+.sam-sidebar__brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sam-sidebar__title {
+  font-family: var(--lm-font-display, 'Plus Jakarta Sans', sans-serif);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  color: #FFFFFF;
+}
+
+.sam-sidebar__status-row {
+  margin-top: 2px;
+}
+
+/* ── Navigation List ── */
+.sam-sidebar__nav {
+  flex: 1;
+  padding: var(--lm-space-4, 16px) var(--lm-space-3, 12px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lm-space-4, 16px);
+}
+
+.sam-sidebar__nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sam-sidebar__section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--lm-text-disabled, #475569);
+  padding: 0 var(--lm-space-3, 12px) var(--lm-space-1, 4px) var(--lm-space-3, 12px);
+}
+
+/* ── Nav Item ── */
+.sam-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--lm-space-3, 12px);
+  padding: 9px 12px;
+  border-radius: var(--lm-radius-md, 8px);
+  color: var(--lm-text-secondary, #94A3B8);
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-size: var(--lm-text-sm, 0.8125rem);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all var(--lm-duration-fast, 120ms) ease;
+  position: relative;
+  outline: none;
+}
+
+.sam-sidebar-item:hover:not(.sam-sidebar-item--disabled) {
+  background-color: var(--lm-bg-surface-hover, #1A1D2B);
+  color: var(--lm-text-primary, #F8FAFC);
+}
+
+.sam-sidebar-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--lm-border-focus, rgba(0, 212, 178, 0.5));
+}
+
+.sam-sidebar-item--active {
+  background-color: var(--lm-accent-muted, rgba(0, 212, 178, 0.12));
+  color: var(--lm-accent, #00D4B2) !important;
+  font-weight: 600;
+}
+
+.sam-sidebar-item--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background-color: var(--lm-accent, #00D4B2);
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 0 8px rgba(0, 212, 178, 0.5);
+}
+
+.sam-sidebar-item__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sam-sidebar-item__label-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+}
+
+.sam-sidebar-item__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sam-sidebar-item__count {
+  font-size: 11px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--lm-text-secondary, #94A3B8);
+  padding: 1px 6px;
+  border-radius: 9999px;
+}
+
+.sam-sidebar-item__badge-soon {
+  font-size: 10px;
+  text-transform: uppercase;
+  background-color: rgba(148, 163, 184, 0.12);
+  color: var(--lm-text-secondary, #94A3B8);
+  padding: 2px 6px;
+  border-radius: var(--lm-radius-sm, 4px);
+}
+
+.sam-sidebar-item--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Footer / User Profile ── */
+.sam-sidebar__footer {
+  padding: var(--lm-space-3, 12px);
+  border-top: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  background-color: rgba(14, 16, 24, 0.4);
+}
+
+.sam-sidebar__user-profile {
+  display: flex;
+  align-items: center;
+  gap: var(--lm-space-3, 12px);
+  padding: var(--lm-space-2, 8px);
+  border-radius: var(--lm-radius-md, 8px);
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--lm-border-subtle, rgba(255, 255, 255, 0.05));
+}
+
+.sam-sidebar__user-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.sam-sidebar__user-name {
+  font-size: var(--lm-text-sm, 0.8125rem);
+  font-weight: 600;
+  color: var(--lm-text-primary, #F8FAFC);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sam-sidebar__user-email {
+  font-size: 11px;
+  color: var(--lm-text-secondary, #94A3B8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sam-sidebar__logout-btn {
+  background: transparent;
+  border: none;
+  color: var(--lm-text-disabled, #475569);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--lm-radius-sm, 4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--lm-duration-fast, 120ms) ease;
+}
+
+.sam-sidebar__logout-btn:hover {
+  color: var(--lm-danger, #F87171);
+  background-color: rgba(248, 113, 113, 0.1);
+}
+
+/* ═══════════════════════════════════════════
+   TABLET COLLAPSED SIDEBAR (641px - 1024px)
+   ═══════════════════════════════════════════ */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .sam-sidebar {
+    width: 72px;
+  }
+
+  .sam-sidebar__brand {
+    padding: 0;
+    justify-content: center;
+  }
+
+  .sam-sidebar-item {
+    justify-content: center;
+    padding: 12px 0;
+  }
+
+  .sam-sidebar__user-profile {
+    justify-content: center;
+    padding: 6px 0;
+    border: none;
+    background: transparent;
+  }
+}
+
+/* Explicit Collapsed Modifier */
+.sam-sidebar--collapsed {
+  width: 72px !important;
+}
+.sam-sidebar--collapsed .sam-sidebar__brand {
+  padding: 0 !important;
+  justify-content: center !important;
+}
+.sam-sidebar--collapsed .sam-sidebar-item {
+  justify-content: center !important;
+  padding: 12px 0 !important;
+}
+.sam-sidebar--collapsed .sam-sidebar__user-profile {
+  justify-content: center !important;
+  padding: 6px 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* ═══════════════════════════════════════════
+   MOBILE TOPBAR (<= 640px)
+   ═══════════════════════════════════════════ */
+
+.sam-topbar {
+  display: none;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background-color: rgba(9, 10, 15, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  padding: 0 var(--lm-space-4, 16px);
+  align-items: center;
+  justify-content: space-between;
+  z-index: var(--lm-z-header, 100);
+}
+
+.sam-topbar__left,
+.sam-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: var(--lm-space-3, 12px);
+}
+
+.sam-topbar__menu-btn {
+  background: transparent;
+  border: none;
+  color: var(--lm-text-secondary, #94A3B8);
+  cursor: pointer;
+  padding: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--lm-radius-sm, 6px);
+  touch-action: manipulation;
+}
+
+.sam-topbar__menu-btn:hover {
+  color: var(--lm-text-primary, #F8FAFC);
+}
+
+.sam-topbar__notif-btn {
+  position: relative;
+  background: transparent;
+  border: none;
+  color: var(--lm-text-secondary, #94a3b8);
+  cursor: pointer;
+  padding: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--lm-radius-sm, 6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--lm-transition-fast, 150ms ease);
+  touch-action: manipulation;
+}
+
+.sam-topbar__notif-btn:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.sam-topbar__notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--lm-accent, #00d4b2);
+  box-shadow: 0 0 6px var(--lm-accent, #00d4b2);
+}
+
+.sam-topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--lm-space-2, 8px);
+}
+
+.sam-topbar__logo-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background-color: rgba(0, 212, 178, 0.1);
+  border: 1px solid rgba(0, 212, 178, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sam-topbar__title {
+  font-family: var(--lm-font-display, 'Plus Jakarta Sans', sans-serif);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  letter-spacing: 0.04em;
+  color: #FFFFFF;
+}
+
+@media (max-width: 640px) {
+  .sam-app-shell > .sam-sidebar {
+    display: none;
+  }
+
+  /* Ensure sidebar inside mobile slide-out Drawer stays visible */
+  .sam-drawer .sam-sidebar {
+    display: flex !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-right: none !important;
+    position: static !important;
+  }
+
+  .sam-topbar {
+    display: flex;
+  }
+
+  .sam-app-shell {
+    flex-direction: column;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   MAIN CONTENT AREA
+   ═══════════════════════════════════════════ */
+
+.sam-app-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--lm-bg-base, #090A0F);
+}
+
+@media (max-width: 640px) {
+  .sam-app-main {
+    min-height: calc(100vh - 56px);
+  }
+}
+
+/* Background Ambient Lighting in Shell */
+.sam-app-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.sam-app-ambient__glow-1 {
+  position: absolute;
+  top: -120px;
+  left: 25%;
+  width: 650px;
+  height: 350px;
+  background-color: rgba(0, 212, 178, 0.035);
+  border-radius: 9999px;
+  filter: blur(80px);
+}
+
+.sam-app-ambient__glow-2 {
+  position: absolute;
+  top: 45%;
+  right: -100px;
+  width: 450px;
+  height: 450px;
+  background-color: rgba(56, 189, 248, 0.025);
+  border-radius: 9999px;
+  filter: blur(90px);
+}

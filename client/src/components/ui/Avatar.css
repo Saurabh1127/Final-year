@@ -1,0 +1,91 @@
+/* ═══════════════════════════════════════════
+   SAMVADA UI: Avatar Component Styles
+   ═══════════════════════════════════════════ */
+
+.sam-avatar-wrapper {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.sam-avatar {
+  border-radius: var(--lm-radius-full, 9999px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-weight: 700;
+  color: #FFFFFF;
+  border: 2px solid var(--lm-bg-base, #090A0F);
+  overflow: hidden;
+  position: relative;
+}
+
+.sam-avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Sizes ── */
+.sam-avatar--xs {
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+}
+
+.sam-avatar--sm {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
+.sam-avatar--md {
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+
+.sam-avatar--lg {
+  width: 52px;
+  height: 52px;
+  font-size: 18px;
+}
+
+.sam-avatar--xl {
+  width: 72px;
+  height: 72px;
+  font-size: 24px;
+}
+
+/* ── Status Dot ── */
+.sam-avatar__status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  border-radius: 9999px;
+  border: 2px solid var(--lm-bg-base, #090A0F);
+}
+
+.sam-avatar-wrapper--xs .sam-avatar__status { width: 7px; height: 7px; }
+.sam-avatar-wrapper--sm .sam-avatar__status { width: 9px; height: 9px; }
+.sam-avatar-wrapper--md .sam-avatar__status { width: 11px; height: 11px; }
+.sam-avatar-wrapper--lg .sam-avatar__status { width: 14px; height: 14px; }
+.sam-avatar-wrapper--xl .sam-avatar__status { width: 18px; height: 18px; }
+
+.sam-avatar__status--online { background-color: var(--lm-success, #34D399); }
+.sam-avatar__status--offline { background-color: var(--lm-offline, #64748B); }
+.sam-avatar__status--away { background-color: var(--lm-warning, #FBBF24); }
+.sam-avatar__status--busy { background-color: var(--lm-danger, #F87171); }
+
+.sam-avatar__status--speaking {
+  background-color: var(--lm-accent, #00D4B2);
+  box-shadow: 0 0 8px var(--lm-accent, #00D4B2);
+  animation: speakingGlow 1.5s ease-in-out infinite;
+}
+
+/* Speaking ring around whole avatar */
+.sam-avatar--speaking {
+  box-shadow: 0 0 0 2px var(--lm-accent, #00D4B2), 0 0 16px rgba(0, 212, 178, 0.4);
+}

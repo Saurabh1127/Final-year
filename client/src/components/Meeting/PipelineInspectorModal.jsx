@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 /**
  * PipelineInspectorModal.jsx
@@ -11,6 +11,65 @@ import React from 'react';
  *   4. 🔊 Speech Synthesis (TTS — Sarvam AI bulbul:v3 / Edge-TTS)
  */
 export default function PipelineInspectorModal({ isOpen, onClose, data }) {
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    // Auto focus close button or first element
+    const timer = setTimeout(() => {
+      if (modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length > 0) focusable[0].focus();
+      }
+    }, 50);
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose?.();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        if (!modalRef.current) return;
+        const focusable = modalRef.current.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) {
+          e.preventDefault();
+          return;
+        }
+
+        const firstElement = focusable[0];
+        const lastElement = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      clearTimeout(timer);
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const diag = data?.diagnostics || {};
@@ -23,12 +82,18 @@ export default function PipelineInspectorModal({ isOpen, onClose, data }) {
   const remedy = diag.primary_remedy || 'All pipeline stages functioned normally.';
 
   const isHealthy = status === 'healthy' && warnings.length === 0;
-  const isWarning = status === 'warning';
   const isError = status === 'error';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in"
+      onClick={onClose}
+    >
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pipeline-inspector-title"
         className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl bg-[#0e1017] border border-white/[0.1] shadow-2xl p-5 sm:p-7 text-slate-100 font-sans animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
@@ -41,7 +106,7 @@ export default function PipelineInspectorModal({ isOpen, onClose, data }) {
               </svg>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">Translation Pipeline Diagnostics</h3>
+              <h3 id="pipeline-inspector-title" className="text-lg font-bold text-white tracking-tight">Translation Pipeline Diagnostics</h3>
               <p className="text-xs text-slate-400">
                 {data?.speakerName ? `Spoken by ${data.speakerName}` : 'Latest Spoken Utterance Telemetry'}
               </p>
