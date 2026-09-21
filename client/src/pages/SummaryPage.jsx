@@ -14,38 +14,7 @@ const SummaryPage = () => {
   const [checkedItems, setCheckedItems] = useState({});
   const [showTranscript, setShowTranscript] = useState(false);
 
-  // Try to load cached summary, if not trigger generation
-  const loadSummary = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await api.get(`/meetings/${roomCode}/summary`);
-      if (res.data?.data) {
-        setSummary(res.data.data);
-      }
-    } catch {
-      // No cached summary yet — will generate on demand
-      setSummary(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [roomCode]);
-
-  // Fetch meeting transcript log
-  const loadTranscripts = useCallback(async () => {
-    try {
-      const res = await api.get(`/transcripts/${roomCode}`);
-      setTranscripts(res.data?.data || []);
-    } catch {
-      setTranscripts([]);
-    }
-  }, [roomCode]);
-
-  useEffect(() => {
-    loadSummary();
-    loadTranscripts();
-  }, [loadSummary, loadTranscripts]);
-
-  const generateSummary = async () => {
+  const generateSummary = useCallback(async () => {
     try {
       setGenerating(true);
       setError(null);
@@ -54,11 +23,50 @@ const SummaryPage = () => {
         setSummary(res.data.data);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to generate summary. Please try again.');
+      setError(err.response?.data?.detail || err.response?.data?.message || 'Failed to generate summary. Please try again.');
     } finally {
       setGenerating(false);
     }
-  };
+  }, [roomCode]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const init = async () => {
+      setLoading(true);
+      let loadedTranscripts = [];
+
+      try {
+        const tRes = await api.get(`/transcripts/${roomCode}`);
+        loadedTranscripts = tRes.data?.data || [];
+        if (isMounted) setTranscripts(loadedTranscripts);
+      } catch {
+        if (isMounted) setTranscripts([]);
+      }
+
+      let cachedSummary = null;
+      try {
+        const sRes = await api.get(`/meetings/${roomCode}/summary`);
+        if (sRes.data?.data) {
+          cachedSummary = sRes.data.data;
+          if (isMounted) setSummary(cachedSummary);
+        }
+      } catch {
+        // No cached summary yet
+      }
+
+      if (isMounted) setLoading(false);
+
+      // Auto-generate if transcripts exist and no summary is cached yet
+      if (!cachedSummary && loadedTranscripts.length > 0 && isMounted) {
+        generateSummary();
+      }
+    };
+
+    init();
+    return () => {
+      isMounted = false;
+    };
+  }, [roomCode, generateSummary]);
 
   const toggleActionItem = (idx) => {
     setCheckedItems(prev => ({ ...prev, [idx]: !prev[idx] }));
