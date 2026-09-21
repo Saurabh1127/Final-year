@@ -314,7 +314,7 @@ def synthesize_speech(
             print(f"⚠️ Edge TTS failed for '{target_lang}': {exc} — Fallback to Kokoro")
 
     # Option 3: Kokoro-82M Local Fallback
-    if raw is None and target_lang in KOKORO_LANG_MAP:
+    if raw is None and os.getenv("USE_KOKORO", "true").lower() == "true" and target_lang in KOKORO_LANG_MAP:
         try:
             raw = synthesize_kokoro_tts(text, target_lang)
             mime, engine_name = "audio/wav", f"🤖 Kokoro-82M Local ({KOKORO_VOICE_MAP.get(target_lang)})"

@@ -173,7 +173,7 @@ def get_indic_models():
             raise RuntimeError("IndicTransToolkit not installed. Please run 'pip install git+https://github.com/VarunGumma/IndicTransToolkit.git'")
         
         device = _get_device()
-        model_name = "ai4bharat/indictrans2-en-indic-1B"
+        model_name = os.environ.get("INDICTRANS_MODEL", "ai4bharat/indictrans2-en-indic-1B")
         print(f"🌐 Loading IndicTrans2 '{model_name}' on {device.upper()} ...")
         
         _indic_tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
