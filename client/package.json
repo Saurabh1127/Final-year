@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "tunnel": ".\\ngrok.cmd http 5173",
+    "tunnel": ".\\cloudflared.cmd tunnel --url http://localhost:5173",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
