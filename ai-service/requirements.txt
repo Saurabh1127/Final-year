@@ -31,7 +31,3 @@ gTTS==2.5.1
 indictranstoolkit
 sacremoses
 nltk
-
-# ── TTS (Fallback): Kokoro-82M ───────────────────────────────────────────────
-kokoro
-soundfile
