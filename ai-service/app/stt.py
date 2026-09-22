@@ -132,14 +132,13 @@ def transcribe_audio(
     """
     model = get_model()
 
-    # beam_size=5 is the recommended setting for large-v3-turbo.
-    # beam_size=2 (the old default) causes poor word selection on large models,
-    # producing hallucinated/garbled words. Only use 2 for small/medium models.
-    beam_size = int(os.getenv("WHISPER_BEAM_SIZE", "5"))
+    # Phase 13: beam_size=1 (greedy decoding) provides a 3-4x speedup on GPU (~300ms vs ~1.7s)
+    # with faster-whisper large-v3-turbo, while repetition_penalty=1.3 and VAD filter prevent artifacts.
+    beam_size = int(os.getenv("WHISPER_BEAM_SIZE", "1"))
     vad_params = dict(
-        threshold=0.5,              # raised from 0.4 — filters out more borderline noise segments
-        min_speech_duration_ms=250,  # raised from 150 — rejects ultra-short noise bursts (<250ms)
-        min_silence_duration_ms=800,
+        threshold=0.55,              # raised from 0.5 — filters borderline noise more aggressively
+        min_speech_duration_ms=300,  # raised from 250 — rejects ultra-short noise bursts (<300ms)
+        min_silence_duration_ms=600, # reduced from 800 — faster sentence boundary detection
     )
 
     # Try in-memory decoding first
@@ -158,7 +157,10 @@ def transcribe_audio(
                 vad_filter=True,
                 vad_parameters=vad_params,
                 condition_on_previous_text=False,  # Phase 12: DISABLED — causes hallucination feedback loops in real-time meetings
-                repetition_penalty=1.1,            # guards against remaining repetition patterns
+                repetition_penalty=1.3,            # Phase 13: raised from 1.1 — aggressively suppresses repetition loops
+                suppress_blank=True,               # Phase 13: suppress blank/silence token artifacts
+                no_speech_threshold=0.6,           # Phase 13: Whisper skips segments where no_speech_prob > 0.6
+                hallucination_silence_threshold=2.0, # Phase 13: silence ≥ 2s → skip instead of hallucinating "thank you"
                 **opts
             )
 
@@ -203,7 +205,10 @@ def transcribe_audio(
             vad_filter=True,
             vad_parameters=vad_params,
             condition_on_previous_text=False,  # Phase 12: DISABLED — breaks hallucination feedback loops
-            repetition_penalty=1.1,
+            repetition_penalty=1.3,            # Phase 13: raised from 1.1 — aggressively suppresses repetition loops
+            suppress_blank=True,               # Phase 13: suppress blank/silence token artifacts
+            no_speech_threshold=0.6,           # Phase 13: Whisper skips segments where no_speech_prob > 0.6
+            hallucination_silence_threshold=2.0, # Phase 13: silence ≥ 2s → skip instead of hallucinating "thank you"
             **opts
         )
 

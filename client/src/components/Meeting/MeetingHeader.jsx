@@ -216,7 +216,7 @@ export function MeetingHeader({
             <LanguageSelector
               currentLanguage={sourceLanguage}
               onChange={setSourceLanguage}
-              disabled={isTranslating}
+              disabled={false}
               label="Speak:"
               includeAuto={true}
             />
@@ -224,7 +224,7 @@ export function MeetingHeader({
             <LanguageSelector
               currentLanguage={targetLanguage}
               onChange={onLanguageChange}
-              disabled={isTranslating}
+              disabled={false}
               label="Listen in:"
             />
           </div>

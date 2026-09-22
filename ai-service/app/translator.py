@@ -175,7 +175,13 @@ def translate_text(text: str, src: str, tgt: str) -> str:
         tokenizer.src_lang = get_nllb_code(src)
         source = tokenizer.convert_ids_to_tokens(tokenizer.encode(text))
         target_prefix = [get_nllb_code(tgt)]
-        results = translator.translate_batch([source], target_prefix=[target_prefix])
+        results = translator.translate_batch(
+            [source],
+            target_prefix=[target_prefix],
+            beam_size=2,
+            max_decoding_length=128,
+            repetition_penalty=1.1,
+        )
         target = results[0].hypotheses[0][1:]
         return tokenizer.decode(tokenizer.convert_tokens_to_ids(target))
     except Exception as nllb_exc:
@@ -214,7 +220,14 @@ def translate_to_multiple(text: str, src: str, targets: list[str]) -> dict[str, 
         source_batch = [source] * len(remaining_targets)
         target_prefixes = [[get_nllb_code(tgt)] for tgt in remaining_targets]
 
-        results = translator.translate_batch(source_batch, target_prefix=target_prefixes)
+        # Phase 13: Fast greedy/narrow-beam decoding (beam_size=2, capped length) for 40-70ms latency
+        results = translator.translate_batch(
+            source_batch,
+            target_prefix=target_prefixes,
+            beam_size=2,
+            max_decoding_length=128,
+            repetition_penalty=1.1,
+        )
 
         for i, tgt in enumerate(remaining_targets):
             target_tokens = results[i].hypotheses[0][1:]

@@ -74,13 +74,18 @@ _HALLUCINATION_BLOCKLIST: frozenset[str] = frozenset({
     "see you in the next video",
     "see you next time",
     "watching this video",
-    # Subtitles / teletext credits
+    # Subtitles / teletext credits & spam
     "subtitles by",
     "subtitles by the amara",
     "captions by",
     "closed captions",
     "transcribed by",
     "translated by",
+    "for more information visit",
+    "for more information visit www",
+    "for more information visit www fema gov",
+    "for more information",
+    "visit www fema gov",
     # Sponsor spam
     "this video is brought to you by",
     "sponsored by",
@@ -91,6 +96,28 @@ _HALLUCINATION_BLOCKLIST: frozenset[str] = frozenset({
     "लाइक और सब्सक्राइब",
     "बेल आइकॉन दबाएं",
     "अगली वीडियो में मिलते हैं",
+    # Phase 13: Foreign-language silence artifacts seen in production logs
+    # Whisper hallucinates these on faint breathing or background noise
+    "спасибо",                          # Russian: thank you
+    "большое спасибо",                   # Russian: many thanks
+    "obrigado",                          # Portuguese: thank you
+    "obrigada",                          # Portuguese: thank you
+    "obrigado por assistir",             # Portuguese: thanks for watching
+    "gracias",                           # Spanish: thank you
+    "muchas gracias",                    # Spanish: thank you very much
+    "bendita chao ahora",                # Spanish noise artifact
+    "a ver los chislaire",               # Spanish noise artifact
+    "merci",                             # French: thank you
+    "merci beaucoup",                    # French: thank you very much
+    "terima kasih",                      # Indonesian: thank you
+    "terima kasih telah menonton",       # Indonesian: thanks for watching
+    "danke",                             # German: thank you
+    "danke schon",                       # German: thank you
+    "grazie",                            # Italian: thank you
+    "dank u",                            # Dutch: thank you
+    "teşekkür ederim",                   # Turkish: thank you
+    "감사합니다",                         # Korean: thank you
+    "시청해 주셔서 감사합니다",           # Korean: thanks for watching
 })
 
 # Single-word filler noise artifacts that Whisper outputs on silence / breathing
@@ -182,6 +209,55 @@ def _is_hallucination(text: str) -> bool:
     # 6. Repetition loop
     if _has_repetition_loop(norm):
         print(f"🚫 [Filter] Repetition loop detected: \"{norm[:60]}\" → rejected.")
+        return True
+
+    return False
+
+
+def _is_foreign_hallucination(
+    text: str,
+    detected_lang: str,
+    expected_lang: str | None,
+    lang_prob: float,
+    avg_logprob: float,
+) -> bool:
+    """
+    Phase 13: Detects foreign-language silence artifacts emitted by Whisper
+    when processing low-energy audio or background hiss. Examples from logs:
+      - [ru] "Спасибо" (lang_prob=0.324)
+      - [pt] "Obrigada" (lang_prob=0.415)
+      - [es] "Gracias" (lang_prob=0.314)
+      - [id] "Terima kasih telah menonton" (lang_prob=0.341)
+
+    Logic:
+      1. If expected_lang is specified (not auto), and detected_lang differs:
+         reject short or low-confidence segments.
+      2. If expected_lang is auto: real human speech in a meeting has
+         lang_prob >= 0.70 (typically > 0.90). If lang_prob < 0.55 on short
+         phrases (<= 6 words), Whisper spread probability across languages
+         due to background noise.
+    """
+    norm = _normalize(text)
+    word_count = len(norm.split()) if norm else 0
+    if word_count == 0:
+        return True
+
+    # Check 1: Hint mismatch (e.g. user selected 'en' or 'hi' but Whisper output 'ru' or 'pt')
+    if expected_lang and expected_lang.lower() not in ("auto", "", "none"):
+        if detected_lang.lower() != expected_lang.lower():
+            if word_count <= 4 or avg_logprob < -0.70 or lang_prob < 0.75:
+                print(f"🚫 [Filter] Language mismatch hallucination (expected {expected_lang}, got {detected_lang}, words={word_count}, lang_prob={lang_prob:.2f}) → rejected.")
+                return True
+
+    # Check 2: Low language confidence on short utterances (even in auto mode)
+    # Whisper on background noise produces low lang_prob (< 0.55)
+    if lang_prob < 0.55 and word_count <= 6:
+        print(f"🚫 [Filter] Low language confidence artifact (lang={detected_lang}, lang_prob={lang_prob:.2f}, words={word_count}) → rejected.")
+        return True
+
+    # Check 3: Ultra-low language probability (< 0.40) regardless of word length
+    if lang_prob < 0.40:
+        print(f"🚫 [Filter] Critically low language probability ({lang_prob:.2f}) → rejected.")
         return True
 
     return False
@@ -355,27 +431,35 @@ class SpeechToSpeechEngine:
               f"  | duration={duration_s}s no_speech={no_speech_prob:.3f} logprob={avg_logprob:.3f} lang_prob={lang_prob:.3f}")
         log_gpu_stats("after-STT")
 
-        # ── Phase 10 Hallucination & Noise Filters ───────────────────────────
+        # ── Phase 13 Hallucination & Noise Filters ───────────────────────────
+        words = original_text.split() if original_text else []
+        word_count = len(words)
+
         stat_reject = (
-            no_speech_prob > 0.70 or
-            avg_logprob < -1.3 or
-            (lang_prob < 0.20 and avg_logprob < -0.9 if not hint else False)
+            no_speech_prob > 0.60 or
+            avg_logprob < -1.1 or
+            # Real speech in meetings has lang_prob >= 0.70; noise artifacts have lang_prob < 0.55
+            (lang_prob < 0.55 and word_count <= 6) or
+            (lang_prob < 0.40)
         )
         text_reject = not original_text or not original_text.strip()
 
-        # Single-word check: only reject if it's filler noise ("uh", "um") or low confidence (< -1.1)
-        words = original_text.split() if original_text else []
-        if len(words) == 1:
+        # Single-word check: only reject if it's filler noise ("uh", "um") or low confidence (< -0.9)
+        if word_count == 1:
             w_norm = _normalize(words[0])
-            if w_norm in _FILLER_NOISE_WORDS or avg_logprob < -1.1:
+            if w_norm in _FILLER_NOISE_WORDS or avg_logprob < -0.9:
                 text_reject = True
 
-        if stat_reject or text_reject or _is_hallucination(original_text):
+        foreign_reject = _is_foreign_hallucination(original_text, detected_lang, hint, lang_prob, avg_logprob)
+
+        if stat_reject or text_reject or foreign_reject or _is_hallucination(original_text):
             reject_reason = (
-                f"Silence/low-speech (no_speech={no_speech_prob:.2f})" if no_speech_prob > 0.70
-                else f"Low confidence ({avg_logprob:.2f})" if avg_logprob < -1.3
-                else f"Low language confidence ({lang_prob:.2f})" if (lang_prob < 0.20 and not hint)
+                f"Silence/low-speech (no_speech={no_speech_prob:.2f})" if no_speech_prob > 0.60
+                else f"Low confidence ({avg_logprob:.2f})" if avg_logprob < -1.1
+                else f"Low language confidence ({lang_prob:.2f})" if (lang_prob < 0.55 and word_count <= 6)
+                else f"Critically low language confidence ({lang_prob:.2f})" if (lang_prob < 0.40)
                 else "Short/empty utterance" if text_reject
+                else "Foreign hallucination (short low-conf segment)" if foreign_reject
                 else "Hallucination pattern detected"
             )
             print(f"🔇 [Filter] Utterance filtered: {reject_reason}")
@@ -498,6 +582,12 @@ class SpeechToSpeechEngine:
             async def _synthesize_one(lang, translated_text):
                 """Run TTS for a single language. Returns (lang, result_dict) or None."""
                 if not translated_text or translated_text.startswith("[Translation error"):
+                    return None
+                # Phase 13: Skip TTS synthesis if target language matches the spoken language.
+                # In meetings, participants already hear the speaker's live voice via WebRTC.
+                # Synthesizing the same language produces an echo and adds 1.5-3.0s latency.
+                if detected_lang.lower() == lang.lower():
+                    print(f"⏩ [TTS] Skipped TTS for '{lang}' (matches spoken '{detected_lang}') — avoids voice echo & cuts latency.")
                     return None
                 try:
                     tts_result = await asyncio.to_thread(synthesize_speech, translated_text, lang, audio_bytes, True)

@@ -125,6 +125,9 @@ export function MeetingRoom({ roomCode }) {
   const onLanguageChange = (newLang) => {
     setTargetLanguage(newLang);
     handleLanguageChange(newLang);
+    try {
+      localStorage.setItem('samvada_target_lang', newLang);
+    } catch (_) {}
   };
 
   const onRename = (newName) => {
