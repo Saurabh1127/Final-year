@@ -78,7 +78,7 @@ INDIC_PROMPTS: dict[str, str] = {
     "ml": "നമസ്കാരം, ഇതൊരു സംഭാഷണമാണ്. ദയവായി വ്യക്തമായി എഴുതുക.",
     "pa": "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ, ਇਹ ਇੱਕ ਗੱਲਬਾਤ ਹੈ।",
 }
-DEFAULT_BILINGUAL_PROMPT = "Hello, नमस्ते, welcome to our meeting. We are speaking clearly."
+DEFAULT_BILINGUAL_PROMPT = "Hello, नमस्ते, English, हिन्दी, conversation."
 
 
 def _get_transcribe_opts(source_language: str | None) -> dict:

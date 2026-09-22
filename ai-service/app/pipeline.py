@@ -45,7 +45,7 @@ def log_gpu_stats(stage: str = "") -> None:
         pass
 
 from .stt import transcribe_audio
-from .translator import translate_to_multiple, get_nllb_code
+from .translator import translate_to_multiple, get_nllb_code, resolve_source_language
 from .tts import synthesize_speech
 from .voice_retention import voice_engine
 
@@ -98,8 +98,14 @@ _HALLUCINATION_BLOCKLIST: frozenset[str] = frozenset({
     "अगली वीडियो में मिलते हैं",
     # Phase 13: Foreign-language silence artifacts seen in production logs
     # Whisper hallucinates these on faint breathing or background noise
+    "we are speaking clearly",          # Prompt leak artifact
+    "welcome to our meeting",           # Prompt leak artifact
     "спасибо",                          # Russian: thank you
     "большое спасибо",                   # Russian: many thanks
+    "сука",                             # Russian noise artifact
+    "продолжение следует",              # Russian subtitle artifact
+    "доброе утро",                      # Russian greeting artifact
+    "вот карабара",                     # Russian gibberish artifact
     "obrigado",                          # Portuguese: thank you
     "obrigada",                          # Portuguese: thank you
     "obrigado por assistir",             # Portuguese: thanks for watching
@@ -427,6 +433,14 @@ class SpeechToSpeechEngine:
         lang_prob: float = transcription.get("language_probability", 1.0)
         duration_s: float = transcription.get("duration_seconds", round(len(audio_bytes) / 32000.0, 2))
         asr_s = round(time.time() - t0, 3)
+
+        # Phase 14: Inspect actual Unicode characters to override Whisper misclassification
+        # (e.g. if Whisper tagged Devanagari Hindi text as 'en' or 'ur', correct it to 'hi')
+        resolved_src = resolve_source_language(original_text, detected_lang)
+        if resolved_src != detected_lang:
+            print(f"🔄 [Pipeline] Script inspector corrected language: '{detected_lang}' ➔ '{resolved_src}'")
+            detected_lang = resolved_src
+
         print(f"📝 STT [{asr_s}s] [{detected_lang.upper()}]: {original_text[:80]}"
               f"  | duration={duration_s}s no_speech={no_speech_prob:.3f} logprob={avg_logprob:.3f} lang_prob={lang_prob:.3f}")
         log_gpu_stats("after-STT")
@@ -586,7 +600,9 @@ class SpeechToSpeechEngine:
                 # Phase 13: Skip TTS synthesis if target language matches the spoken language.
                 # In meetings, participants already hear the speaker's live voice via WebRTC.
                 # Synthesizing the same language produces an echo and adds 1.5-3.0s latency.
-                if detected_lang.lower() == lang.lower():
+                # Configurable via SKIP_SAME_LANG_TTS env var (default: true). Set to false for solo testing.
+                skip_same_lang = os.getenv("SKIP_SAME_LANG_TTS", "true").lower() in ("true", "1")
+                if skip_same_lang and detected_lang.lower() == lang.lower():
                     print(f"⏩ [TTS] Skipped TTS for '{lang}' (matches spoken '{detected_lang}') — avoids voice echo & cuts latency.")
                     return None
                 try:
