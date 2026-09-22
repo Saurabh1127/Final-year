@@ -198,15 +198,15 @@ def get_nllb_code(iso: str) -> str:
 def translate_text(text: str, src: str, tgt: str) -> str:
     """
     Translate text from src language to tgt language using Hybrid Router.
-    Routes to IndicTrans2 for en->Indic, otherwise NLLB.
+    Routes to IndicTrans2 for en->Indic (if available), with automatic NLLB fallback.
     """
     if not text or not text.strip():
         return ""
     if src == tgt:
         return text  # No-op
 
-    # Hybrid router
-    if src == "en" and tgt in INDIC_LANGS:
+    # Hybrid router: try IndicTrans2 for en -> Indic if installed and working
+    if src == "en" and tgt in INDIC_LANGS and _INDIC_AVAILABLE:
         try:
             model, tokenizer, ip = get_indic_models()
             device = _get_device()
@@ -218,10 +218,11 @@ def translate_text(text: str, src: str, tgt: str) -> str:
             translations = tokenizer.batch_decode(outputs, skip_special_tokens=True)
             return ip.postprocess_batch(translations, lang=tgt_lang_code)[0]
         except Exception as exc:
-            print(f"⚠️ IndicTrans2 translation failed: {exc}")
-            return f"[Translation error for '{tgt}']"
-    else:
-        # NLLB fallback
+            print(f"⚠️ IndicTrans2 translation failed: {exc} — Falling back to NLLB-200")
+            # Fall through to NLLB translation below!
+
+    # NLLB translation (primary for non-Indic, and automatic robust fallback for Indic)
+    try:
         translator, tokenizer = get_translator_and_tokenizer()
         tokenizer.src_lang = get_nllb_code(src)
         source = tokenizer.convert_ids_to_tokens(tokenizer.encode(text))
@@ -229,12 +230,15 @@ def translate_text(text: str, src: str, tgt: str) -> str:
         results = translator.translate_batch([source], target_prefix=[target_prefix])
         target = results[0].hypotheses[0][1:]
         return tokenizer.decode(tokenizer.convert_tokens_to_ids(target))
+    except Exception as nllb_exc:
+        print(f"⚠️ NLLB translation failed: {nllb_exc}")
+        return text
 
 
 def translate_to_multiple(text: str, src: str, targets: list[str]) -> dict[str, str]:
     """
     Translate text to multiple target languages using Hybrid Router.
-    Splits targets into IndicTrans2 (en->indic) and NLLB (others).
+    Routes en->Indic to IndicTrans2 (if available), with automatic NLLB fallback.
     """
     out: dict[str, str] = {}
     if not targets:
@@ -244,61 +248,60 @@ def translate_to_multiple(text: str, src: str, targets: list[str]) -> dict[str, 
             out[lang] = ""
         return out
 
-    # Filter out target = src
-    valid_targets = [tgt for tgt in targets if tgt != src]
+    # Handle target == src directly
+    remaining_targets = []
     for tgt in targets:
         if tgt == src:
             out[tgt] = text
-            
-    if not valid_targets:
+        else:
+            remaining_targets.append(tgt)
+
+    if not remaining_targets:
         return out
 
-    # Router logic
-    indic_targets = [tgt for tgt in valid_targets if tgt in INDIC_LANGS] if src == "en" else []
-    nllb_targets = [tgt for tgt in valid_targets if tgt not in indic_targets]
+    # Hybrid router: try IndicTrans2 for en -> Indic targets (only if IndicTrans2 is installed and working)
+    if src == "en" and _INDIC_AVAILABLE:
+        indic_candidates = [tgt for tgt in remaining_targets if tgt in INDIC_LANGS]
+        if indic_candidates:
+            try:
+                model, tokenizer, ip = get_indic_models()
+                device = _get_device()
+                for tgt in indic_candidates:
+                    try:
+                        src_lang_code, tgt_lang_code = get_nllb_code(src), get_nllb_code(tgt)
+                        batch = ip.preprocess_batch([text], src_lang=src_lang_code, tgt_lang=tgt_lang_code)
+                        inputs = tokenizer(batch, padding=True, truncation=True, return_tensors="pt").to(device)
+                        with torch.inference_mode():
+                            outputs = model.generate(**inputs, num_beams=5, num_return_sequences=1)
+                        translations = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+                        out[tgt] = ip.postprocess_batch(translations, lang=tgt_lang_code)[0]
+                    except Exception as single_exc:
+                        print(f"⚠️ IndicTrans2 failed for {tgt}: {single_exc} — falling back to NLLB-200")
+            except Exception as exc:
+                print(f"⚠️ IndicTrans2 initialization failed: {exc} — all Indic targets falling back to NLLB-200")
 
-    # Process NLLB targets
+    # All targets not yet populated (non-Indic, or Indic targets where IndicTrans2 failed/was unavailable)
+    nllb_targets = [tgt for tgt in remaining_targets if tgt not in out]
+
     if nllb_targets:
         try:
             translator, tokenizer = get_translator_and_tokenizer()
             tokenizer.src_lang = get_nllb_code(src)
             source = tokenizer.convert_ids_to_tokens(tokenizer.encode(text))
-            
+
             source_batch = [source] * len(nllb_targets)
             target_prefixes = [[get_nllb_code(tgt)] for tgt in nllb_targets]
-            
+
             results = translator.translate_batch(source_batch, target_prefix=target_prefixes)
-            
+
             for i, tgt in enumerate(nllb_targets):
                 target_tokens = results[i].hypotheses[0][1:]
                 out[tgt] = tokenizer.decode(tokenizer.convert_tokens_to_ids(target_tokens))
         except Exception as exc:
-            print(f"⚠️  NLLB Batch translation failed: {exc}")
+            print(f"⚠️ NLLB Batch translation failed: {exc}")
             for tgt in nllb_targets:
-                out[tgt] = f"[Translation error for '{tgt}']"
-
-    # Process Indic targets
-    if indic_targets:
-        try:
-            model, tokenizer, ip = get_indic_models()
-            device = _get_device()
-            
-            for tgt in indic_targets:
-                src_lang_code, tgt_lang_code = get_nllb_code(src), get_nllb_code(tgt)
-                batch = ip.preprocess_batch([text], src_lang=src_lang_code, tgt_lang=tgt_lang_code)
-                inputs = tokenizer(batch, padding=True, truncation=True, return_tensors="pt").to(device)
-                
-                with torch.inference_mode():
-                    outputs = model.generate(**inputs, num_beams=5, num_return_sequences=1)
-                
-                translations = tokenizer.batch_decode(outputs, skip_special_tokens=True)
-                final_translations = ip.postprocess_batch(translations, lang=tgt_lang_code)
-                out[tgt] = final_translations[0]
-                
-        except Exception as exc:
-            print(f"⚠️  IndicTrans2 translation failed: {exc}")
-            for tgt in indic_targets:
-                out[tgt] = f"[Translation error for '{tgt}']"
+                if tgt not in out:
+                    out[tgt] = text  # Graceful fallback to source text
 
     return out
 

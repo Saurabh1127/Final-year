@@ -54,84 +54,48 @@ from .voice_retention import voice_engine
 # Phase 10 — Hallucination Filter
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Expanded blocklist of known Whisper hallucination phrases.
-# All comparisons are done after lowercasing + stripping punctuation.
+# Explicit blocklist of known Whisper hallucination phrases (YouTube / credits / noise).
+# We ONLY list explicit multi-word spam / credits here.
+# Conversational words like "hello", "hi", "yes", "no", "okay", "right", "thank you",
+# "thanks", "so", "yeah", "धन्यवाद", "नमस्ते", "शुक्रिया" are valid speech and MUST NOT be blocked.
 _HALLUCINATION_BLOCKLIST: frozenset[str] = frozenset({
-    # YouTube / streaming clichés
+    # YouTube / streaming clichés (must match exactly or be contained as full phrase)
     "thank you for watching",
     "thanks for watching",
     "thank you for watching this video",
-    "please subscribe",
+    "thanks for watching this video",
+    "please subscribe to my channel",
     "subscribe to my channel",
-    "like and subscribe",
     "don't forget to subscribe",
+    "dont forget to subscribe",
+    "like and subscribe",
     "hit the like button",
     "hit the bell icon",
     "see you in the next video",
     "see you next time",
-    "bye bye",
-    # Music / noise markers
-    "music",
-    "applause",
-    "laughter",
-    "silence",
-    "background music",
-    # Teletext artifacts
+    "watching this video",
+    # Subtitles / teletext credits
     "subtitles by",
-    "subtitles",
+    "subtitles by the amara",
     "captions by",
     "closed captions",
     "transcribed by",
-    # Common phantom repetitions
-    "you",
-    "um",
-    "uh",
-    "hmm",
-    "ah",
-    "oh",
-    # Repeated punctuation / symbols (normalised away, but kept for safety)
-    "...",
-    "…",
-    # Misc English
-    "movistar",
-    "www",
+    "translated by",
+    # Sponsor spam
     "this video is brought to you by",
     "sponsored by",
-    "ad",
-    # ── Phase 12: Hindi / Indic phantom phrases ──────────────────────────────
-    # Whisper commonly hallucinates these Hindi phrases on silence/noise when
-    # processing Indian-language audio streams.
-    "सब्सक्राइब",                   # "subscribe"
-    "सब्सक्राइब करें",             # "subscribe kare"
-    "शुक्रिया",                      # "shukriya"
-    "धन्यवाद",                      # "dhanyavaad"
-    "नमस्कार",                      # "namaskar"
-    "आपका बहुत बहुत धन्यवाद",     # "aapka bahut bahut dhanyavaad"
-    "आप देख रहे हैं",               # "aap dekh rahe hain"
-    "देखते रहिये",                  # "dekhte rahiye"
-    "लाइक और सब्सक्राइब",         # "like aur subscribe"
-    "बेल आइकॉन",                    # "bell icon"
-    "अगली वीडियो में",              # "agali video mein"
-    "आपका स्वागत है",             # "aapka swaagat hai"
-    "आमीन",                          # "aameen" (prayer noise)
-    # ── Additional English patterns (Phase 12) ──────────────────────────────
-    "thank you",
-    "thanks",
-    "okay",
-    "alright",
-    "so",
-    "yeah",
-    "yes",
-    "no",
-    "hello",
-    "hi",
-    "hey",
-    "right",
-    "the",
-    "a",
-    "i",
-    "it",
-    "is",
+    # Indic YouTube spam phrases
+    "सब्सक्राइब करना न भूलें",
+    "चैनल को सब्सक्राइब करें",
+    "लाइक और सब्सक्राइब करें",
+    "लाइक और सब्सक्राइब",
+    "बेल आइकॉन दबाएं",
+    "अगली वीडियो में मिलते हैं",
+})
+
+# Single-word filler noise artifacts that Whisper outputs on silence / breathing
+_FILLER_NOISE_WORDS: frozenset[str] = frozenset({
+    "um", "uh", "hmm", "ah", "oh",
 })
 
 # Regex: detect [MUSIC], [APPLAUSE], ♪ etc. — common Whisper noise tags
@@ -142,7 +106,7 @@ _NOISE_TAG_RE = re.compile(
 
 
 def _normalize(text: str) -> str:
-    """Lowercase, strip punctuation/symbols, collapse whitespace.
+    r"""Lowercase, strip punctuation/symbols, collapse whitespace.
     Uses re.UNICODE so \w matches Devanagari, Bengali, Tamil, etc.
     Without this flag, \w only matches ASCII and all Hindi characters get stripped.
     """
@@ -181,16 +145,11 @@ def _is_hallucination(text: str) -> bool:
 
     Checks (in order):
     1. Contains noise tags like [MUSIC] or ♪
-    2. Normalised text exactly matches a blocklist entry
-    3. Normalised text is a substring of a blocklist entry (fuzzy)
-    4. A blocklist entry is a substring of the normalised text (fuzzy reverse)
-    5. Repetition loop detected (same phrase 3+ times in a row)
-
-    NOTE: Single-word utterances are NOT rejected here. All known single-word
-    noise artifacts ("ah", "um", "hmm", "you", etc.) are already enumerated in
-    _HALLUCINATION_BLOCKLIST and are caught by check 2. Blocking ALL single-word
-    outputs would silently discard valid short speech ("Haan", "Yes", "Theek",
-    "Namaste") that was VAD-cut from a longer utterance.
+    2. Empty after normalisation
+    3. Pure filler noise (single "um", "uh", "hmm")
+    4. Exact match against hallucination spam phrases
+    5. Contains a multi-word spam phrase (e.g. "thanks for watching")
+    6. Repetition loop detected (same phrase 3+ times in a row)
     """
     # 1. Noise tags
     if _NOISE_TAG_RE.search(text):
@@ -199,24 +158,28 @@ def _is_hallucination(text: str) -> bool:
 
     norm = _normalize(text)
 
-    # Empty / pure whitespace after normalisation
+    # 2. Empty / pure whitespace after normalisation
     if not norm:
         print(f"🚫 [Filter] Empty after normalisation → rejected.")
         return True
 
-    # 2. Exact blocklist match
+    # 3. Pure filler noise
+    if norm in _FILLER_NOISE_WORDS:
+        print(f"🚫 [Filter] Single filler noise word: \"{norm}\" → rejected.")
+        return True
+
+    # 4. Exact blocklist match
     if norm in _HALLUCINATION_BLOCKLIST:
         print(f"🚫 [Filter] Exact blocklist match: \"{norm}\" → rejected.")
         return True
 
-    # 3 & 4. Fuzzy substring match (both directions)
+    # 5. Multi-word spam phrase contained in utterance
     for blocked in _HALLUCINATION_BLOCKLIST:
-        if len(blocked) > 4:  # only check meaningful phrases, skip single words
-            if blocked in norm or norm in blocked:
-                print(f"🚫 [Filter] Fuzzy match \"{norm}\" ↔ blocklist \"{blocked}\" → rejected.")
-                return True
+        if len(blocked) >= 12 and blocked in norm:
+            print(f"🚫 [Filter] Spam phrase match: \"{blocked}\" in \"{norm}\" → rejected.")
+            return True
 
-    # 5. Repetition loop
+    # 6. Repetition loop
     if _has_repetition_loop(norm):
         print(f"🚫 [Filter] Repetition loop detected: \"{norm[:60]}\" → rejected.")
         return True
@@ -393,31 +356,25 @@ class SpeechToSpeechEngine:
         log_gpu_stats("after-STT")
 
         # ── Phase 10 Hallucination & Noise Filters ───────────────────────────
-        # Soften rejection when user provided an explicit language hint
         stat_reject = (
-            no_speech_prob > 0.65 or
-            avg_logprob < -1.1 or
-            (lang_prob < 0.4 if not hint else False)
+            no_speech_prob > 0.70 or
+            avg_logprob < -1.3 or
+            (lang_prob < 0.20 and avg_logprob < -0.9 if not hint else False)
         )
-        # NOTE: We intentionally do NOT reject based on character length (< 3).
-        # Hindi words like "कर" (2 chars) and "हाँ" (3 chars) are valid speech.
-        # The hallucination blocklist already catches known noise words.
         text_reject = not original_text or not original_text.strip()
 
-        # ── Phase 12: Word-count filter ──────────────────────────────────────
-        # If Whisper produces only 1 word token from a chunk, it's almost always
-        # a hallucination artifact ("you", "the", "so", etc.) or a misfire.
-        # Skip this check when user provided an explicit language hint, because
-        # valid Hindi responses like "हाँ" may be 1 token.
-        word_count = len(original_text.split()) if original_text else 0
-        if word_count == 1 and not hint:
-            text_reject = True
+        # Single-word check: only reject if it's filler noise ("uh", "um") or low confidence (< -1.1)
+        words = original_text.split() if original_text else []
+        if len(words) == 1:
+            w_norm = _normalize(words[0])
+            if w_norm in _FILLER_NOISE_WORDS or avg_logprob < -1.1:
+                text_reject = True
 
         if stat_reject or text_reject or _is_hallucination(original_text):
             reject_reason = (
-                f"Silence/low-speech (no_speech={no_speech_prob:.2f})" if no_speech_prob > 0.65
-                else f"Low confidence ({avg_logprob:.2f})" if avg_logprob < -1.1
-                else f"Low language confidence ({lang_prob:.2f})" if (lang_prob < 0.4 and not hint)
+                f"Silence/low-speech (no_speech={no_speech_prob:.2f})" if no_speech_prob > 0.70
+                else f"Low confidence ({avg_logprob:.2f})" if avg_logprob < -1.3
+                else f"Low language confidence ({lang_prob:.2f})" if (lang_prob < 0.20 and not hint)
                 else "Short/empty utterance" if text_reject
                 else "Hallucination pattern detected"
             )
