@@ -461,7 +461,7 @@ The paradigm shifted with End-to-End (E2E) deep learning architectures:
 <h3 style="font-size: 14pt; font-weight: bold;">2.1.3 Neural Machine Translation (NMT) Milestones</h3>
 Machine translation evolved rapidly from Statistical Machine Translation (Moses, phrase-based models) to Neural Machine Translation (NMT) powered by the attention mechanism (Bahdanau et al., 2014) and the Transformer architecture (Vaswani et al., 2017).
 
-1. **Bilingual vs. Multilingual Models**: While bilingual Transformer models (e.g., MarianMT) excel in specific language pairs (e.g., English-to-Spanish), supporting a video conferencing platform with $N$ languages would require $N 	imes (N-1)$ separate bilingual models, consuming unsustainable disk and GPU memory.
+1. **Bilingual vs. Multilingual Models**: While bilingual Transformer models (e.g., MarianMT) excel in specific language pairs (e.g., English-to-Spanish), supporting a video conferencing platform with $N$ languages would require $N \times (N-1)$ separate bilingual models, consuming unsustainable disk and GPU memory.
 2. **Meta No Language Left Behind (NLLB-200 Team, 2022)**: Meta AI established a breakthrough in multilingual translation by releasing NLLB-200, a sequence-to-sequence Transformer capable of translating across 200+ distinct languages. NLLB-200 was trained using extensive synthetic data generated through laser-mined bitexts and novel data-filtering techniques. It utilizes Flores-200 language codes (e.g., `eng_Latn`, `hin_Deva`, `spa_Latn`) and excels at low- and medium-resource languages (such as Indian regional languages and African languages) where prior models suffered severe translation degeneration. The distilled 600M parameter variant (`nllb-200-distilled-600M`) achieves an optimal compromise between high translation fidelity (BLEU > 35) and rapid GPU inference times (100–250ms).
 
 
@@ -1449,32 +1449,32 @@ Figure 4.9: UML Deployment Diagram: Physical Nodes, Cloud GPU, and Tunnel Topolo
 #### 1. Root Mean Square (RMS) Energy Calculation
 To identify human speech while ignoring low-level microphone hiss, ambient room noise, and digital silence, the client samples the incoming audio signal using the Web Audio API. The time-domain audio data is captured as a 32-bit floating-point array $x[n]$ across a window of $N$ discrete samples ($N = 512$). The instantaneous RMS energy is computed as:
 
-$$RMS = \sqrt{rac{1}{N} \sum_{i=0}^{N-1} x[i]^2}$$
+$$RMS = \sqrt{\f\frac{1}{N} \sum_{i=0}^{N-1} x[i]^2}$$
 
 Speech is formally declared active when the instantaneous energy satisfies the condition:
-$$	ext{State}(t) = egin{cases} 	ext{SPEECH}, & 	ext{if } RMS(t) \ge 	heta_{	ext{silence}} \ 	ext{SILENCE}, & 	ext{if } RMS(t) < 	heta_{	ext{silence}} \end{cases}$$
+$$\text{State}(t) = \begin{cases} \text{SPEECH}, & \text{if } RMS(t) \ge \theta_{\text{silence}} \ \text{SILENCE}, & \text{if } RMS(t) < \theta_{\text{silence}} \end{cases}$$
 
-Where the calibrated silence threshold $	heta_{	ext{silence}} = 0.003$.
+Where the calibrated silence threshold $\theta_{\text{silence}} = 0.003$.
 
 #### 2. Adaptive Silence Pause Gating
 Continuous speech contains intra-word acoustic stops (plosives such as /p/, /t/, /k/) that momentarily drop RMS energy to zero for 50–100ms. To prevent premature chunk fragmentation during natural speech, the algorithm maintains a silence duration counter:
 
-$$\Delta t_{	ext{silence}} = t_{	ext{current}} - t_{	ext{last\_speech}}$$
+$$\Delta t_{\text{silence}} = t_{\text{current}} - t_{\text{last\_speech}}$$
 
 The audio recorder triggers an automatic flush if and only if:
-$$	ext{FlushTrigger} = (\Delta t_{	ext{silence}} \ge T_{	ext{pause\_limit}} \land t_{	ext{speech}} \ge T_{	ext{min\_chunk}}) \lor (t_{	ext{total\_chunk}} \ge T_{	ext{max\_chunk}})$$
+$$\text{FlushTrigger} = (\Delta t_{\text{silence}} \ge T_{\text{pause\_limit}} \land t_{\text{speech}} \ge T_{\text{min\_chunk}}) \lor (t_{\text{total\_chunk}} \ge T_{\text{max\_chunk}})$$
 
 Where:
-- $T_{	ext{pause\_limit}} = 300	ext{ ms}$ (natural conversational pause).
-- $T_{	ext{min\_chunk}} = 300	ext{ ms}$ (filters out incidental clicks/coughs).
-- $T_{	ext{max\_chunk}} = 4000	ext{ ms}$ (prevents buffer overflow during continuous monologues).
+- $T_{\text{pause\_limit}} = 300\text{ ms}$ (natural conversational pause).
+- $T_{\text{min\_chunk}} = 300\text{ ms}$ (filters out incidental clicks/coughs).
+- $T_{\text{max\_chunk}} = 4000\text{ ms}$ (prevents buffer overflow during continuous monologues).
 
 #### 3. Dynamic Audio Ducking Attenuation
 To prevent auditory clash between the original WebRTC audio stream and the delayed translated speech, incoming WebRTC peer volume $V(t)$ is modulated via an exponential gain curve:
 
-$$V(t) = egin{cases} V_0 \cdot lpha, & 	ext{during active translation playback} \ V_0, & 	ext{during idle translation} \end{cases}$$
+$$V(t) = \begin{cases} V_0 \cdot \alpha, & \text{during active translation playback} \ V_0, & \text{during idle translation} \end{cases}$$
 
-Where $V_0 = 1.0$ (baseline volume) and $lpha = 0.10$ (10% ducked volume level). The transition between states is smoothed over a 150ms linear ramp to prevent acoustic clicks or sudden pops in the listener's earpiece.
+Where $V_0 = 1.0$ (baseline volume) and $\a\alpha = 0.10$ (10% ducked volume level). The transition between states is smoothed over a 150ms linear ramp to prevent acoustic clicks or sudden pops in the listener's earpiece.
 
 ---
 
@@ -2320,7 +2320,7 @@ While SAMVADA achieves its primary goal of real-time speech-to-speech video conf
 
 <h3 style="font-size: 14pt; font-weight: bold;">5.3.1 Full-Mesh WebRTC Scaling Limits</h3>
 SAMVADA utilizes a decentralized Full-Mesh WebRTC topology where each participant establishes an independent, direct bidirectional media peer connection with every other participant. In a room with $N$ participants, the total number of peer connections scales quadratically:
-$$C = rac{N(N - 1)}{2}$$
+$$C = \f\frac{N(N - 1)}{2}$$
 
 For $N = 3$, $C = 3$; for $N = 5$, $C = 10$; for $N = 8$, $C = 28$. Beyond 5–6 participants, client uplink bandwidth and CPU consumption (encoding multiple video streams simultaneously) degrade significantly. For enterprise-scale deployments exceeding 10 participants, the media layer must migrate to a **Selective Forwarding Unit (SFU)** media server architecture (e.g., mediasoup or LiveKit).
 
@@ -2480,7 +2480,7 @@ Developing dedicated native mobile applications for iOS and Android using React 
 8. **Audio Ducking**: An audio engineering technique wherein the volume gain of a primary audio signal is automatically attenuated (reduced) whenever a secondary, higher-priority audio signal is actively playing, preventing acoustic collision.
 9. **Translation Deduplication**: An architectural optimization implemented in the signaling broker that clusters active listeners by their preferred target language, ensuring that compute-intensive NMT and TTS pipelines are executed only once per unique target language per speech turn.
 10. **Word Error Rate (WER)**: The standard metric for measuring speech recognition inaccuracy, calculated as:
-   $$	ext{WER} = rac{S + D + I}{N} 	imes 100\%$$
+   $$\text{WER} = \f\frac{S + D + I}{N} \times 100\%$$
    where $S$ is substitutions, $D$ is deletions, $I$ is insertions, and $N$ is the total words in the reference transcript.
 11. **Bilingual Evaluation Understudy (BLEU)**: An algorithmic benchmark that evaluates machine translation quality by computing modified n-gram precision between machine-generated candidate sentences and human-authored reference translations.
 12. **Mean Opinion Score (MOS)**: A numerical measure of the perceived subjective quality of synthesized audio media, ranging from 1.0 (Bad) to 5.0 (Excellent).
