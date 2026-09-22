@@ -28,7 +28,7 @@ edge-tts>=6.1.9
 gTTS==2.5.1
 
 # ── NMT (Indic): IndicTrans2 ─────────────────────────────────────────────────
-git+https://github.com/VarunGumma/IndicTransToolkit.git
+indictranstoolkit
 sacremoses
 nltk
 
