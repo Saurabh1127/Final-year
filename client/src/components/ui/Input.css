@@ -43,9 +43,9 @@
 }
 
 .sam-input-wrapper:focus-within:not(.sam-input-wrapper--disabled) {
-  border-color: var(--lm-accent, #00D4B2);
-  box-shadow: 0 0 0 3px var(--lm-border-focus, rgba(0, 212, 178, 0.25));
-  background-color: rgba(14, 16, 24, 0.95);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+  background-color: rgba(18, 21, 30, 0.98);
 }
 
 .sam-input-wrapper--error {
@@ -63,14 +63,32 @@
 
 .sam-input {
   width: 100%;
-  background: transparent;
-  border: none;
+  background: transparent !important;
+  border: none !important;
   color: var(--lm-text-primary, #F8FAFC);
   font-family: var(--lm-font-primary, 'Inter', sans-serif);
   font-size: var(--lm-text-base, 0.875rem);
-  outline: none;
+  outline: none !important;
+  box-shadow: none !important;
   padding: 0 var(--lm-space-3, 12px);
   min-width: 0;
+}
+
+.sam-input:focus,
+.sam-input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Chrome / Edge / Safari Autofill Override to prevent green/yellow box */
+.sam-input:-webkit-autofill,
+.sam-input:-webkit-autofill:hover,
+.sam-input:-webkit-autofill:focus,
+.sam-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #0E1018 inset !important;
+  -webkit-text-fill-color: #F8FAFC !important;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: #F8FAFC;
 }
 
 .sam-input::placeholder {

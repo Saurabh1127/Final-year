@@ -567,19 +567,26 @@ body,
 
 /* Universal high-visibility focus ring (WCAG 2.4.7 Focus Visible & 2.4.11 Focus Appearance) */
 :focus-visible {
-  outline: 2px solid var(--lm-accent, #00d4b2) !important;
-  outline-offset: 2px !important;
+  outline: 2px solid var(--lm-accent, #00d4b2);
+  outline-offset: 2px;
 }
 
 button:focus-visible,
 a:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
 [role="button"]:focus-visible,
 [tabindex]:focus-visible {
   outline: 2px solid var(--lm-accent, #00d4b2) !important;
   outline-offset: 2px !important;
+}
+
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none !important;
+  box-shadow: none;
 }
 
 /* Screen reader only utility class */

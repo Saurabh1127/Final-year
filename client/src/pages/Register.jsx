@@ -18,6 +18,26 @@ export function Register() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const handleGoogleAuth = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setError('');
+      setLoading(true);
+      try {
+        await googleLogin({ accessToken: tokenResponse.access_token });
+        toast.success('Account created with Google! Welcome to Samvada.');
+        navigate('/');
+      } catch (err) {
+        setError(err.response?.data?.message || 'Google registration failed. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: (err) => {
+      console.error('Google sign-up error:', err);
+      setError('Google registration was cancelled or encountered an error.');
+    },
+  });
+
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
@@ -58,26 +78,6 @@ export function Register() {
       setLoading(false);
     }
   };
-
-  const handleGoogleAuth = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setError('');
-      setLoading(true);
-      try {
-        await googleLogin({ accessToken: tokenResponse.access_token });
-        toast.success('Account created with Google! Welcome to Samvada.');
-        navigate('/');
-      } catch (err) {
-        setError(err.response?.data?.message || 'Google registration failed. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    },
-    onError: (err) => {
-      console.error('Google sign-up error:', err);
-      setError('Google registration was cancelled or encountered an error.');
-    },
-  });
 
   const handleSocialLogin = (provider) => {
     if (provider === 'Google') {
