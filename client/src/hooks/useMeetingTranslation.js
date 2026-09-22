@@ -106,7 +106,7 @@ export function useMeetingTranslation({
 
   // Translation Receiver hook (plays synthesized TTS from remote peers)
   const { isReceiving, isPending } = useTranslationReceiver({
-    remoteAudioRefs: remoteVideoRefs?.current || [],
+    remoteAudioRefs: remoteVideoRefs,
     onSubtitle: handleSubtitle,
     onTranscriptEntry: handleTranscriptEntry,
     enabled: translationEnabled,

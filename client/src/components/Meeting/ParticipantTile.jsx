@@ -18,6 +18,9 @@ export function ParticipantTile({
   isLocal = false,
   onRename,
   sourceLanguage = 'auto',
+  translationEnabled = false,
+  registerRemoteAudioRef,
+  unregisterRemoteAudioRef,
 }) {
   const isSpeaking = useAudioVolume(stream);
   const actuallySpeaking = isSpeaking && !participant?.isMuted;
@@ -86,6 +89,9 @@ export function ParticipantTile({
       if (videoEl.srcObject !== stream) {
         videoEl.srcObject = stream;
       }
+      if (!isLocal) {
+        videoEl.volume = translationEnabled ? 0.15 : 1.0;
+      }
       videoEl
         .play()
         .then(() => setAutoplayBlocked(false))
@@ -99,7 +105,7 @@ export function ParticipantTile({
         videoEl.srcObject = null;
       }
     };
-  }, [stream, hasVideo, isLocal]);
+  }, [stream, hasVideo, isLocal, translationEnabled]);
 
   // Audio element playback for remote participants
   useEffect(() => {
@@ -108,6 +114,7 @@ export function ParticipantTile({
       if (audioEl.srcObject !== stream) {
         audioEl.srcObject = stream;
       }
+      audioEl.volume = translationEnabled ? 0.15 : 1.0;
       audioEl
         .play()
         .then(() => setAutoplayBlocked(false))
@@ -121,7 +128,36 @@ export function ParticipantTile({
         audioEl.srcObject = null;
       }
     };
-  }, [stream, isLocal]);
+  }, [stream, isLocal, translationEnabled]);
+
+  // Volume control: when translation is toggled on, reduce original remote speaker voice to 15% (0.15)
+  useEffect(() => {
+    if (isLocal) return;
+    const targetVolume = translationEnabled ? 0.15 : 1.0;
+    if (audioRef.current) {
+      audioRef.current.volume = targetVolume;
+    }
+    if (videoRef.current) {
+      videoRef.current.volume = targetVolume;
+    }
+  }, [translationEnabled, isLocal, stream]);
+
+  // Register remote audio elements for global TTS ducking
+  useEffect(() => {
+    if (isLocal) return;
+    const audioEl = audioRef.current;
+    const videoEl = videoRef.current;
+    if (registerRemoteAudioRef) {
+      if (audioEl) registerRemoteAudioRef(audioEl);
+      if (videoEl) registerRemoteAudioRef(videoEl);
+    }
+    return () => {
+      if (unregisterRemoteAudioRef) {
+        if (audioEl) unregisterRemoteAudioRef(audioEl);
+        if (videoEl) unregisterRemoteAudioRef(videoEl);
+      }
+    };
+  }, [isLocal, registerRemoteAudioRef, unregisterRemoteAudioRef]);
 
   const handleManualPlay = () => {
     if (videoRef.current) videoRef.current.play().catch(() => {});
@@ -247,6 +283,17 @@ export function ParticipantTile({
               <line x1="12" y1="19" x2="12" y2="23" />
               <line x1="8" y1="23" x2="16" y2="23" />
             </svg>
+          )}
+
+          {/* Translation Active: Original Voice Ducked Indicator */}
+          {translationEnabled && !isLocal && (
+            <span
+              className="sam-participant-tile__ducked-pill"
+              title="Translation Active: Original speaker voice ducked to 15% so translated voice is clear"
+            >
+              <span className="sam-participant-tile__ducked-icon">🔉</span>
+              <span>15%</span>
+            </span>
           )}
 
           {/* Speaking Indicator */}

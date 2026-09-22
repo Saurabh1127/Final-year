@@ -672,6 +672,24 @@
   animation: sam-pulse-slow 1s infinite ease-in-out;
 }
 
+.sam-participant-tile__ducked-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  letter-spacing: 0.02em;
+}
+
+.sam-participant-tile__ducked-icon {
+  font-size: 0.6875rem;
+}
+
 /* ── Translating Status Floating Pill ── */
 .sam-translation-status {
   position: fixed;
