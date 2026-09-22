@@ -161,12 +161,64 @@ def get_nllb_code(iso: str) -> str:
     return LANG_CODE_MAP.get(iso, "eng_Latn")
 
 
+def resolve_source_language(text: str, detected_src: str) -> str:
+    """
+    Phase 14: Inspects actual Unicode characters in the transcribed text to fix
+    Whisper language misclassifications before calling NLLB:
+      - Devanagari (\u0900-\u097F): If Whisper detected 'ur' or 'en' on Devanagari text,
+        override to 'hi' (hin_Deva). Devanagari script is never Arabic or English!
+      - Bengali (\u0980-\u09FF): override to 'bn' (ben_Beng).
+      - Tamil (\u0B80-\u0BFF): override to 'ta' (tam_Taml).
+      - Telugu (\u0C00-\u0C7F): override to 'te' (tel_Telu).
+      - Gujarati (\u0A80-\u0AFF): override to 'gu' (guj_Gujr).
+      - Kannada (\u0C80-\u0CFF): override to 'kn' (kan_Knda).
+      - Malayalam (\u0D00-\u0D7F): override to 'ml' (mal_Mlym).
+      - Gurmukhi (\u0A00-\u0A7F): override to 'pa' (pan_Guru).
+    """
+    if not text:
+        return detected_src
+
+    devanagari_count = sum(1 for ch in text if '\u0900' <= ch <= '\u097F')
+    bengali_count = sum(1 for ch in text if '\u0980' <= ch <= '\u09FF')
+    tamil_count = sum(1 for ch in text if '\u0B80' <= ch <= '\u0BFF')
+    telugu_count = sum(1 for ch in text if '\u0C00' <= ch <= '\u0C7F')
+    gujarati_count = sum(1 for ch in text if '\u0A80' <= ch <= '\u0AFF')
+    kannada_count = sum(1 for ch in text if '\u0C80' <= ch <= '\u0CFF')
+    malayalam_count = sum(1 for ch in text if '\u0D00' <= ch <= '\u0D7F')
+    gurmukhi_count = sum(1 for ch in text if '\u0A00' <= ch <= '\u0A7F')
+
+    if devanagari_count >= 2:
+        if detected_src in ("ur", "en", "auto", ""):
+            return "hi"
+        if detected_src == "mr":
+            return "mr"
+        return "hi"
+    if bengali_count >= 2:
+        return "bn"
+    if tamil_count >= 2:
+        return "ta"
+    if telugu_count >= 2:
+        return "te"
+    if gujarati_count >= 2:
+        return "gu"
+    if kannada_count >= 2:
+        return "kn"
+    if malayalam_count >= 2:
+        return "ml"
+    if gurmukhi_count >= 2:
+        return "pa"
+
+    return detected_src
+
+
 def translate_text(text: str, src: str, tgt: str) -> str:
     """
     Translate text from src language to tgt language using CTranslate2 NLLB-200.
     """
     if not text or not text.strip():
         return ""
+    
+    src = resolve_source_language(text, src)
     if src == tgt:
         return text  # No-op
 
@@ -175,10 +227,15 @@ def translate_text(text: str, src: str, tgt: str) -> str:
         tokenizer.src_lang = get_nllb_code(src)
         source = tokenizer.convert_ids_to_tokens(tokenizer.encode(text))
         target_prefix = [get_nllb_code(tgt)]
+
+        # Phase 14: Indic (SOV) -> English (SVO) requires beam_size=4 to reorder verbs/clauses
+        is_indic_to_en = (src in INDIC_LANGS or src == "hi") and (tgt == "en")
+        effective_beam = 4 if is_indic_to_en else 2
+
         results = translator.translate_batch(
             [source],
             target_prefix=[target_prefix],
-            beam_size=2,
+            beam_size=effective_beam,
             max_decoding_length=128,
             repetition_penalty=1.1,
         )
@@ -201,6 +258,8 @@ def translate_to_multiple(text: str, src: str, targets: list[str]) -> dict[str, 
             out[lang] = ""
         return out
 
+    src = resolve_source_language(text, src)
+
     # Handle target == src directly
     remaining_targets = []
     for tgt in targets:
@@ -220,11 +279,14 @@ def translate_to_multiple(text: str, src: str, targets: list[str]) -> dict[str, 
         source_batch = [source] * len(remaining_targets)
         target_prefixes = [[get_nllb_code(tgt)] for tgt in remaining_targets]
 
-        # Phase 13: Fast greedy/narrow-beam decoding (beam_size=2, capped length) for 40-70ms latency
+        # Phase 14: Indic (SOV) -> English (SVO) requires beam_size=4 to reorder verbs/clauses
+        is_indic_to_en = (src in INDIC_LANGS or src == "hi") and ("en" in remaining_targets)
+        effective_beam = 4 if is_indic_to_en else 2
+
         results = translator.translate_batch(
             source_batch,
             target_prefix=target_prefixes,
-            beam_size=2,
+            beam_size=effective_beam,
             max_decoding_length=128,
             repetition_penalty=1.1,
         )

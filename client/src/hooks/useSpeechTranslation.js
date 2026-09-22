@@ -28,10 +28,10 @@ import workletUrl from '../workers/audio-processor.worklet.js?url';
 // ── VAD configuration ─────────────────────────────────────────────────────────
 const VAD_CONFIG = {
   SILENCE_THRESHOLD:   0.015,  // RMS energy cutoff — soft syllables/breathing not mistaken for silence
-  SILENCE_DURATION_MS: 1200,   // ms of consecutive silence before flush — 1.2s covers natural Hindi mid-sentence pauses
-  MIN_SPEECH_MS:        300,   // minimum speech duration before flush is allowed — shorter so quick words still send
-  MAX_CHUNK_MS:        5000,   // hard cap — 5s balances full Hindi sentences vs Whisper chunk processing time
-  FRAME_MS:              20,   // worklet frame size (must match FRAME_SAMPLES / sampleRate)
+  SILENCE_DURATION_MS:   800,  // ms of consecutive silence before flush — 800ms natural breath pause flushes at sentence boundary
+  MIN_SPEECH_MS:        300,  // minimum speech duration before flush is allowed — shorter so quick words still send
+  MAX_CHUNK_MS:        7500,  // hard cap — 7.5s allows complete SOV sentences (Hindi/Tamil) without slicing the verb off
+  FRAME_MS:              20,  // worklet frame size (must match FRAME_SAMPLES / sampleRate)
 };
 
 // ── WAV helpers ───────────────────────────────────────────────────────────────

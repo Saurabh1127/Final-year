@@ -64,6 +64,37 @@ MIME_EXT_MAP: dict[str, str] = {
 }
 
 
+# ── Language Prompt conditioning (Phase 14) ──────────────────────────────────
+# Primes Whisper's language model with proper orthography to avoid word-splitting
+# (e.g. stops 'किंतु' from splitting into 'कि इंटू', 'प्रतिदिन' into 'प्रती दिन').
+INDIC_PROMPTS: dict[str, str] = {
+    "hi": "नमस्ते, यह एक लाइव बातचीत है। कृपया स्पष्ट और शुद्ध देवनागरी में लिखें।",
+    "mr": "नमस्कार, ही एक चर्चा आहे. कृपया स्पष्ट देवनागरीत लिहा.",
+    "bn": "নমস্কার, এটি একটি আলোচনা। দয়া করে স্পষ্ট বাংলায় লিখুন।",
+    "ta": "வணக்கம், இது ஒரு உரையாடல். தயவுசெய்து தமிழில் எழுதுங்கள்.",
+    "te": "నమస్కారం, ఇది ఒక సంభాషణ. దయచేసి స్పష్టంగా రాయండి.",
+    "gu": "નમસ્તે, આ એક ચર્ચા છે. કૃપા કરીને સ્પષ્ટ ગુજરાતીમાં લખો.",
+    "kn": "ನಮಸ್ಕಾರ, ಇದು ಒಂದು ಸಂಭಾಷಣೆ. ದಯವಿಟ್ಟು ಸ್ಪಷ್ಟವಾಗಿ ಬರೆಯಿರಿ.",
+    "ml": "നമസ്കാരം, ഇതൊരു സംഭാഷണമാണ്. ദയവായി വ്യക്തമായി എഴുതുക.",
+    "pa": "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ, ਇਹ ਇੱਕ ਗੱਲਬਾਤ ਹੈ।",
+}
+DEFAULT_BILINGUAL_PROMPT = "Hello, नमस्ते, welcome to our meeting. We are speaking clearly."
+
+
+def _get_transcribe_opts(source_language: str | None) -> dict:
+    opts: dict = {}
+    if source_language and source_language.lower() not in ("", "auto"):
+        clean_lang = source_language.strip().lower()
+        opts["language"] = clean_lang
+        if clean_lang in INDIC_PROMPTS:
+            opts["initial_prompt"] = INDIC_PROMPTS[clean_lang]
+    else:
+        # In auto-detect mode, this primes Whisper that English and Hindi are standard,
+        # preventing foreign silence hallucinations (Russian, Portuguese, Urdu).
+        opts["initial_prompt"] = DEFAULT_BILINGUAL_PROMPT
+    return opts
+
+
 def _mime_to_ext(mime_type: str | None) -> str:
     """Map a MIME type string to a file extension Whisper/FFmpeg can decode."""
     if not mime_type:
@@ -147,9 +178,7 @@ def transcribe_audio(
 
     if audio_array is not None and audio_array.size > 0:
         try:
-            opts: dict = {}
-            if source_language and source_language.lower() not in ("", "auto"):
-                opts["language"] = source_language
+            opts = _get_transcribe_opts(source_language)
 
             segments, info = model.transcribe(
                 audio_array,
@@ -195,9 +224,7 @@ def transcribe_audio(
             tmp.write(audio_bytes)
             tmp_path = tmp.name
 
-        opts = {}
-        if source_language and source_language.lower() not in ("", "auto"):
-            opts["language"] = source_language
+        opts = _get_transcribe_opts(source_language)
 
         segments, info = model.transcribe(
             tmp_path,
