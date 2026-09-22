@@ -1449,10 +1449,10 @@ Figure 4.9: UML Deployment Diagram: Physical Nodes, Cloud GPU, and Tunnel Topolo
 #### 1. Root Mean Square (RMS) Energy Calculation
 To identify human speech while ignoring low-level microphone hiss, ambient room noise, and digital silence, the client samples the incoming audio signal using the Web Audio API. The time-domain audio data is captured as a 32-bit floating-point array $x[n]$ across a window of $N$ discrete samples ($N = 512$). The instantaneous RMS energy is computed as:
 
-$$RMS = \sqrt{rac{1}{N} \sum_{i=0}^{N-1} x[i]^2}$$
+$$RMS = \sqrt{rac{1}{N} \sum_{i=0}^{N-1} x[i]^2}$$
 
 Speech is formally declared active when the instantaneous energy satisfies the condition:
-$$	ext{State}(t) = egin{cases} 	ext{SPEECH}, & 	ext{if } RMS(t) \ge 	heta_{	ext{silence}} \ 	ext{SILENCE}, & 	ext{if } RMS(t) < 	heta_{	ext{silence}} \end{cases}$$
+$$	ext{State}(t) = egin{cases} 	ext{SPEECH}, & 	ext{if } RMS(t) \ge 	heta_{	ext{silence}} \ 	ext{SILENCE}, & 	ext{if } RMS(t) < 	heta_{	ext{silence}} \end{cases}$$
 
 Where the calibrated silence threshold $	heta_{	ext{silence}} = 0.003$.
 
@@ -1472,9 +1472,9 @@ Where:
 #### 3. Dynamic Audio Ducking Attenuation
 To prevent auditory clash between the original WebRTC audio stream and the delayed translated speech, incoming WebRTC peer volume $V(t)$ is modulated via an exponential gain curve:
 
-$$V(t) = egin{cases} V_0 \cdot lpha, & 	ext{during active translation playback} \ V_0, & 	ext{during idle translation} \end{cases}$$
+$$V(t) = egin{cases} V_0 \cdot lpha, & 	ext{during active translation playback} \ V_0, & 	ext{during idle translation} \end{cases}$$
 
-Where $V_0 = 1.0$ (baseline volume) and $lpha = 0.10$ (10% ducked volume level). The transition between states is smoothed over a 150ms linear ramp to prevent acoustic clicks or sudden pops in the listener's earpiece.
+Where $V_0 = 1.0$ (baseline volume) and $lpha = 0.10$ (10% ducked volume level). The transition between states is smoothed over a 150ms linear ramp to prevent acoustic clicks or sudden pops in the listener's earpiece.
 
 ---
 
@@ -2320,7 +2320,7 @@ While SAMVADA achieves its primary goal of real-time speech-to-speech video conf
 
 <h3 style="font-size: 14pt; font-weight: bold;">5.3.1 Full-Mesh WebRTC Scaling Limits</h3>
 SAMVADA utilizes a decentralized Full-Mesh WebRTC topology where each participant establishes an independent, direct bidirectional media peer connection with every other participant. In a room with $N$ participants, the total number of peer connections scales quadratically:
-$$C = rac{N(N - 1)}{2}$$
+$$C = rac{N(N - 1)}{2}$$
 
 For $N = 3$, $C = 3$; for $N = 5$, $C = 10$; for $N = 8$, $C = 28$. Beyond 5–6 participants, client uplink bandwidth and CPU consumption (encoding multiple video streams simultaneously) degrade significantly. For enterprise-scale deployments exceeding 10 participants, the media layer must migrate to a **Selective Forwarding Unit (SFU)** media server architecture (e.g., mediasoup or LiveKit).
 
@@ -2480,7 +2480,7 @@ Developing dedicated native mobile applications for iOS and Android using React 
 8. **Audio Ducking**: An audio engineering technique wherein the volume gain of a primary audio signal is automatically attenuated (reduced) whenever a secondary, higher-priority audio signal is actively playing, preventing acoustic collision.
 9. **Translation Deduplication**: An architectural optimization implemented in the signaling broker that clusters active listeners by their preferred target language, ensuring that compute-intensive NMT and TTS pipelines are executed only once per unique target language per speech turn.
 10. **Word Error Rate (WER)**: The standard metric for measuring speech recognition inaccuracy, calculated as:
-   $$	ext{WER} = rac{S + D + I}{N} 	imes 100\%$$
+   $$	ext{WER} = rac{S + D + I}{N} 	imes 100\%$$
    where $S$ is substitutions, $D$ is deletions, $I$ is insertions, and $N$ is the total words in the reference transcript.
 11. **Bilingual Evaluation Understudy (BLEU)**: An algorithmic benchmark that evaluates machine translation quality by computing modified n-gram precision between machine-generated candidate sentences and human-authored reference translations.
 12. **Mean Opinion Score (MOS)**: A numerical measure of the perceived subjective quality of synthesized audio media, ranging from 1.0 (Bad) to 5.0 (Excellent).

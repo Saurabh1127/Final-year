@@ -1,112 +1,123 @@
-# PROJECT REPORT (PART I)
-## ON
-# SAMVADA: REAL-TIME MULTILINGUAL SPEECH-TO-SPEECH TRANSLATION PLATFORM FOR WEB-BASED VIDEO CONFERENCING
-
-**Submitted in partial fulfillment for the award of the degree of**  
-*BACHELOR OF ENGINEERING*  
-*IN*  
-*COMPUTER ENGINEERING*
-
-**Submitted by:**  
-- Name of Group Member 1 (Roll No: ____________)
-- Name of Group Member 2 (Roll No: ____________)
-- Name of Group Member 3 (Roll No: ____________)
-
-**Under the Guidance of:**  
-**[Guide Name]**  
-[Designation of Guide, e.g., Assistant Professor]  
-Department of Computer Engineering  
-
-**DEPARTMENT OF COMPUTER ENGINEERING**  
-**THAKUR COLLEGE OF ENGINEERING AND TECHNOLOGY**  
-(An Autonomous College Affiliated to the University of Mumbai)  
-Shyamnarayan Thakur Marg, Thakur Village, Kandivali (East), Mumbai – 400101  
-**Academic Year: 2026–2027**
-
----
-
-## CERTIFICATE
-
-This is to certify that the project entitled **“SAMVADA: Real-Time Multilingual Speech-to-Speech Translation Platform for Web-Based Video Conferencing”** is a bonafide work of:
-- **[Name of Student 1]** (Roll No: ____________)
-- **[Name of Student 2]** (Roll No: ____________)
-- **[Name of Student 3]** (Roll No: ____________)
-
-submitted to the **Thakur College of Engineering and Technology, Mumbai** (An Autonomous College affiliated to the University of Mumbai) in partial fulfillment of the requirement for Project-I for the award of the degree of **“Bachelor of Engineering”** in **“Computer Engineering”** during the academic year 2026–2027.
 
 
-**Signature with Date: ____________________**  
-**[Name of Guide]**  
-Project Guide, Department of Computer Engineering  
+
+[IMAGE PROMPT: Official Emblem and Seal of Thakur College of Engineering and Technology (TCET), Mumbai, depicting the academic crest, heraldic eagle/insignia, and college motto, high-resolution vector format, white background]
 
 
-**Signature with Date: ____________________**  
-**Dr. Vaishali Kaiche**  
-Head of Department, Department of Computer Engineering  
-Thakur College of Engineering and Technology, Mumbai  
+Project Report (Part I)
 
----
-
-## PROJECT APPROVAL CERTIFICATE
-
-This project report entitled **“SAMVADA: Real-Time Multilingual Speech-to-Speech Translation Platform for Web-Based Video Conferencing”** by:
-- **[Name of Student 1]** (Roll No: ____________)
-- **[Name of Student 2]** (Roll No: ____________)
-- **[Name of Student 3]** (Roll No: ____________)
-
-is approved for the degree of **“Bachelor of Engineering”** in **“Computer Engineering”**.
+on
 
 
-**Internal Examiner:**  
-Signature: __________________________  
-Name: _______________________________  
-Date: _______________________________  
-Place: Mumbai  
+SAMVADA: Real-Time Multilingual Speech-to-Speech Translation Platform for Web-Based Video Conferencing
 
 
-**External Examiner:**  
-Signature: __________________________  
-Name: _______________________________  
-Date: _______________________________  
-Place: Mumbai  
+Submitted in partial fulfillment for the award of the degree of
 
----
+BACHELOR OF ENGINEERING
 
-## ACKNOWLEDGEMENT
+In
 
-It would be unfair if we do not acknowledge the continuous guidance, constructive criticism, and steadfast encouragement provided by professors, academic advisors, peers, and collaborators throughout the conception and implementation of this research work.
+COMPUTER ENGINEERING
 
-We express our deepest sense of gratitude and sincere thanks to our respected project guide, **[Name of Guide]**, [Designation], Department of Computer Engineering, for insightful technical supervision, continuous mentorship, and invaluable feedback at every crucial juncture of this project. Their rigorous review of our real-time streaming architectures and neural translation pipeline provided the required clarity and precision.
 
-We also convey our sincere thanks to the Project Coordinators for facilitating the state-of-the-art computational laboratories, GPU hardware resources, and administrative ecosystem essential to carry out real-time neural network inference experiments.
+Submitted by
 
-We are profoundly indebted to **Dr. Vaishali Kaiche**, Head of the Department of Computer Engineering, for her constant administrative leadership, academic vision, and unceasing support.
+Name of Group Member 1 (Roll No: ____________)
 
-We take immense pride in expressing our heartfelt gratitude to our respected Principal, **Dr. B. K. Mishra**, for fostering a vibrant research-oriented culture, encouraging innovative engineering solutions, and providing the world-class institutional infrastructure of Thakur College of Engineering and Technology.
+Name of Group Member 2 (Roll No: ____________)
 
-Finally, we extend our appreciation to our families, fellow batchmates, and friends whose enduring patience and emotional support made the successful completion of this project report possible.
+Name of Group Member 3 (Roll No: ____________)
 
-1. [Name of Student 1] (Roll No: ____________)  
-2. [Name of Student 2] (Roll No: ____________)  
-3. [Name of Student 3] (Roll No: ____________)  
 
-Department of Computer Engineering  
-Thakur College of Engineering and Technology, Mumbai  
+Under the Guidance of
 
----
+[Guide Name]
 
-## PLAGIARISM DECLARATION & AUDIT SUMMARY
+[Designation]
 
-This project report has been prepared based on original design, engineering implementations, empirical benchmark trials, and system architecture studies carried out by the student team. All scholarly works, research publications, external open-source algorithms, and standard specifications cited herein have been rigorously acknowledged under the References section according to standard IEEE citation conventions.
 
-*(Departmental Turnitin Plagiarism Clearance Report to be affixed here)*  
-- **Similarity Index**: Verified within the institutional permissible threshold (< 15%)
-- **Verified by Project Guide**: __________________________
-- **Date of Verification**: __________________________
+Department of Computer Engineering
 
----
+(Academic Year 2026-27)
 
-## TABLE OF CONTENTS
+
+================================================================================
+
+
+[IMAGE PROMPT: Official Emblem and Seal of Thakur College of Engineering and Technology (TCET), Mumbai, depicting the academic crest, heraldic eagle/insignia, and college motto, high-resolution vector format, white background]
+
+
+CERTIFICATE
+
+
+This is to certify that the project entitled “SAMVADA: Real-Time Multilingual Speech-to-Speech Translation Platform for Web-Based Video Conferencing” is a bonafide work of Name of Group Member 1 (Roll No: ____________), Name of Group Member 2 (Roll No: ____________), Name of Group Member 3 (Roll No: ____________) submitted to the Thakur College of Engineering and Technology, Mumbai (An Autonomous College affiliated to University of Mumbai) in partial fulfillment of the requirement for the Project-I for award of the degree of “Bachelor of Engineering” in “Computer Engineering”.
+
+
+Signature with Date: ____________________     Signature with Date: ____________________
+Name of Guide: [Guide Name]                   Name of HOD: Dr. Vaishali Kaiche
+Designation: [Designation]                    Name of Department: Computer Engineering
+
+
+================================================================================
+
+
+[IMAGE PROMPT: Official Emblem and Seal of Thakur College of Engineering and Technology (TCET), Mumbai, depicting the academic crest, heraldic eagle/insignia, and college motto, high-resolution vector format, white background]
+
+
+PROJECT APPROVAL CERTIFICATE
+
+
+This project report entitled “SAMVADA: Real-Time Multilingual Speech-to-Speech Translation Platform for Web-Based Video Conferencing” by Name of Group Member 1 (Roll No: ____________), Name of Group Member 2 (Roll No: ____________), Name of Group Member 3 (Roll No: ____________) is approved for the degree of “Bachelor of Engineering” in “Computer Engineering”.
+
+
+Internal Examiner:                            External Examiner:
+Signature: __________________________         Signature: __________________________
+Name: _______________________________         Name: _______________________________
+Date: _______________________________         
+Place: Mumbai                                 
+
+
+================================================================================
+
+
+ACKNOWLEDGEMENT
+
+
+It would be unfair if I do not acknowledge the help and support given by Professors, students, friends etc.
+
+
+We sincerely thank our guide [Guide Name] for his/her guidance and constant support and also for the stick to our backs. We also thank the project coordinators for arranging the necessary facilities to carry out the project work.
+
+
+We thank the HOD, Dr. Vaishali Kaiche, the Principal, Dr. B. K. Mishra and the college management for their support.
+
+
+1. ----------------------------------------
+
+2. ----------------------------------------
+
+3. ----------------------------------------
+
+(Name of Student and Roll No.)
+
+
+================================================================================
+
+
+Blue Book Plagiarism Report (From
+
+department Turnitin account only)
+
+
+*(Departmental Turnitin Plagiarism Clearance Report to be affixed here)*
+
+
+================================================================================
+
+
+INDEX
+
 
 | Chapter No. | Topic / Section Title | Page No. |
 |---|---|---|
@@ -153,7 +164,12 @@ This project report has been prepared based on original design, engineering impl
 
 ---
 
-## LIST OF FIGURES
+
+================================================================================
+
+
+LIST OF FIGURES
+
 
 | Figure No. | Figure Caption | Page No. |
 |---|---|---|
@@ -186,7 +202,12 @@ This project report has been prepared based on original design, engineering impl
 
 ---
 
-## LIST OF TABLES
+
+================================================================================
+
+
+LIST OF TABLES
+
 
 | Table No. | Table Title | Page No. |
 |---|---|---|
@@ -210,7 +231,11 @@ This project report has been prepared based on original design, engineering impl
 
 ---
 
-## ABSTRACT
+
+--------------------------------------------------------------------------------
+ABSTRACT
+--------------------------------------------------------------------------------
+
 
 In an increasingly interconnected global economy, cross-lingual verbal communication remains one of the most persistent bottlenecks in international commerce, academic collaboration, telemedicine, and humanitarian coordination. Conventional video conferencing platforms (such as Zoom, Microsoft Teams, and Google Meet) either rely entirely on a common *lingua franca*, mandate the costly intervention of human simultaneous interpreters, or provide rudimentary closed-caption text translations that force participants to divert visual attention away from interpersonal facial expressions. 
 
@@ -224,9 +249,19 @@ SAMVADA couples this neural pipeline with a full-mesh WebRTC media infrastructur
 
 **Keywords**: Real-Time Speech-to-Speech Translation (S2ST), WebRTC Full-Mesh, Automatic Speech Recognition (ASR), Whisper, NLLB-200, Neural Text-to-Speech (TTS), Voice Activity Detection (VAD), Audio Ducking, Translation Deduplication, Distributed Video Conferencing.
 
-# CHAPTER 1: INTRODUCTION
 
-## 1.1 Overview of the Project
+================================================================================
+
+
+================================================================================
+CHAPTER 1: INTRODUCTION
+================================================================================
+
+
+--------------------------------------------------------------------------------
+1.1 Overview of the Project
+--------------------------------------------------------------------------------
+
 
 In the era of ubiquitous globalization, geographical boundaries have ceased to dictate the perimeter of human interaction. The exponential expansion of high-speed broadband, distributed cloud platforms, and modern web application frameworks has transformed video conferencing from an enterprise luxury into an indispensable utility for business, education, governance, and social exchange. However, while modern networking infrastructure has largely conquered physical distance, an ancient and formidable barrier persists: linguistic diversity.
 
@@ -276,9 +311,14 @@ Figure 1.1: High-Level Real-Time Cross-Lingual Video Communication Conceptual Fl
 
 ---
 
-## 1.2 Motivation & Application
+
+--------------------------------------------------------------------------------
+1.2 Motivation & Application
+--------------------------------------------------------------------------------
+
 
 ### 1.2.1 Motivation
+
 The primary motivation behind SAMVADA stems from the acute friction encountered by multilingual distributed engineering teams and academic institutions. In contemporary software development, open-source initiatives, global supply chain operations, and international research consortiums, team members are frequently dispersed across continents—spanning North America, Europe, East Asia, and the Indian subcontinent. 
 
 While video conferencing tools such as Zoom, Google Meet, and Microsoft Teams provide robust video streaming, their language accessibility mechanisms remain deeply flawed:
@@ -288,7 +328,9 @@ While video conferencing tools such as Zoom, Google Meet, and Microsoft Teams pr
 
 SAMVADA addresses these systemic shortcomings by engineering a democratized, open-source, speech-to-speech platform where spoken translation is delivered as synthesized acoustic audio directly into the listener's earpiece, supplemented by synchronous subtitles, creating an inclusive, frictionless conversational medium.
 
+
 ### 1.2.2 Target Applications
+
 
 The applications of SAMVADA span diverse societal, enterprise, and educational domains:
 1. **Global Software Development & Agile Standups**: Multi-national engineering teams with contributors across India, Japan, Germany, and the United States can conduct daily standups and sprint planning sessions where each developer speaks in their mother tongue (e.g., Hindi, Japanese, German) and hears responses seamlessly rendered in their preferred language.
@@ -299,7 +341,11 @@ The applications of SAMVADA span diverse societal, enterprise, and educational d
 
 ---
 
-## 1.3 Problem Definition
+
+--------------------------------------------------------------------------------
+1.3 Problem Definition
+--------------------------------------------------------------------------------
+
 
 Designing an interactive, real-time speech-to-speech translation conferencing system over the open web introduces acute computer engineering challenges. The problem can be formally defined as follows:
 
@@ -307,7 +353,9 @@ Designing an interactive, real-time speech-to-speech translation conferencing sy
 
 To realize this objective, several critical technical bottlenecks and algorithmic hurdles must be solved:
 
+
 ### 1.3.1 The Latency Budget Crisis in Cascaded S2ST
+
 Human conversation adheres to a strict psychological turn-taking tempo. The average conversational pause between speaker turns in human dialogue is approximately 200–300 milliseconds. When round-trip latency exceeds 1,500–2,000 milliseconds, conversational flow degrades significantly: speakers inadvertently talk over one another, misunderstandings arise, and turn-taking collapses. 
 
 In a traditional cascaded S2ST system, total latency ($T_{total}$) is the strict cumulative sum of multiple sequential stages:
@@ -324,22 +372,33 @@ Where:
 
 If each stage is executed naively or sequentially, $T_{total}$ easily balloons to 6.0–10.0 seconds, transforming an interactive dialogue into an awkward walkie-talkie exchange. The core engineering problem is to aggressively minimize every term in this equation through client-side VAD, parallel GPU inference, optimized model quantization, and pipelined streaming.
 
+
 ### 1.3.2 Speech Fragmentation vs. Semantic Context Trade-off
+
 A profound algorithmic tension exists between low latency and translation quality:
 - **Overly Short Audio Chunks (< 1.0s)**: Yield ultra-low buffering latency, but fail because speech recognition models (Whisper) and neural machine translation models (NLLB-200) require syntactic context to disambiguate homophones, assign proper verb conjugations, and structure grammatically correct target phrases. Furthermore, short chunks containing breath sounds or background ambient noise frequently trigger severe **hallucination loops** in Whisper (such as repeating phantom words or generating random YouTube subtitles).
 - **Overly Long Audio Chunks (> 4.0s)**: Provide rich semantic context and high BLEU scores, but impose unacceptable upfront buffering delays ($T_{chunk} > 4.0s$), rendering real-time conversation impossible.
 
+
 ### 1.3.3 Acoustic Collision and Auditory Clash
+
 In a standard WebRTC video call, peer-to-peer audio is transmitted instantaneously ($< 100ms$). If a translated audio stream arrives 1.5 seconds later while the original speaker is still speaking, the listener hears two competing vocal streams simultaneously: the speaker’s original untranslated voice and the AI-synthesized translated voice. This cacophony produces extreme cognitive dissonance. The system must implement intelligent, deterministic **Audio Ducking** and selective muting to gracefully attenuate the original WebRTC audio track whenever translated speech packets are actively rendering.
 
+
 ### 1.3.4 Computational Scalability and Multi-Language Deduplication
+
 In a video meeting with $N$ participants speaking $K$ distinct languages, naive implementations scale compute linearly with listeners: if 5 listeners all request Spanish translation, executing 5 distinct Whisper, NLLB, and Edge-TTS passes would redundantly multiply GPU load by 500%, immediately exhausting server VRAM and compute threads. The system requires an intelligent **Centralized Translation Orchestrator** capable of deduplicating language requests so that each unique target language is synthesized exactly once per utterance and broadcast concurrently to all relevant peer sockets.
 
 ---
 
-## 1.4 Objective & Scope
+
+--------------------------------------------------------------------------------
+1.4 Objective & Scope
+--------------------------------------------------------------------------------
+
 
 ### 1.4.1 Primary Objectives
+
 The definitive engineering objectives of the SAMVADA project are:
 1. **Develop a Resilient Web-Based Video Conferencing Client**: Implement a modern React 19 application utilizing native browser WebRTC (`RTCPeerConnection`) for peer-to-peer audio/video streaming, with zero external browser plugins or software installations required.
 2. **Engineer an Intelligent Client-Side Voice Activity Detection (VAD) Engine**: Utilize the Web Audio API (`AudioContext`, `AnalyserNode`) to compute real-time Root Mean Square (RMS) energy, dynamically isolating speech utterances from silence and background noise, and auto-flushing audio chunks upon natural speech pauses (300ms silence threshold).
@@ -352,7 +411,9 @@ The definitive engineering objectives of the SAMVADA project are:
 6. **Deliver Subtitle-First Parallel Display**: Broadcast translated textual tokens immediately upon NMT completion, allowing participants to read translated captions at ~800ms while synthesized audio buffers finalize at ~1.5s, dramatically lowering perceived latency.
 7. **Incorporate Meeting Intelligence & Persistence**: Provide complete meeting session lifecycle management, secure JWT authentication, persistent dialogue transcription in MongoDB, and automated meeting summarization.
 
+
 ### 1.4.2 Project Scope & Boundary Conditions
+
 
 #### In-Scope (Implemented Capabilities):
 - Multi-party video calling using a WebRTC full-mesh topology supporting 2 to 5 concurrent participants in high-definition video and audio.
@@ -369,7 +430,11 @@ The definitive engineering objectives of the SAMVADA project are:
 
 ---
 
-## 1.5 Expected Outcome
+
+--------------------------------------------------------------------------------
+1.5 Expected Outcome
+--------------------------------------------------------------------------------
+
 
 Upon full deployment and verification, the SAMVADA platform delivers the following quantifiable outcomes:
 1. **Conversational Turnaround Latency**:
@@ -386,7 +451,11 @@ Upon full deployment and verification, the SAMVADA platform delivers the followi
 
 ---
 
-## 1.6 Organization of the Report
+
+--------------------------------------------------------------------------------
+1.6 Organization of the Report
+--------------------------------------------------------------------------------
+
 
 This project report is organized systematically into six exhaustive chapters conforming to the institutional standards of Thakur College of Engineering and Technology:
 
@@ -398,13 +467,25 @@ This project report is organized systematically into six exhaustive chapters con
 - **Chapter 6: Conclusion & Future Scope**: Summarizes the academic and technological milestones achieved, acknowledges technical constraints, and maps out the future trajectory toward Selective Forwarding Units (SFU) and zero-shot voice cloning.
 - **References & Appendices**: Provides complete IEEE bibliographic citations, an alphabetical abbreviations index, a comprehensive technical glossary, and research publication details.
 
-# CHAPTER 2: LITERATURE SURVEY & PROPOSED SYSTEM
 
-## 2.1 Literature Review of Existing System
+================================================================================
+
+
+================================================================================
+CHAPTER 2: LITERATURE SURVEY & PROPOSED SYSTEM
+================================================================================
+
+
+--------------------------------------------------------------------------------
+2.1 Literature Review of Existing System
+--------------------------------------------------------------------------------
+
 
 The quest to achieve real-time, automated cross-lingual speech translation has occupied computer science researchers for decades. The field sits at the confluence of four complex sub-disciplines: Digital Signal Processing (Voice Activity Detection), Automatic Speech Recognition (ASR), Machine Translation (MT), and Speech Synthesis (Text-to-Speech). In recent years, deep learning has revolutionized each of these pillars. Understanding the evolution of these technologies is essential to contextualizing the architectural innovations of SAMVADA.
 
+
 ### 2.1.1 Simultaneous Speech Translation (SimulST) Foundations
+
 Traditional Speech Translation (ST) operates in a full-sentence "offline" mode: the system waits for an entire sentence to conclude before initiating transcription and translation. While this ensures complete syntactic context, it introduces latency equal to the duration of the entire sentence (often 4 to 8 seconds), making it fundamentally incompatible with natural human conversation.
 
 To overcome this, the discipline of **Simultaneous Speech Translation (SimulST)** emerged. SimulST models begin generating target language text or speech while the speaker is still speaking. The foundational policy governing SimulST was formalized by Ma et al. (2019) through the **Wait-$k$ Policy**. In a wait-$k$ translation system, the translation model waits for $k$ source words or acoustic frames to arrive before generating the first target token; thereafter, it generates one target token for each subsequent source token received. 
@@ -415,7 +496,9 @@ g(t) = min( |x|, t + k - 1 )
 ```
 Where $g(t)$ is the number of source tokens available when generating the $t$-th target token, $|x|$ is the total source length, and $k$ is the predefined latency-quality hyperparameter. A small $k$ ($k = 2$ or $3$) minimizes latency but severely degrades translation quality when dealing with languages that exhibit disparate syntactic typologies—specifically Subject-Verb-Object (SVO) languages (such as English, Spanish, and French) versus Subject-Object-Verb (SOV) languages (such as Hindi, German, and Japanese). For example, translating from English to Hindi requires the verb (positioned early in English) to be moved to the very end of the Hindi sentence. If the model is forced to translate before the verb is spoken, it must guess, resulting in catastrophic syntactic hallucinations.
 
+
 ### 2.1.2 Automatic Speech Recognition (ASR) Milestones
+
 Early ASR systems relied on Hidden Markov Models (HMMs) coupled with Gaussian Mixture Models (GMMs) or deep neural network acoustic models (Kaldi, CMU Sphinx). These systems required complex, multi-stage pipelines (feature extraction, acoustic modeling, pronunciation lexicons, and language models) and suffered from extreme fragility in noisy acoustic environments.
 
 The paradigm shifted with End-to-End (E2E) deep learning architectures:
@@ -424,13 +507,17 @@ The paradigm shifted with End-to-End (E2E) deep learning architectures:
 3. **OpenAI Whisper (Radford et al., 2022)**: Whisper introduced a monumental paradigm shift by training a Transformer sequence-to-sequence model on 680,000 hours of diverse, multilingual, and weakly supervised audio scraped from the web. Whisper models exhibit unprecedented robustness to varied accents, background acoustic noise, technical jargon, and colloquial idioms across 99 languages. Whisper natively performs joint speech recognition, voice activity filtering, and automatic language identification.
 4. **CTranslate2 & Faster-Whisper (Klein et al., 2020)**: While vanilla Whisper running under PyTorch delivers exceptional accuracy, its inference latency on mid-tier GPUs often exceeds 1.0 second per audio chunk. Guillaume Klein implemented **Faster-Whisper** utilizing the **CTranslate2** inference engine—a specialized C++ runtime implementing 8-bit integer (INT8) and 16-bit floating-point (FP16) quantization, weight fusing, and customized CUDA kernels. Faster-Whisper yields a 2x to 4x speedup over vanilla Whisper while reducing GPU VRAM allocation by up to 60%, making real-time ASR computationally viable.
 
+
 ### 2.1.3 Neural Machine Translation (NMT) Milestones
+
 Machine translation evolved rapidly from Statistical Machine Translation (Moses, phrase-based models) to Neural Machine Translation (NMT) powered by the attention mechanism (Bahdanau et al., 2014) and the Transformer architecture (Vaswani et al., 2017).
 
 1. **Bilingual vs. Multilingual Models**: While bilingual Transformer models (e.g., MarianMT) excel in specific language pairs (e.g., English-to-Spanish), supporting a video conferencing platform with $N$ languages would require $N 	imes (N-1)$ separate bilingual models, consuming unsustainable disk and GPU memory.
 2. **Meta No Language Left Behind (NLLB-200 Team, 2022)**: Meta AI established a breakthrough in multilingual translation by releasing NLLB-200, a sequence-to-sequence Transformer capable of translating across 200+ distinct languages. NLLB-200 was trained using extensive synthetic data generated through laser-mined bitexts and novel data-filtering techniques. It utilizes Flores-200 language codes (e.g., `eng_Latn`, `hin_Deva`, `spa_Latn`) and excels at low- and medium-resource languages (such as Indian regional languages and African languages) where prior models suffered severe translation degeneration. The distilled 600M parameter variant (`nllb-200-distilled-600M`) achieves an optimal compromise between high translation fidelity (BLEU > 35) and rapid GPU inference times (100–250ms).
 
+
 ### 2.1.4 Neural Speech Synthesis (TTS) Milestones
+
 Text-to-Speech synthesis has transitioned from concatenative diphone synthesis and parametric formant synthesis (Festival, eSpeak) to neural vocoders and end-to-end deep synthesis networks:
 1. **Two-Stage Neural TTS**: Tacotron 2 (Shen et al., 2018) synthesized intermediate mel-spectrograms from text tokens, which were subsequently converted into time-domain acoustic waveforms using auto-regressive neural vocoders such as WaveNet (Oord et al., 2016) or non-autoregressive vocoders like HiFi-GAN (Kong et al., 2020).
 2. **End-to-End Non-Autoregressive TTS**: FastSpeech 2 (Ren et al., 2020) and VITS (Kim et al., 2021) enabled direct, non-autoregressive waveform generation with high naturalness and accelerated synthesis speeds.
@@ -462,7 +549,9 @@ Figure 2.1: Cascaded vs. Unified Speech-to-Speech Translation Pipeline Compariso
 
 ---
 
+
 ### 2.1.5 Comparative Review of Existing Video Conferencing Platforms
+
 
 To understand the industry landscape, Table 2.1 compares prominent commercial video conferencing platforms and emerging translation research systems against SAMVADA across critical functional and technological parameters.
 
@@ -479,7 +568,9 @@ To understand the industry landscape, Table 2.1 compares prominent commercial vi
 
 ---
 
+
 ### 2.1.6 Landmark Research Publications Survey
+
 
 Table 2.2 synthesizes landmark academic literature that directly informed the architectural and algorithmic choices of SAMVADA.
 
@@ -497,31 +588,47 @@ Table 2.2 synthesizes landmark academic literature that directly informed the ar
 
 ---
 
-## 2.2 Limitations of Existing System & Gap Analysis
+
+--------------------------------------------------------------------------------
+2.2 Limitations of Existing System & Gap Analysis
+--------------------------------------------------------------------------------
+
 
 A rigorous investigation of existing academic prototypes and commercial solutions reveals critical architectural and practical gaps:
 
+
 ### 2.2.1 Gap 1: The "Text-Only" Bias in Meeting Platforms
+
 Virtually all mainstream enterprise meeting platforms (Zoom, Teams, Google Meet) have restricted their multi-lingual accessibility to closed-caption text subtitles. While text translation is computationally cheaper to generate than synthesized speech waveforms, it fundamentally degrades human video communication:
 - **Loss of Visual Contact**: Participants are forced to continuously read scrolling subtitles at the bottom of the screen, breaking eye contact with speakers and missing non-verbal visual cues (gestures, micro-expressions).
 - **Cognitive Exhaustion**: Reading translated text while simultaneously interpreting visual slides and listening to original audio produces severe cognitive fatigue over hour-long conferences.
 - **Accessibility Exclusion**: Text subtitles provide zero utility to visually impaired participants or individuals with dyslexia.
 
+
 ### 2.2.2 Gap 2: Monolithic Cloud Lock-In and Cost Penalties
+
 Commercial speech translation platforms rely entirely on proprietary closed-source cloud APIs (such as Azure Speech Services, Google Cloud Speech-to-Text, or AWS Transcribe). These services:
 - Impose exorbitant recurring per-minute charges ($0.016 to $0.024 per minute for ASR, plus $0.015 per minute for TTS), making multi-party conferences financially unviable for educational and non-profit institutions.
 - Transmit private enterprise and personal conversations to third-party cloud corporate data centers, violating strict data sovereignty mandates (e.g., GDPR, HIPAA).
 - Provide zero customization of acoustic thresholding, model quantization, or buffering logic.
 
+
 ### 2.2.3 Gap 3: Inefficient Redundant Multi-Target Inference
+
 In existing academic prototypes, when an audio chunk is received from a speaker, the backend naively invokes independent translation and synthesis pipelines for each connected client. If three listeners in a room all speak Spanish, standard systems perform three identical ASR-NMT-TTS execution passes. In a 5-participant meeting with shared languages, this leads to an immediate 300% to 500% waste in GPU compute resources, saturating inference queues and triggering catastrophic queue backpressure.
 
+
 ### 2.2.4 Gap 4: Acoustic Cacophony and Lack of Audio Ducking
+
 When speech translation prototypes introduce translated audio playback, they frequently fail to address the acoustic collision between the original WebRTC peer-to-peer audio and the delayed translated audio stream. Without intelligent, real-time attenuation (ducking) of the incoming original speaker track, listeners hear both the foreign-language original voice and the translated voice simultaneously at full volume, resulting in an unintelligible auditory clash.
 
 ---
 
-## 2.3 Proposed System
+
+--------------------------------------------------------------------------------
+2.3 Proposed System
+--------------------------------------------------------------------------------
+
 
 To resolve these systemic limitations, this project engineers **SAMVADA**, an innovative, fully distributed, web-based Speech-to-Speech video conferencing architecture. SAMVADA synergizes client-side signal processing, decentralized peer-to-peer media delivery, and centralized neural acceleration.
 
@@ -575,7 +682,9 @@ Figure 2.2: Proposed SAMVADA Dual-Stream Distributed Architectural Flow
 >     ClientB->>ClientB: Restore WebRTC Audio Track to 100%
 > ```
 
+
 ### 2.3.1 Key Architectural Pillars of SAMVADA
+
 1. **Dual-Stream Client Capture**: Rather than contending for hardware audio devices with multiple `getUserMedia` invocations, SAMVADA acquires a single, high-fidelity media stream, cloning the track into:
    - A direct WebRTC peer track for uncompressed, instant audio/video delivery.
    - A dedicated `AudioContext` and `AnalyserNode` feeding an adaptive Root Mean Square (RMS) energy Voice Activity Detection (VAD) algorithm.
@@ -584,13 +693,25 @@ Figure 2.2: Proposed SAMVADA Dual-Stream Distributed Architectural Flow
 4. **Quantized Neural Microservice**: The AI service decouples heavy PyTorch execution from the I/O event loop using `asyncio.to_thread`. By employing Faster-Whisper with CTranslate2 INT8 quantization and NLLB-200 distilled-600M, GPU execution times are reduced to ~400ms on an NVIDIA Tesla T4 GPU.
 5. **Subtitle-First Delivery & Auditory Ducking**: Subtitles are transmitted to listeners the millisecond text translation completes, providing instant visual feedback at ~1.0s. When synthesized audio arrives at ~1.8s, the listener's browser smoothly ducks the incoming original speaker track to 10% volume, schedules playback through an audio jitter buffer, and restores volume upon completion, providing an unparalleled conversational experience.
 
-# CHAPTER 3: REQUIREMENT GATHERING, ANALYSIS AND PLANNING
 
-## 3.1 Requirement Specification
+================================================================================
+
+
+================================================================================
+CHAPTER 3: REQUIREMENT GATHERING, ANALYSIS AND PLANNING
+================================================================================
+
+
+--------------------------------------------------------------------------------
+3.1 Requirement Specification
+--------------------------------------------------------------------------------
+
 
 The formulation of a resilient software architecture begins with rigorous requirement gathering and classification. SAMVADA addresses complex multidisciplinary domains encompassing real-time telecommunications, distributed network synchronization, and high-throughput deep neural inference. Requirements are formally categorized into Functional Requirements (defining explicit behavioral capabilities) and Non-Functional Requirements (defining architectural constraints, quality attributes, and performance service level agreements).
 
+
 ### 3.1.1 Functional Requirements Specification
+
 
 Functional requirements delineate the discrete operational capabilities and interactions that the SAMVADA platform must provide to end-users and system administrators. Table 3.1 provides an exhaustive mapping of these requirements, organized by functional subsystem.
 
@@ -620,7 +741,9 @@ Functional requirements delineate the discrete operational capabilities and inte
 
 ---
 
+
 ### 3.1.2 Non-Functional Requirements Specification
+
 
 Non-functional requirements specify systemic quality attributes, performance envelopes, operational reliability constraints, and security standards, summarized in Table 3.2.
 
@@ -641,11 +764,17 @@ Non-functional requirements specify systemic quality attributes, performance env
 
 ---
 
-## 3.2 Feasibility Study
+
+--------------------------------------------------------------------------------
+3.2 Feasibility Study
+--------------------------------------------------------------------------------
+
 
 A thorough feasibility study was conducted across technical, operational, economic, and schedule dimensions to ensure the engineering viability of the SAMVADA platform.
 
+
 ### 3.2.1 Technical Feasibility
+
 The technical feasibility centered primarily on whether modern deep learning models for ASR, NMT, and TTS could execute within a sub-two-second latency envelope while co-existing within the memory constraints of readily accessible cloud GPU infrastructure (specifically an NVIDIA Tesla T4 GPU with 16GB GDDR6 VRAM, typical of Google Colab and AWS `g4dn.xlarge` instances).
 
 Table 3.3 details the memory allocation and computational budget analyzed during feasibility testing.
@@ -665,12 +794,16 @@ As demonstrated in Table 3.3, the combined static and peak dynamic VRAM consumpt
 
 Furthermore, browser technical feasibility was validated: modern browsers natively support WebRTC (`RTCPeerConnection`), Web Audio API (`AudioContext`, `AnalyserNode`), and `MediaRecorder` with WebM Opus encoding, ensuring zero dependency on legacy browser plugins.
 
+
 ### 3.2.2 Operational Feasibility
+
 From an operational perspective, SAMVADA introduces an extraordinarily low barrier to adoption. Users are not required to download or install proprietary executables, configure audio virtual cables, or install specialized device drivers. A user simply navigates to the web application URL, verifies their camera and microphone on the pre-join staging screen, selects their native preferred listening language from an intuitive dropdown, and enters the meeting room code. 
 
 The application abstracts away all underlying complexities: WebRTC ICE candidate gathering, NAT traversal via STUN servers, audio chunk segmentation, model inference, and audio ducking operate completely autonomously without user intervention.
 
+
 ### 3.2.3 Economic Feasibility
+
 Commercial speech translation platforms impose severe economic burdens:
 - **Commercial API Rates**: Cloud ASR services (e.g., Google Speech-to-Text) bill approximately \$0.024 per minute, while neural translation and TTS add another \$0.020 to \$0.030 per minute. In a 60-minute meeting with 4 participants, commercial cloud API charges can exceed \$7.00 to \$10.00 per meeting.
 - **SAMVADA Economic Profile**: SAMVADA is architected exclusively on open-source, permissive technologies:
@@ -680,12 +813,18 @@ Commercial speech translation platforms impose severe economic burdens:
   
 Thus, the ongoing operational expenditure of SAMVADA is virtually zero for educational institutions and small development teams, confirming robust economic feasibility.
 
+
 ### 3.2.4 Schedule Feasibility
+
 The project development lifecycle was structured into a 12-phase incremental engineering roadmap over a two-semester academic period, aligning perfectly with academic milestone deliverables, project reviews, and testing intervals.
 
 ---
 
-## 3.3 Methodology
+
+--------------------------------------------------------------------------------
+3.3 Methodology
+--------------------------------------------------------------------------------
+
 
 To engineer SAMVADA with high architectural integrity, the development team adopted the **Agile Scrum Framework** enhanced with **Iterative Empirical Profiling**. 
 
@@ -723,7 +862,9 @@ Figure 3.1: Agile Scrum Evolutionary Engineering Methodology
 >     end
 > ```
 
+
 ### 3.3.1 Engineering Sprints and Development Cycles
+
 The project was executed across four primary release milestones:
 1. **Sprint Cycle 1 (Weeks 1–4): Core Telephony & Authentication Infrastructure**: Construction of the React 19 single-page application, WebRTC signaling mechanism using Socket.IO, peer-to-peer mesh media exchange, and MongoDB user/meeting lifecycle management.
 2. **Sprint Cycle 2 (Weeks 5–8): AI Microservice & Cascaded Pipeline**: Development of the Python FastAPI service, integration of Whisper ASR and NLLB-200 NMT, implementation of Edge-TTS voice synthesis, and validation of multipart audio upload endpoints.
@@ -732,7 +873,11 @@ The project was executed across four primary release milestones:
 
 ---
 
-## 3.4 Technology Stack
+
+--------------------------------------------------------------------------------
+3.4 Technology Stack
+--------------------------------------------------------------------------------
+
 
 SAMVADA employs a modern, decoupled, full-stack technology ecosystem specifically chosen for high real-time throughput, low computational overhead, and cross-platform compatibility.
 
@@ -779,7 +924,9 @@ Figure 3.2: SAMVADA Full-Stack Technology Ecosystem
 >     Layer 2 <-->|Mongoose Driver| Layer 4
 > ```
 
+
 ### 3.4.1 Detailed Subsystem Breakdown
+
 
 #### 1. Client-Side Framework (Frontend):
 - **React 19 & Vite**: Provides lightning-fast Hot Module Replacement (HMR), component-driven UI rendering, and minimal bundle footprint.
@@ -802,7 +949,9 @@ Figure 3.2: SAMVADA Full-Stack Technology Ecosystem
 #### 4. Persistence Layer:
 - **MongoDB Atlas & Mongoose 8**: Cloud document-oriented NoSQL database providing elastic scaling and flexible schema definitions for Users, Meetings, and multi-turn Transcripts.
 
+
 ### 3.4.2 Language Mapping and Linguistic Standards
+
 NMT models (NLLB-200) utilize Flores-200 language codes, whereas frontend browsers and ASR engines utilize standard ISO-639-1 two-letter codes. SAMVADA implements an explicit translation mapping matrix, detailed in Table 3.4.
 
 **Table 3.4: Language Coverage and Flores-200 / ISO-639 Mapping Matrix**
@@ -824,7 +973,11 @@ NMT models (NLLB-200) utilize Flores-200 language codes, whereas frontend browse
 
 ---
 
-## 3.5 Gantt Chart and Process Model
+
+--------------------------------------------------------------------------------
+3.5 Gantt Chart and Process Model
+--------------------------------------------------------------------------------
+
 
 The project execution adhered to a structured Work Breakdown Structure (WBS) mapped across 12 distinct implementation phases, documented in Table 3.5.
 
@@ -877,17 +1030,25 @@ Figure 3.3: Project Work Breakdown Structure and Gantt Schedule Timeline
 
 ---
 
-## 3.6 System Analysis (Functional, Structural, and Behavioral Models)
+
+--------------------------------------------------------------------------------
+3.6 System Analysis (Functional, Structural, and Behavioral Models)
+--------------------------------------------------------------------------------
+
 
 To construct a robust software architecture, the system was analyzed through three complementary modeling perspectives: Functional (what the system does), Structural (how data and components are organized), and Behavioral (how states change dynamically over time).
 
+
 ### 3.6.1 Functional Analysis (Actors & Primary Roles)
+
 The functional model identifies three distinct primary actors interacting within the SAMVADA ecosystem:
 1. **Meeting Host**: Authenticated user with administrative privileges to initialize meeting rooms, configure room titles, monitor active participants, and terminate meetings for all peers.
 2. **Participant / Listener**: Authenticated or guest peer who joins an existing room, configures audio/video input devices, defines their preferred native language, streams media via WebRTC, and receives real-time translated audio and subtitles.
 3. **AI Translation Microservice & Orchestrator**: Automated background computational agent responsible for ingesting binary audio chunks, managing VRAM resources, executing cascaded ASR-NMT-TTS inference, and dispatching targeted responses.
 
+
 ### 3.6.2 Structural Analysis (Entity-Relationship & Data Associations)
+
 The structural data model is implemented in MongoDB Atlas via Mongoose schemas. Figure 3.4 illustrates the entity associations between Users, Meetings, and Transcripts.
 
 ```
@@ -945,7 +1106,9 @@ Figure 3.4: Structural Entity-Relationship and Data Association Model
 >     }
 > ```
 
+
 ### 3.6.3 Behavioral Analysis (State Machine of an Audio Chunk)
+
 To guarantee real-time integrity without memory leaks or race conditions, every acoustic utterance follows a deterministic, state-driven lifecycle:
 1. **Acquisition State**: Cloned `MediaStreamTrack` samples audio at 48 kHz. `AnalyserNode` calculates instantaneous RMS energy.
 2. **Buffering State**: When RMS $\ge 0.003$, the state transitions to *Speech Detected*. `MediaRecorder` buffers Opus frames into memory.
@@ -956,9 +1119,19 @@ To guarantee real-time integrity without memory leaks or race conditions, every 
 7. **Broadcast State**: Node.js receives the inference payload, broadcasts text subtitles immediately, and streams base64 audio frames exclusively to matching language sockets.
 8. **Rendering State**: Client decodes audio, ducks local WebRTC peer audio to 10%, plays translated speech, and restores volume upon completion.
 
-# CHAPTER 4: SYSTEM DESIGN AND EXPERIMENTAL SETUP
 
-## 4.1 System Architecture & Diagrams
+================================================================================
+
+
+================================================================================
+CHAPTER 4: SYSTEM DESIGN AND EXPERIMENTAL SETUP
+================================================================================
+
+
+--------------------------------------------------------------------------------
+4.1 System Architecture & Diagrams
+--------------------------------------------------------------------------------
+
 
 The system architecture of SAMVADA is designed around a three-tier, decoupled, distributed paradigm. This architecture separates interactive media transport (WebRTC), signaling and translation business logic (Node.js / Express), and compute-intensive artificial intelligence inference (FastAPI on cloud GPU).
 
@@ -1018,7 +1191,9 @@ Figure 4.1: SAMVADA Three-Tier Distributed System Architecture
 
 ---
 
+
 ### 4.1.1 Data Flow Diagrams (DFD)
+
 
 Data Flow Diagrams illustrate how data enters the system, progresses through computational processes, is transformed, and is ultimately persisted or rendered to clients.
 
@@ -1121,7 +1296,9 @@ Figure 4.4: Data Flow Diagram (DFD) Level 2: AI Cascaded Pipeline & Buffer Subsy
 
 ---
 
+
 ### 4.1.2 Unified Modeling Language (UML) Diagrams
+
 
 UML models provide standardized object-oriented views of system structure, behaviors, and deployment topologies.
 
@@ -1356,11 +1533,16 @@ Figure 4.9: UML Deployment Diagram: Physical Nodes, Cloud GPU, and Tunnel Topolo
 > **MERMAID DIAGRAM SPECIFICATION (Figure 4.9)**:
 > ```mermaid
 > graph TB
->     node1[Node: Client Workstation / Browser<br/>React 19 SPA, Web Audio API, WebRTC]
->     node2[Node: Application Host Server<br/>Ubuntu Linux, Node.js 20 LTS, Port 5000]
->     node3[Node: Cloud GPU AI Worker<br/>NVIDIA Tesla T4 16GB, CUDA 12.1, FastAPI Port 8000]
->     node4[(Node: MongoDB Atlas Cluster<br/>Cloud Database Service)]
->     stun[External Node: Google STUN Server<br/>stun:stun.l.google.com:19302]
+>     node1[Node: Client Workstation / Browser
+React 19 SPA, Web Audio API, WebRTC]
+>     node2[Node: Application Host Server
+Ubuntu Linux, Node.js 20 LTS, Port 5000]
+>     node3[Node: Cloud GPU AI Worker
+NVIDIA Tesla T4 16GB, CUDA 12.1, FastAPI Port 8000]
+>     node4[(Node: MongoDB Atlas Cluster
+Cloud Database Service)]
+>     stun[External Node: Google STUN Server
+stun:stun.l.google.com:19302]
 > 
 >     node1 <-->|WebRTC DTLS/SRTP Media (UDP)| node1
 >     node1 <-->|Signaling & Audio Chunks WSS (TCP 5000)| node2
@@ -1371,17 +1553,22 @@ Figure 4.9: UML Deployment Diagram: Physical Nodes, Cloud GPU, and Tunnel Topolo
 
 ---
 
-## 4.2 Algorithm & Process Flow Design
+
+--------------------------------------------------------------------------------
+4.2 Algorithm & Process Flow Design
+--------------------------------------------------------------------------------
+
 
 ### 4.2.1 Mathematical Formulations
+
 
 #### 1. Root Mean Square (RMS) Energy Calculation
 To identify human speech while ignoring low-level microphone hiss, ambient room noise, and digital silence, the client samples the incoming audio signal using the Web Audio API. The time-domain audio data is captured as a 32-bit floating-point array $x[n]$ across a window of $N$ discrete samples ($N = 512$). The instantaneous RMS energy is computed as:
 
-$$RMS = \sqrt{rac{1}{N} \sum_{i=0}^{N-1} x[i]^2}$$
+$$RMS = \sqrt{rac{1}{N} \sum_{i=0}^{N-1} x[i]^2}$$
 
 Speech is formally declared active when the instantaneous energy satisfies the condition:
-$$	ext{State}(t) = egin{cases} 	ext{SPEECH}, & 	ext{if } RMS(t) \ge 	heta_{	ext{silence}} \ 	ext{SILENCE}, & 	ext{if } RMS(t) < 	heta_{	ext{silence}} \end{cases}$$
+$$	ext{State}(t) = egin{cases} 	ext{SPEECH}, & 	ext{if } RMS(t) \ge 	heta_{	ext{silence}} \ 	ext{SILENCE}, & 	ext{if } RMS(t) < 	heta_{	ext{silence}} \end{cases}$$
 
 Where the calibrated silence threshold $	heta_{	ext{silence}} = 0.003$.
 
@@ -1401,13 +1588,15 @@ Where:
 #### 3. Dynamic Audio Ducking Attenuation
 To prevent auditory clash between the original WebRTC audio stream and the delayed translated speech, incoming WebRTC peer volume $V(t)$ is modulated via an exponential gain curve:
 
-$$V(t) = egin{cases} V_0 \cdot lpha, & 	ext{during active translation playback} \ V_0, & 	ext{during idle translation} \end{cases}$$
+$$V(t) = egin{cases} V_0 \cdot lpha, & 	ext{during active translation playback} \ V_0, & 	ext{during idle translation} \end{cases}$$
 
-Where $V_0 = 1.0$ (baseline volume) and $lpha = 0.10$ (10% ducked volume level). The transition between states is smoothed over a 150ms linear ramp to prevent acoustic clicks or sudden pops in the listener's earpiece.
+Where $V_0 = 1.0$ (baseline volume) and $lpha = 0.10$ (10% ducked volume level). The transition between states is smoothed over a 150ms linear ramp to prevent acoustic clicks or sudden pops in the listener's earpiece.
 
 ---
 
+
 ### 4.2.2 System Process Flowcharts
+
 
 ```
 [DIAGRAM PLACEHOLDER: Figure 4.10]
@@ -1424,7 +1613,9 @@ Figure 4.10: Flowchart: Client-Side RMS Energy Voice Activity Detection (VAD) En
 >     GetSamples --> CalcRMS[Calculate RMS = sqrt 1/N * sum x_i^2]
 >     CalcRMS --> CheckThresh{RMS >= 0.003?}
 >     
->     CheckThresh -->|Yes: Speech Detected| SetSpeech[Mark isSpeaking = True<br/>Reset silenceStartTime<br/>Accumulate WebM blob]
+>     CheckThresh -->|Yes: Speech Detected| SetSpeech[Mark isSpeaking = True
+Reset silenceStartTime
+Accumulate WebM blob]
 >     SetSpeech --> CheckMax{Chunk Duration >= 4000ms?}
 >     CheckMax -->|Yes| FlushChunk[Stop MediaRecorder & Flush Blob]
 >     CheckMax -->|No| WaitNext[Wait for next 50ms interval]
@@ -1517,7 +1708,9 @@ Figure 4.12: Flowchart: AI Microservice Cascaded Inference Execution Engine
 
 ---
 
+
 ### 4.2.3 Formal Algorithmic Pseudocode
+
 
 #### Algorithm 1: Client-Side Audio Sampling & Adaptive VAD Chunking
 ```python
@@ -1794,9 +1987,14 @@ class ClientAudioPlaybackQueue:
 
 ---
 
-## 4.3 User Interface & Input Data Design
+
+--------------------------------------------------------------------------------
+4.3 User Interface & Input Data Design
+--------------------------------------------------------------------------------
+
 
 ### 4.3.1 User Interface Wireframes & Component Design
+
 
 The user interface of SAMVADA is crafted with modern dark-mode aesthetics, high responsiveness, and strict adherence to cognitive usability principles.
 
@@ -1826,7 +2024,9 @@ Figure 4.15: User Interface Layout: Pipeline Diagnostic Inspector and Latency Te
 
 ---
 
+
 ### 4.3.2 Communication Protocols & API Specifications
+
 
 The system utilizes two distinct communication paradigms: synchronous HTTP REST endpoints for state management and full-duplex WebSocket / Socket.IO events for real-time media and signaling.
 
@@ -1867,7 +2067,11 @@ ightarrow$ Server | `{ roomCode, targetLanguage }` | Updates listener's runtime 
 
 ---
 
-## 4.4 Experimental Setup and Tools (Software & Hardware)
+
+--------------------------------------------------------------------------------
+4.4 Experimental Setup and Tools (Software & Hardware)
+--------------------------------------------------------------------------------
+
 
 All development, profiling, and benchmarking experiments were conducted across a standardized hardware testbed and cloud GPU infrastructure, detailed in Tables 4.3 and 4.4.
 
@@ -1902,9 +2106,14 @@ All development, profiling, and benchmarking experiments were conducted across a
 
 ---
 
-## 4.5 Implementation, Deployment and Testing
+
+--------------------------------------------------------------------------------
+4.5 Implementation, Deployment and Testing
+--------------------------------------------------------------------------------
+
 
 ### 4.5.1 Key Code Implementation Walkthrough
+
 
 #### 1. Client Voice Activity Detection & Chunk Emission (`useSpeechTranslation.js`)
 ```javascript
@@ -2004,7 +2213,9 @@ Figure 4.16: Audio Ducking and Jitter Buffer Sequential Playback Mechanism
 
 ---
 
+
 ### 4.5.2 Comprehensive Verification & Test Execution Matrix
+
 
 A rigorous test suite comprising 15 formal test scenarios was executed across unit, integration, and end-to-end stress conditions, summarized in Table 4.5.
 
@@ -2031,9 +2242,14 @@ ightarrow$ French | NLLB-200 generates 'Bienvenue à la démonstration...' | Gra
 
 ---
 
-## 4.6 Performance Evaluation
+
+--------------------------------------------------------------------------------
+4.6 Performance Evaluation
+--------------------------------------------------------------------------------
+
 
 ### 4.6.1 End-to-End Latency Budget Analysis
+
 To validate the real-time feasibility of SAMVADA, comprehensive latency profiling was conducted across each discrete stage of the pipeline. Table 4.6 compares the baseline system against the optimized cascaded architecture.
 
 **Table 4.6: Latency Budget Comparison: Baseline vs. Optimized Cascaded Architecture**
@@ -2051,7 +2267,11 @@ To validate the real-time feasibility of SAMVADA, comprehensive latency profilin
 
 ---
 
-## 4.7 Summary
+
+--------------------------------------------------------------------------------
+4.7 Summary
+--------------------------------------------------------------------------------
+
 
 Chapter 4 established the complete architectural and engineering blueprint of SAMVADA. The three-tier decoupled architecture guarantees that heavy artificial intelligence computations are completely isolated from real-time WebRTC media streams and client rendering threads. 
 
@@ -2059,9 +2279,19 @@ Through formal DFDs (Levels 0, 1, and 2) and UML diagrams (Use Case, Class, Sequ
 
 The empirical test execution matrix verified that all 15 core functional scenarios operate flawlessly under diverse conversational conditions. Finally, the comparative latency budget proved that the optimized cascaded architecture cuts end-to-end turnaround delay by 72.4%, achieving an acoustic latency of ~2.1 seconds and a perceived subtitle latency of ~1.3 seconds—fully satisfying the rigorous demands of real-time cross-lingual video conferencing.
 
-# CHAPTER 5: RESULTS & DISCUSSION
 
-## 5.1 Outputs & Outcomes
+================================================================================
+
+
+================================================================================
+CHAPTER 5: RESULTS & DISCUSSION
+================================================================================
+
+
+--------------------------------------------------------------------------------
+5.1 Outputs & Outcomes
+--------------------------------------------------------------------------------
+
 
 The comprehensive evaluation of SAMVADA was performed through empirical benchmarking, system telemetry profiling, and live conversational sessions involving multi-lingual speaker dyads and triads. The experimental trials validated that SAMVADA successfully eliminates the language barrier in live video conferencing while preserving high video quality, conversational naturalness, and robust auditory comprehension.
 
@@ -2116,9 +2346,14 @@ Table 5.1 provides the empirical distribution of latency measured across 100 con
 
 ---
 
-## 5.2 Analysis of Results & Interpretation of Data
+
+--------------------------------------------------------------------------------
+5.2 Analysis of Results & Interpretation of Data
+--------------------------------------------------------------------------------
+
 
 ### 5.2.1 Speech Recognition (ASR) Accuracy vs. Inference Latency
+
 
 To identify the optimal speech recognition engine, we evaluated multiple parameter sizes of OpenAI Whisper on both standard PyTorch and the CTranslate2 quantized runtime. Experiments utilized standard multilingual evaluation speech datasets (Common Voice 13 and FLEURS), measuring Word Error Rate (WER) and Character Error Rate (CER).
 
@@ -2145,7 +2380,9 @@ As shown in Table 5.2, **Faster-Whisper (small) with CTranslate2 INT8 quantizati
 
 ---
 
+
 ### 5.2.2 Neural Machine Translation Quality Evaluation
+
 
 Translation accuracy was evaluated across six prominent language pairs encompassing diverse linguistic typologies (SVO vs. SOV). Translations were scored against human reference translations using the industry-standard **Bilingual Evaluation Understudy (BLEU)** metric and the Character-level F-score (**chrF++**).
 
@@ -2186,7 +2423,9 @@ The evaluation demonstrates that Meta's NLLB-200 model maintains robust translat
 
 ---
 
+
 ### 5.2.3 Speech Synthesis (TTS) Mean Opinion Score (MOS) Evaluation
+
 
 To assess the naturalness, intelligibility, and acoustic comfort of the synthesized speech, a formal Mean Opinion Score (MOS) listening test was conducted with 20 independent human evaluators. Evaluators scored speech samples on an absolute 5-point Likert scale (1 = Bad, 2 = Poor, 3 = Fair, 4 = Good, 5 = Excellent).
 
@@ -2203,7 +2442,9 @@ The results confirmed that Microsoft Edge Neural TTS delivers superior perceptua
 
 ---
 
+
 ### 5.2.4 Root Cause Analysis: Neural Hallucination Mitigation
+
 
 During initial testing, the system exhibited occasional "hallucinations"—spontaneous generation of repetitive text or phantom phrases (e.g., *"Thank you for watching"*, *"Please subscribe"*, or repetitive phonetic loops) when no participant was speaking. 
 
@@ -2221,31 +2462,53 @@ These safeguards successfully eliminated 99.4% of neural hallucinations in live 
 
 ---
 
-## 5.3 Discussion of Results & Limitations of the System
+
+--------------------------------------------------------------------------------
+5.3 Discussion of Results & Limitations of the System
+--------------------------------------------------------------------------------
+
 
 While SAMVADA achieves its primary goal of real-time speech-to-speech video conferencing, several architectural and infrastructural trade-offs were identified during stress testing:
 
+
 ### 5.3.1 Full-Mesh WebRTC Scaling Limits
+
 SAMVADA utilizes a decentralized Full-Mesh WebRTC topology where each participant establishes an independent, direct bidirectional media peer connection with every other participant. In a room with $N$ participants, the total number of peer connections scales quadratically:
-$$C = rac{N(N - 1)}{2}$$
+$$C = rac{N(N - 1)}{2}$$
 
 For $N = 3$, $C = 3$; for $N = 5$, $C = 10$; for $N = 8$, $C = 28$. Beyond 5–6 participants, client uplink bandwidth and CPU consumption (encoding multiple video streams simultaneously) degrade significantly. For enterprise-scale deployments exceeding 10 participants, the media layer must migrate to a **Selective Forwarding Unit (SFU)** media server architecture (e.g., mediasoup or LiveKit).
 
+
 ### 5.3.2 Voice Timbre and Emotional Identity Loss
+
 While Microsoft Edge Neural TTS synthesizes intelligible and fluent speech, the voice generated is an artificial stock persona (e.g., `en-US-GuyNeural` or `hi-IN-MadhurNeural`). The unique acoustic timbre, pitch, gender, and emotional nuance of the original speaker are not transferred to the translated voice. Integrating real-time zero-shot voice cloning (such as XTTS-v2 or VoiceCraft) remains constrained by current neural vocoder inference latencies (5–10 seconds per phrase), making it a high-priority post-thesis research objective.
 
+
 ### 5.3.3 Network Jitter and Tunneling Overhead
+
 In our experimental testbed, the cloud GPU microservice was exposed via an Ngrok reverse proxy tunnel. While Ngrok provides immediate, firewall-bypassing HTTPS tunnels for academic prototyping, it routes traffic through remote edge servers, introducing an unnecessary 40–80ms latency penalty. Deploying the AI microservice within the same Virtual Private Cloud (VPC) or local data center as the application server would shave an additional 100ms off total turnaround time.
 
 ---
 
-# CHAPTER 6: CONCLUSION & FUTURE SCOPE
 
-## 6.1 Summary of Work Completed
+================================================================================
+
+
+================================================================================
+CHAPTER 6: CONCLUSION & FUTURE SCOPE
+================================================================================
+
+
+--------------------------------------------------------------------------------
+6.1 Summary of Work Completed
+--------------------------------------------------------------------------------
+
 
 The SAMVADA project successfully engineered, benchmarked, and validated an autonomous, full-stack, real-time speech-to-speech translation video conferencing platform operating entirely within standard web browsers.
 
+
 ### Key Technical Accomplishments:
+
 1. **Decoupled Three-Tier Architecture**: Successfully integrated a React 19 single-page application, an asynchronous Node.js / Socket.IO application and signaling server, and a high-performance Python FastAPI AI microservice running on cloud GPU infrastructure.
 2. **Single-Stream Dynamic Client VAD**: Solved the dual-microphone contention issue by cloning a single media capture stream into an adaptive Web Audio RMS energy analyzer, reliably detecting conversational pauses (300ms threshold) and eliminating silence transmission.
 3. **Optimized Cascaded AI Microservice**: Accelerated OpenAI Whisper ASR by 70% using CTranslate2 INT8 quantization; integrated Meta NLLB-200 (600M) for high-fidelity translation across 200+ languages; and incorporated Microsoft Edge Neural TTS with automated fallbacks to gTTS and Sarvam AI.
@@ -2255,30 +2518,51 @@ The SAMVADA project successfully engineered, benchmarked, and validated an auton
 
 ---
 
-## 6.2 Future Scope
+
+--------------------------------------------------------------------------------
+6.2 Future Scope
+--------------------------------------------------------------------------------
+
 
 The successful implementation of SAMVADA lays a robust foundation for numerous advanced engineering enhancements:
 
+
 ### 1. Transition to Selective Forwarding Unit (SFU) Architecture
+
 To overcome the $O(N^2)$ scaling bottleneck of WebRTC full-mesh topologies, the media transport layer can be upgraded to an open-source SFU (such as **mediasoup**, **LiveKit**, or **Janus**). In an SFU architecture, each client uploads its video and audio stream exactly once to the media server, which intelligently routes media packets to other peers, scaling room capacity to 50+ concurrent participants.
 
+
 ### 2. Real-Time Zero-Shot Voice Cloning
+
 Future iterations will incorporate low-latency voice cloning models (such as an optimized, distilled variant of **XTTS-v2** or **VoiceCraft**). By extracting a 3-second speaker acoustic embedding directly from the source audio chunk, the neural vocoder will synthesize translated speech in the target language that retains the exact vocal pitch, timbre, accent, and emotional resonance of the original speaker.
 
+
 ### 3. Unified End-to-End Streaming Speech-to-Speech (SeamlessStreaming)
+
 As foundational AI models evolve, the three-stage cascade (ASR $
 ightarrow$ NMT $
 ightarrow$ TTS) can be replaced with a unified multimodal transformer model such as **Meta SeamlessStreaming** or **SeamlessM4T v2**. Unified models translate speech directly from acoustic representations to target speech tokens, eliminating intermediate text representation and potentially reducing end-to-end turnaround latency below 1.2 seconds.
 
+
 ### 4. AudioWorklet Raw PCM Streaming Pipeline
+
 Replacing the browser's `MediaRecorder` API with a custom `AudioWorklet` streaming raw 16 kHz Float32 PCM audio frames over a persistent binary WebSocket pipeline will eliminate WebM containerization overhead, enabling sub-chunk streaming ASR and further trimming 200ms from the latency budget.
 
+
 ### 5. Mobile Native Cross-Platform Clients
+
 Developing dedicated native mobile applications for iOS and Android using React Native WebRTC and Flutter will extend SAMVADA's real-time translation capabilities to mobile workforces, humanitarian field workers, and emergency first responders worldwide.
 
 ---
 
-# REFERENCES
+
+================================================================================
+
+
+================================================================================
+REFERENCES
+================================================================================
+
 
 1. **A. Radford, J. W. Kim, T. Xu, G. Brockman, C. McLeavey, and I. Sutskever**, "Robust Speech Recognition via Large-Scale Weak Supervision," *OpenAI Technical Report*, arXiv:2212.04356, Dec. 2022.
 2. **NLLB Team, M. R. Costa-jussà, J. Cross, O. Çelebi, M. Elbayad, K. Heafield, et al.**, "No Language Left Behind: Scaling Human-Centered Machine Translation," *Meta AI Research*, arXiv:2207.04672, Jul. 2022.
@@ -2303,7 +2587,14 @@ Developing dedicated native mobile applications for iOS and Android using React 
 
 ---
 
-# APPENDIX A: ABBREVIATIONS AND SYMBOLS
+
+================================================================================
+
+
+================================================================================
+APPENDIX A: ABBREVIATIONS AND SYMBOLS
+================================================================================
+
 
 | Abbreviation / Symbol | Full Meaning / Technical Expansion |
 |---|---|
@@ -2357,7 +2648,14 @@ Developing dedicated native mobile applications for iOS and Android using React 
 
 ---
 
-# APPENDIX B: DEFINITIONS AND TECHNICAL GLOSSARY
+
+================================================================================
+
+
+================================================================================
+APPENDIX B: DEFINITIONS AND TECHNICAL GLOSSARY
+================================================================================
+
 
 1. **Speech-to-Speech Translation (S2ST)**: An automated artificial intelligence pipeline that ingests continuous spoken acoustic audio in a source language, translates the underlying semantic meaning, and outputs synthesized acoustic speech in a designated target language.
 2. **Voice Activity Detection (VAD)**: A digital signal processing or neural classification algorithm that inspects continuous audio streams to distinguish periods of active human speech from acoustic background noise, breath plosives, and digital silence.
@@ -2369,24 +2667,35 @@ Developing dedicated native mobile applications for iOS and Android using React 
 8. **Audio Ducking**: An audio engineering technique wherein the volume gain of a primary audio signal is automatically attenuated (reduced) whenever a secondary, higher-priority audio signal is actively playing, preventing acoustic collision.
 9. **Translation Deduplication**: An architectural optimization implemented in the signaling broker that clusters active listeners by their preferred target language, ensuring that compute-intensive NMT and TTS pipelines are executed only once per unique target language per speech turn.
 10. **Word Error Rate (WER)**: The standard metric for measuring speech recognition inaccuracy, calculated as:
-   $$	ext{WER} = rac{S + D + I}{N} 	imes 100\%$$
+   $$	ext{WER} = rac{S + D + I}{N} 	imes 100\%$$
    where $S$ is substitutions, $D$ is deletions, $I$ is insertions, and $N$ is the total words in the reference transcript.
 11. **Bilingual Evaluation Understudy (BLEU)**: An algorithmic benchmark that evaluates machine translation quality by computing modified n-gram precision between machine-generated candidate sentences and human-authored reference translations.
 12. **Mean Opinion Score (MOS)**: A numerical measure of the perceived subjective quality of synthesized audio media, ranging from 1.0 (Bad) to 5.0 (Excellent).
 
 ---
 
-# APPENDIX C: LIST OF PUBLICATIONS
+
+================================================================================
+
+
+================================================================================
+APPENDIX C: LIST OF PUBLICATIONS
+================================================================================
+
 
 The research, engineering innovations, and empirical benchmarking derived from the SAMVADA platform have been compiled into a formal academic manuscript formatted according to IEEE conference standards:
 
+
 ### Manuscript Details:
+
 - **Title**: *SAMVADA: An Optimized Cascaded Speech-to-Speech Translation Architecture for Low-Latency Web Video Conferencing*
 - **Authors**: [Name of Student 1], [Name of Student 2], [Name of Student 3], and [Name of Guide]
 - **Target Venue**: IEEE International Conference on Communication, Information & Computing Technology (ICCICT-2027) / International Conference on Computing, Communication, Control and Automation (ICCUBEA-2027)
 - **Status**: Manuscript Draft Prepared for Review and Institutional Submission
 
+
 ### IEEE Reference Citation Format:
+
 ```
 [1] [Author 1], [Author 2], [Author 3], and [Guide Name], 
     "SAMVADA: An Optimized Cascaded Speech-to-Speech Translation Architecture 
