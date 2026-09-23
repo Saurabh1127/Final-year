@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "tunnel": ".\\cloudflared.cmd tunnel --url http://localhost:5173",
+    "tunnel": ".\\cloudflared.cmd tunnel --protocol http2 --edge-ip-version 4 --url http://127.0.0.1:5173",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
