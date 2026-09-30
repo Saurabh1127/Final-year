@@ -17,9 +17,12 @@ build/
 .vscode/
 .idea/
 
-# OS
+# OS & Temp
 .DS_Store
 Thumbs.db
+~$*
+*.tmp
+*.bak
 
 # Logs
 *.log
