@@ -33,3 +33,9 @@ npm-debug.log*
 !package.json
 !package-lock.json
 !tsconfig.json
+
+# Local documentation & internal planning (kept locally, excluded from git)
+implementation_plan.md
+linguameet_architecture_study.md
+client/README.md
+docs/

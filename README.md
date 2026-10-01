@@ -1,4 +1,4 @@
-﻿# SAMVADA
+# SAMVADA
 
 **S**peech **A**nd **M**ultilingual **V**oice **A**ssisted **D**ialog **A**pplication
 
@@ -453,19 +453,12 @@ gantt
 
 ---
 
-## 📚 Documentation
+## 📚 Documentation & Guides
 
-| Document | Description |
-|---|---|
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Full system architecture, component diagrams, tech decisions |
-| [AI_PIPELINE.md](docs/AI_PIPELINE.md) | STT → NMT → TTS specification and benchmarks |
-| [API.md](docs/API.md) | REST API and Socket.IO event reference |
-| [DATABASE.md](docs/DATABASE.md) | MongoDB schema definitions |
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Local dev setup and production deployment guide |
-| [PRD.md](docs/PRD.md) | Product requirements and feature status matrix |
-| [SECURITY.md](docs/SECURITY.md) | Security audit and known vulnerabilities |
-| [TECHNICAL_SPEC.md](docs/TECHNICAL_SPEC.md) | Low-level technical implementation specification |
-| [COLAB_INTEGRATION_GUIDE.md](ai-service/COLAB_INTEGRATION_GUIDE.md) | Step-by-step Colab + Ngrok setup |
+Comprehensive technical specifications, architecture diagrams, data flows, and benchmark figures are consolidated directly within this [README.md](README.md).
+
+For step-by-step instructions on deploying the GPU AI microservice:
+- 📖 **[Colab & Ngrok Setup Guide](ai-service/COLAB_INTEGRATION_GUIDE.md)** — Step-by-step instructions for launching Whisper, NLLB-200, and Edge-TTS on a free Tesla T4 GPU in Google Colab.
 
 ---
 
