@@ -1,6 +1,6 @@
 /* ═════════════════════════════════════════════════════════════════════════════════
    SAMVADA MEETING HISTORY DESIGN SYSTEM
-   Tokens: #090A0F (Obsidian), #0E1017 (Surface), #00D4B2 (Mint), #38BDF8 (Cyan)
+   Midnight Navy + Steel Blue
    ═════════════════════════════════════════════════════════════════════════════════ */
 
 .sam-history-page {
@@ -50,10 +50,10 @@
 .sam-history-icon-badge {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
-  background-color: rgba(0, 212, 178, 0.1);
-  border: 1px solid rgba(0, 212, 178, 0.25);
-  color: var(--lm-accent, #00d4b2);
+  border-radius: 8px;
+  background-color: var(--accent-subtle);
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,16 +61,17 @@
 }
 
 .sam-history-title {
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 1.5rem;
-  font-weight: 800;
-  color: #ffffff;
+  font-weight: 600;
+  color: var(--text-primary);
   letter-spacing: -0.02em;
   margin: 0;
 }
 
 .sam-history-subtitle {
   font-size: 0.875rem;
-  color: var(--lm-text-secondary, #94a3b8);
+  color: var(--text-secondary);
   margin: 2px 0 0 0;
   line-height: 1.5;
 }
@@ -80,36 +81,31 @@
   align-items: center;
   gap: 8px;
   padding: 9px 18px;
-  border-radius: 10px;
-  background-color: var(--lm-accent, #00d4b2);
-  color: #090a0f;
+  border-radius: 8px;
+  background-color: var(--accent);
+  color: #ffffff;
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 500;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 212, 178, 0.25);
-  transition: all var(--lm-transition-fast, 150ms ease);
+  transition: all 0.15s ease;
   white-space: nowrap;
 }
 
 .sam-history-cta-btn:hover {
-  background-color: #33e0c4;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 212, 178, 0.35);
+  background-color: var(--accent-hover);
 }
 
 /* ── Search & Filter Controls Card ── */
 .sam-history-controls-card {
   padding: 18px 20px;
-  border-radius: var(--lm-radius-2xl, 16px);
-  background: rgba(18, 21, 30, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .sam-history-search-row {
@@ -122,26 +118,26 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #64748b;
+  color: var(--text-muted);
   pointer-events: none;
 }
 
 .sam-history-search-input {
   width: 100%;
   padding: 10px 14px 10px 42px;
-  border-radius: 12px;
-  background-color: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  border-radius: 8px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.875rem;
   outline: none;
-  transition: all var(--lm-transition-fast, 150ms ease);
+  transition: all 0.15s ease;
 }
 
 .sam-history-search-input:focus {
-  background-color: rgba(255, 255, 255, 0.07);
-  border-color: rgba(0, 212, 178, 0.5);
-  box-shadow: 0 0 0 3px rgba(0, 212, 178, 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .sam-history-filters-row {
@@ -156,32 +152,34 @@
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  border-radius: 9999px;
-  background-color: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--lm-text-secondary, #94a3b8);
+  border-radius: 8px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all var(--lm-transition-fast, 150ms ease);
+  transition: all 0.15s ease;
 }
 
 .sam-history-filter-pill:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  background-color: var(--surface-elevated);
+  color: var(--text-primary);
 }
 
 .sam-history-filter-pill--active {
-  background-color: rgba(0, 212, 178, 0.12);
-  border-color: rgba(0, 212, 178, 0.35);
-  color: var(--lm-accent, #00d4b2);
+  background-color: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .sam-history-filter-count {
   font-size: 0.6875rem;
   padding: 1px 6px;
-  border-radius: 9999px;
-  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  background-color: var(--surface-elevated);
   color: inherit;
 }
 
@@ -200,23 +198,19 @@
 
 .sam-history-card {
   padding: 20px;
-  border-radius: 14px;
-  background: rgba(18, 21, 30, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  transition: all var(--lm-transition-fast, 150ms ease);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: all 0.15s ease;
 }
 
 .sam-history-card:hover {
-  background: rgba(18, 21, 30, 0.9);
-  border-color: rgba(255, 255, 255, 0.14);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  background: var(--surface-elevated);
+  border-color: var(--border-strong);
 }
 
 .sam-history-card__header {
@@ -233,30 +227,31 @@
 }
 
 .sam-history-card__title {
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 1rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 600;
+  color: var(--text-primary);
   margin: 0;
   line-height: 1.35;
 }
 
 .sam-history-card__date {
   font-size: 0.75rem;
-  color: var(--lm-text-tertiary, #64748b);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 .sam-history-card__room-pill {
-  font-family: var(--lm-font-mono, monospace);
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 500;
   padding: 3px 9px;
-  border-radius: 9999px;
-  background-color: rgba(0, 212, 178, 0.1);
-  border: 1px solid rgba(0, 212, 178, 0.25);
-  color: var(--lm-accent, #00d4b2);
+  border-radius: 6px;
+  background-color: var(--accent-subtle);
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
   white-space: nowrap;
 }
 
@@ -265,9 +260,9 @@
   align-items: center;
   gap: 14px;
   padding: 10px 12px;
-  border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
   font-size: 0.75rem;
 }
 
@@ -275,7 +270,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  color: var(--lm-text-secondary, #94a3b8);
+  color: var(--text-secondary);
 }
 
 .sam-history-card__actions {
@@ -283,8 +278,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding-top: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
 }
 
 .sam-history-btn-secondary {
@@ -293,18 +288,19 @@
   gap: 5px;
   padding: 6px 12px;
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--lm-text-secondary, #94a3b8);
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all var(--lm-transition-fast, 150ms ease);
+  transition: all 0.15s ease;
 }
 
 .sam-history-btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.09);
-  color: #ffffff;
+  background-color: var(--surface-elevated);
+  color: var(--text-primary);
 }
 
 .sam-history-btn-primary {
@@ -313,27 +309,27 @@
   gap: 5px;
   padding: 6px 14px;
   border-radius: 8px;
-  background-color: rgba(0, 212, 178, 0.1);
-  border: 1px solid rgba(0, 212, 178, 0.3);
-  color: var(--lm-accent, #00d4b2);
+  background-color: var(--accent);
+  border: 1px solid var(--accent);
+  color: #ffffff;
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
-  transition: all var(--lm-transition-fast, 150ms ease);
+  transition: all 0.15s ease;
 }
 
 .sam-history-btn-primary:hover {
-  background-color: rgba(0, 212, 178, 0.2);
-  border-color: #00d4b2;
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 /* ── Empty State ── */
 .sam-history-empty {
   padding: 64px 24px;
-  border-radius: var(--lm-radius-2xl, 16px);
-  background: rgba(18, 21, 30, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -344,10 +340,10 @@
 .sam-history-empty-icon {
   width: 56px;
   height: 56px;
-  border-radius: 16px;
-  background-color: rgba(0, 212, 178, 0.1);
-  border: 1px solid rgba(0, 212, 178, 0.25);
-  color: var(--lm-accent, #00d4b2);
+  border-radius: 10px;
+  background-color: var(--accent-subtle);
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -355,15 +351,16 @@
 }
 
 .sam-history-empty-title {
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 1.125rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 600;
+  color: var(--text-primary);
   margin: 0 0 8px 0;
 }
 
 .sam-history-empty-desc {
   font-size: 0.875rem;
-  color: var(--lm-text-secondary, #94a3b8);
+  color: var(--text-secondary);
   max-width: 440px;
   margin: 0 0 20px 0;
   line-height: 1.5;

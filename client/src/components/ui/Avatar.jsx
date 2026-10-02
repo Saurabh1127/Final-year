@@ -1,14 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import './Avatar.css';
 
-// Gradient palette for name-based avatar fallbacks
+// Navy & steel blue palette for name-based avatar fallbacks
 const GRADIENTS = [
-  'linear-gradient(135deg, #00D4B2 0%, #0284C7 100%)',
-  'linear-gradient(135deg, #38BDF8 0%, #6366F1 100%)',
-  'linear-gradient(135deg, #818CF8 0%, #C084FC 100%)',
-  'linear-gradient(135deg, #F43F5E 0%, #FB923C 100%)',
-  'linear-gradient(135deg, #10B981 0%, #00D4B2 100%)',
-  'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
+  'linear-gradient(135deg, #4F7FA8 0%, #263D54 100%)',
+  'linear-gradient(135deg, #3F6F96 0%, #162235 100%)',
+  'linear-gradient(135deg, #5E9B7B 0%, #1C2B40 100%)',
+  'linear-gradient(135deg, #6595BD 0%, #101A2A 100%)',
+  'linear-gradient(135deg, #263D54 0%, #0B1220 100%)',
+  'linear-gradient(135deg, #35485E 0%, #162235 100%)',
 ];
 
 function getInitials(name = '') {

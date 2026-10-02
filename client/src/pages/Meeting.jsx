@@ -5,7 +5,7 @@ const Meeting = () => {
   const { roomCode } = useParams();
 
   return (
-    <div className="min-h-screen bg-[#090a0f] text-slate-100 font-sans overflow-hidden">
+    <div className="min-h-screen bg-[var(--bg-primary,#0B1220)] text-[var(--text-primary,#F4F5F3)] font-sans overflow-hidden">
       <MeetingRoom roomCode={roomCode} />
     </div>
   );

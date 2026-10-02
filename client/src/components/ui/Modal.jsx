@@ -1,5 +1,4 @@
 import React, { useEffect, useId, useRef } from 'react';
-import './Modal.css';
 
 /**
  * Samvada Modal Component

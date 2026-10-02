@@ -1,5 +1,6 @@
 /* ═════════════════════════════════════════════════════════════════════════════════
    SAMVADA NOTIFICATION CENTER DESIGN SYSTEM
+   Midnight Navy + Steel Blue
    ═════════════════════════════════════════════════════════════════════════════════ */
 
 .sam-notification-center {
@@ -8,12 +9,10 @@
   right: 0;
   width: 320px;
   max-width: 90vw;
-  background-color: rgba(14, 16, 23, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--lm-radius-xl, 14px);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   z-index: 210;
   display: flex;
   flex-direction: column;
@@ -24,7 +23,7 @@
 @keyframes sam-notification-dropdown {
   from {
     opacity: 0;
-    transform: translateY(-8px) scale(0.98);
+    transform: translateY(-6px) scale(0.98);
   }
   to {
     opacity: 1;
@@ -34,11 +33,11 @@
 
 .sam-notification-center__header {
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--bg-secondary);
 }
 
 .sam-notification-center__title-row {
@@ -48,36 +47,46 @@
 }
 
 .sam-notification-center__title {
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.875rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
   margin: 0;
 }
 
 .sam-notification-center__unread-badge {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   font-size: 0.625rem;
-  font-weight: 700;
+  font-weight: 600;
   padding: 1px 6px;
-  border-radius: 9999px;
-  background-color: rgba(0, 212, 178, 0.15);
-  color: var(--lm-accent, #00d4b2);
-  border: 1px solid rgba(0, 212, 178, 0.3);
+  border-radius: 4px;
+  background-color: var(--accent-subtle);
+  color: var(--accent);
+  border: 1px solid var(--border-strong);
 }
 
 .sam-notification-center__action-btn {
   background: none;
   border: none;
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--lm-accent, #00d4b2);
+  font-weight: 500;
+  color: var(--accent);
   cursor: pointer;
-  padding: 2px 6px;
+  padding: 3px 6px;
   border-radius: 4px;
   transition: all 120ms ease;
 }
 
 .sam-notification-center__action-btn:hover {
-  background-color: rgba(0, 212, 178, 0.1);
+  color: var(--accent-hover);
+  background-color: var(--accent-subtle);
+}
+
+.sam-notification-center__action-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .sam-notification-center__list {
@@ -90,8 +99,9 @@
 .sam-notification-center__empty {
   padding: 32px 16px;
   text-align: center;
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.75rem;
-  color: var(--lm-text-tertiary, #64748b);
+  color: var(--text-muted);
 }
 
 /* ── Individual Notification Item ── */
@@ -100,25 +110,33 @@
   align-items: flex-start;
   gap: 10px;
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: all 120ms ease;
+  text-align: left;
+  outline: none;
 }
 
 .sam-notification-item:hover {
-  background-color: rgba(255, 255, 255, 0.035);
+  background-color: var(--surface-elevated);
+}
+
+.sam-notification-item:focus-visible {
+  background-color: var(--surface-elevated);
+  outline: 1px solid var(--accent);
 }
 
 .sam-notification-item--unread {
-  background-color: rgba(0, 212, 178, 0.03);
+  background-color: var(--accent-subtle);
 }
 
 .sam-notification-item__icon-wrap {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,29 +160,31 @@
 }
 
 .sam-notification-item__title {
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.75rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .sam-notification-item__dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--lm-accent, #00d4b2);
-  box-shadow: 0 0 6px var(--lm-accent, #00d4b2);
+  background-color: var(--accent);
   flex-shrink: 0;
 }
 
 .sam-notification-item__desc {
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.6875rem;
-  color: var(--lm-text-secondary, #94a3b8);
+  color: var(--text-secondary);
   line-height: 1.4;
   margin: 0;
 }
 
 .sam-notification-item__time {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   font-size: 0.625rem;
-  color: var(--lm-text-tertiary, #64748b);
-  margin-top: 2px;
+  color: var(--text-muted);
+  margin-top: 3px;
 }

@@ -1,14 +1,14 @@
 /* ═════════════════════════════════════════════════════════════════════════════════
    SAMVADA POST-MEETING SUMMARY DESIGN SYSTEM
-   Tokens: #090A0F (Obsidian), #0E1017 (Surface), #00D4B2 (Mint), #38BDF8 (Cyan)
+   Midnight Navy + Steel Blue
    ═════════════════════════════════════════════════════════════════════════════════ */
 
 .sam-summary-page {
   width: 100%;
   min-height: calc(100vh - 64px);
-  background-color: var(--lm-bg-primary, #090a0f);
-  color: var(--lm-text-primary, #f8fafc);
-  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  background-color: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   padding: 24px 16px 48px;
   display: flex;
   flex-direction: column;
@@ -35,12 +35,10 @@
   flex-direction: column;
   gap: 16px;
   padding: 16px 20px;
-  border-radius: var(--lm-radius-2xl, 16px);
-  background: rgba(18, 21, 30, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 @media (min-width: 640px) {
@@ -62,20 +60,20 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--lm-text-secondary, #94a3b8);
+  border-radius: 8px;
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all var(--lm-transition-fast, 150ms ease);
+  transition: all 0.15s ease;
 }
 
 .sam-summary-header__back-btn:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--surface-elevated);
+  color: var(--text-primary);
 }
 
 .sam-summary-header__title-wrap {
@@ -85,9 +83,11 @@
 }
 
 .sam-summary-header__title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
   margin: 0;
   display: flex;
   align-items: center;
@@ -95,14 +95,14 @@
 }
 
 .sam-summary-header__room-pill {
-  font-family: var(--lm-font-mono, monospace);
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   font-size: 0.75rem;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: var(--lm-radius-full, 9999px);
-  background-color: rgba(0, 212, 178, 0.1);
-  border: 1px solid rgba(0, 212, 178, 0.25);
-  color: var(--lm-accent, #00d4b2);
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background-color: var(--accent-subtle);
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
 }
 
 .sam-summary-header__right {
@@ -117,35 +117,33 @@
   justify-content: center;
   gap: 8px;
   padding: 8px 18px;
-  border-radius: 10px;
-  background-color: var(--lm-accent, #00d4b2);
-  color: #090a0f;
+  border-radius: 8px;
+  background-color: var(--accent);
+  color: #ffffff;
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 500;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 212, 178, 0.25);
-  transition: all var(--lm-transition-fast, 150ms ease);
+  transition: all 0.15s ease;
 }
 
 .sam-summary-btn-generate:hover:not(:disabled) {
-  background-color: #33e0c4;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 212, 178, 0.35);
+  background-color: var(--accent-hover);
 }
 
 .sam-summary-btn-generate:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* ── Error Banner ── */
 .sam-summary-error {
   padding: 12px 16px;
-  border-radius: 12px;
-  background-color: rgba(244, 63, 94, 0.1);
-  border: 1px solid rgba(244, 63, 94, 0.25);
-  color: #fda4af;
+  border-radius: 8px;
+  background-color: rgba(198, 107, 107, 0.12);
+  border: 1px solid rgba(198, 107, 107, 0.3);
+  color: var(--error);
   font-size: 0.8125rem;
   display: flex;
   align-items: center;
@@ -155,10 +153,9 @@
 /* ── Loading & Generating States ── */
 .sam-summary-loading-box {
   padding: 64px 24px;
-  border-radius: var(--lm-radius-2xl, 16px);
-  background: rgba(18, 21, 30, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -177,7 +174,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: var(--lm-accent, #00d4b2);
+  background-color: var(--accent);
   animation: sam-dot-bounce 1s infinite ease-in-out;
 }
 
@@ -201,25 +198,25 @@
 }
 
 .sam-summary-loading-title {
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
   margin: 0 0 6px 0;
 }
 
 .sam-summary-loading-sub {
   font-size: 0.8125rem;
-  color: var(--lm-text-secondary, #94a3b8);
+  color: var(--text-secondary);
   margin: 0;
 }
 
 /* ── Empty State ── */
 .sam-summary-empty-card {
   padding: 56px 24px;
-  border-radius: var(--lm-radius-2xl, 16px);
-  background: rgba(18, 21, 30, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -230,10 +227,10 @@
 .sam-summary-empty-icon {
   width: 56px;
   height: 56px;
-  border-radius: 16px;
-  background-color: rgba(0, 212, 178, 0.1);
-  border: 1px solid rgba(0, 212, 178, 0.25);
-  color: var(--lm-accent, #00d4b2);
+  border-radius: 10px;
+  background-color: var(--accent-subtle);
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -241,15 +238,16 @@
 }
 
 .sam-summary-empty-title {
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 1.125rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 600;
+  color: var(--text-primary);
   margin: 0 0 8px 0;
 }
 
 .sam-summary-empty-desc {
   font-size: 0.875rem;
-  color: var(--lm-text-secondary, #94a3b8);
+  color: var(--text-secondary);
   max-width: 440px;
   margin: 0 0 16px 0;
   line-height: 1.5;
@@ -271,12 +269,10 @@
 /* ── Common Card Styling ── */
 .sam-summary-card {
   padding: 24px;
-  border-radius: var(--lm-radius-xl, 14px);
-  background: rgba(18, 21, 30, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -297,47 +293,44 @@
 .sam-summary-card__icon {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.sam-summary-card__icon--mint {
-  background-color: rgba(0, 212, 178, 0.12);
-  color: var(--lm-accent, #00d4b2);
-}
-
+.sam-summary-card__icon--mint,
 .sam-summary-card__icon--cyan {
-  background-color: rgba(56, 189, 248, 0.12);
-  color: var(--lm-telemetry, #38bdf8);
+  background-color: var(--accent-subtle);
+  color: var(--accent);
 }
 
 .sam-summary-card__icon--emerald {
-  background-color: rgba(16, 185, 129, 0.12);
-  color: #10b981;
+  background-color: rgba(94, 155, 123, 0.15);
+  color: var(--success);
 }
 
 .sam-summary-card__icon--purple {
-  background-color: rgba(168, 85, 247, 0.12);
-  color: #c084fc;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
 }
 
 .sam-summary-card__title {
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 1rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 600;
+  color: var(--text-primary);
   margin: 0;
 }
 
 /* Executive Summary Box */
 .sam-summary-executive-text {
   font-size: 0.9375rem;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   line-height: 1.65;
   margin: 0;
   padding-left: 14px;
-  border-left: 2px solid var(--lm-accent, #00d4b2);
+  border-left: 2px solid var(--accent);
 }
 
 /* Key Topics */
@@ -351,13 +344,12 @@
   display: inline-flex;
   align-items: center;
   padding: 5px 12px;
-  border-radius: 9999px;
-  background-color: rgba(56, 189, 248, 0.1);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  color: var(--lm-telemetry, #38bdf8);
+  border-radius: 6px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
   font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 500;
 }
 
 /* Action Items */
@@ -375,33 +367,32 @@
   align-items: flex-start;
   gap: 12px;
   padding: 10px 14px;
-  border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
   cursor: pointer;
-  transition: all var(--lm-transition-fast, 150ms ease);
+  transition: all 0.15s ease;
 }
 
 .sam-summary-action-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--surface-elevated);
 }
 
 .sam-summary-action-item--checked {
-  background-color: rgba(16, 185, 129, 0.05);
-  border-color: rgba(16, 185, 129, 0.2);
+  background-color: rgba(94, 155, 123, 0.1);
+  border-color: rgba(94, 155, 123, 0.25);
 }
 
 .sam-summary-action-item--checked .sam-summary-action-text {
   text-decoration: line-through;
-  color: var(--lm-text-tertiary, #64748b);
+  color: var(--text-muted);
 }
 
 .sam-summary-action-checkbox {
   width: 18px;
   height: 18px;
-  border-radius: 5px;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  border: 1.5px solid var(--border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -411,26 +402,26 @@
 }
 
 .sam-summary-action-item--checked .sam-summary-action-checkbox {
-  background-color: #10b981;
-  border-color: #10b981;
-  color: #090a0f;
+  background-color: var(--success);
+  border-color: var(--success);
+  color: #ffffff;
 }
 
 .sam-summary-action-text {
   font-size: 0.8125rem;
-  color: #e2e8f0;
+  color: var(--text-primary);
   line-height: 1.5;
   margin: 0;
 }
 
 .sam-summary-badge-completed {
   font-size: 0.6875rem;
-  font-weight: 700;
+  font-weight: 600;
   padding: 2px 8px;
-  border-radius: 9999px;
-  background-color: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  color: #10b981;
+  border-radius: 6px;
+  background-color: rgba(94, 155, 123, 0.15);
+  border: 1px solid rgba(94, 155, 123, 0.35);
+  color: var(--success);
 }
 
 /* ── Transcript Log In Summary ── */
@@ -445,10 +436,10 @@
 
 .sam-summary-transcript-entry {
   padding: 12px 14px;
-  border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-left: 2px solid var(--lm-accent, #00d4b2);
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
 }
 
 .sam-summary-transcript-meta {
@@ -460,29 +451,30 @@
 }
 
 .sam-summary-transcript-speaker {
-  font-weight: 700;
-  color: var(--lm-accent, #00d4b2);
+  font-weight: 600;
+  color: var(--accent);
 }
 
 .sam-summary-transcript-time {
-  color: var(--lm-text-tertiary, #64748b);
-  font-family: var(--lm-font-mono, monospace);
+  color: var(--text-muted);
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   font-size: 0.6875rem;
 }
 
 .sam-summary-transcript-lang {
   padding: 1px 5px;
   border-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.05);
-  color: var(--lm-text-secondary, #94a3b8);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   font-size: 0.625rem;
-  font-family: var(--lm-font-mono, monospace);
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   text-transform: uppercase;
 }
 
 .sam-summary-transcript-original {
   font-size: 0.8125rem;
-  color: #e2e8f0;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
   line-height: 1.45;
 }
@@ -492,19 +484,19 @@
   flex-direction: column;
   gap: 3px;
   padding-left: 8px;
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 1px solid var(--border);
 }
 
 .sam-summary-transcript-trans-row {
   font-size: 0.75rem;
-  color: var(--lm-text-secondary, #94a3b8);
+  color: var(--text-secondary);
   margin: 0;
 }
 
 .sam-summary-transcript-trans-tag {
-  color: var(--lm-telemetry, #38bdf8);
-  font-family: var(--lm-font-mono, monospace);
+  color: var(--accent);
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   font-size: 0.625rem;
-  font-weight: 700;
+  font-weight: 600;
   margin-right: 4px;
 }

@@ -4,22 +4,22 @@ const STEPS = [
   {
     num: '01',
     title: 'Speak Naturally in Your Language',
-    desc: 'Join via browser without downloading apps or configuring virtual soundboards. Speak freely in your native language with zero interruption.',
+    desc: 'Join via browser. Speak freely in your native language.',
   },
   {
     num: '02',
     title: 'Browser-Side Semantic Chunking',
-    desc: 'An AudioWorklet VAD processor tracks voice energy in real-time, segmenting speech at natural acoustic pauses to preserve semantic continuity.',
+    desc: 'AudioWorklet VAD segments speech at natural pauses for semantic accuracy.',
   },
   {
     num: '03',
     title: 'Cascaded Neural Translation',
-    desc: 'Whisper models transcribe with low Word Error Rates, NLLB-200 translates into target languages, and neural voices synthesize speech in milliseconds.',
+    desc: 'Whisper transcribes, NLLB-200 translates, Edge-TTS synthesizes — in milliseconds.',
   },
   {
     num: '04',
     title: 'Simultaneous Hearing & Captions',
-    desc: 'Listeners hear the translated speech in real time while intelligent ducking softens the original voice. Synchronized subtitles ensure absolute clarity.',
+    desc: 'Translated speech plays in real time with intelligent ducking and synced subtitles.',
   },
 ];
 

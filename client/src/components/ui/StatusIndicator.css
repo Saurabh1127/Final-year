@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════
    SAMVADA UI: StatusIndicator Component Styles
+   Midnight Navy + Steel Blue
    ═══════════════════════════════════════════ */
 
 .sam-status-indicator {
@@ -24,38 +25,35 @@
 /* ── Sizes ── */
 .sam-status-indicator--sm .sam-status-dot { width: 6px; height: 6px; }
 .sam-status-indicator--md .sam-status-dot { width: 8px; height: 8px; }
-.sam-status-indicator--lg .sam-status-dot { width: 12px; height: 12px; }
+.sam-status-indicator--lg .sam-status-dot { width: 10px; height: 10px; }
 
-.sam-status-indicator--sm .sam-status-label { font-size: var(--lm-text-xs, 0.75rem); }
-.sam-status-indicator--md .sam-status-label { font-size: var(--lm-text-sm, 0.8125rem); }
-.sam-status-indicator--lg .sam-status-label { font-size: var(--lm-text-base, 0.875rem); }
+.sam-status-indicator--sm .sam-status-label { font-size: 0.75rem; }
+.sam-status-indicator--md .sam-status-label { font-size: 0.8125rem; }
+.sam-status-indicator--lg .sam-status-label { font-size: 0.875rem; }
 
 /* ── Status Variants ── */
 .sam-status-indicator--online .sam-status-dot {
-  background-color: var(--lm-success, #34D399);
-  box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+  background-color: var(--success, #5E9B7B);
 }
 
 .sam-status-indicator--offline .sam-status-dot {
-  background-color: var(--lm-offline, #64748B);
+  background-color: var(--text-muted, #718092);
 }
 
 .sam-status-indicator--warning .sam-status-dot {
-  background-color: var(--lm-warning, #FBBF24);
-  box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+  background-color: var(--warning, #B99A59);
 }
 
 .sam-status-indicator--degraded .sam-status-dot {
-  background-color: var(--lm-degraded, #FB923C);
+  background-color: var(--warning, #B99A59);
 }
 
 .sam-status-indicator--busy .sam-status-dot {
-  background-color: var(--lm-danger, #F87171);
+  background-color: var(--error, #C66B6B);
 }
 
 .sam-status-indicator--speaking .sam-status-dot {
-  background-color: var(--lm-accent, #00D4B2);
-  box-shadow: 0 0 10px rgba(0, 212, 178, 0.8);
+  background-color: var(--accent, #4F7FA8);
 }
 
 /* ── Pulse Ping Animation ── */
@@ -65,12 +63,12 @@
   inset: -3px;
   border-radius: 9999px;
   background-color: inherit;
-  opacity: 0.6;
+  opacity: 0.4;
   animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
 .sam-status-label {
-  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-weight: 500;
-  color: var(--lm-text-secondary, #94A3B8);
+  color: var(--text-secondary, #A9B4C2);
 }

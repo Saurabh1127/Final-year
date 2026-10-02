@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import AccountSettings from '../components/Settings/AccountSettings';
 import LanguageSettings from '../components/Settings/LanguageSettings';
 import AudioVideoSettings from '../components/Settings/AudioVideoSettings';
-import { Button, useToast } from '../components/ui';
-import './Settings.css';
+import { Button, useToast, ThemeSegmentedControl } from '../components/ui';
 
 /**
  * Settings
  * Comprehensive configuration center for Samvada.
  * Manages user credentials, language translation preferences,
- * audio/video hardware devices, notification triggers, and privacy.
+ * appearance theme, audio/video hardware devices, notification triggers, and privacy.
  */
 export function Settings() {
   const { toast } = useToast();
@@ -28,6 +27,21 @@ export function Settings() {
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
+        </svg>
+      ),
+    },
+    {
+      id: 'appearance',
+      label: 'Appearance',
+      icon: (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
         </svg>
       ),
     },
@@ -125,6 +139,28 @@ export function Settings() {
         <main className="sam-settings-content">
           {activeTab === 'account' && <AccountSettings />}
 
+          {activeTab === 'appearance' && (
+            <div className="sam-settings-section" aria-label="Appearance and theme settings">
+              <div className="sam-settings-section__header">
+                <h3 className="sam-settings-section__title">Appearance & Theme</h3>
+                <p className="sam-settings-section__desc">
+                  Select your interface theme. SAMVADA seamlessly transitions between deep space night and warm editorial sky daylight.
+                </p>
+              </div>
+
+              <div className="sam-settings-card">
+                <h4 className="sam-settings-card__title">Interface Theme</h4>
+                <p className="sam-settings-card__desc">
+                  Changes take effect immediately across all dashboard views, meeting rooms, and live transcripts without reloading.
+                </p>
+
+                <div style={{ marginTop: '18px', marginBottom: '8px' }}>
+                  <ThemeSegmentedControl />
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'language' && <LanguageSettings />}
 
           {activeTab === 'audio-video' && <AudioVideoSettings />}
@@ -145,7 +181,7 @@ export function Settings() {
                       type="checkbox"
                       checked={emailAlerts}
                       onChange={(e) => setEmailAlerts(e.target.checked)}
-                      style={{ accentColor: '#00D4B2', width: 16, height: 16 }}
+                      style={{ accentColor: 'var(--accent)', width: 16, height: 16 }}
                     />
                     <div>
                       <p className="sam-settings-label" style={{ margin: 0 }}>
@@ -162,7 +198,7 @@ export function Settings() {
                       type="checkbox"
                       checked={summaryAlerts}
                       onChange={(e) => setSummaryAlerts(e.target.checked)}
-                      style={{ accentColor: '#00D4B2', width: 16, height: 16 }}
+                      style={{ accentColor: 'var(--accent)', width: 16, height: 16 }}
                     />
                     <div>
                       <p className="sam-settings-label" style={{ margin: 0 }}>
@@ -179,7 +215,7 @@ export function Settings() {
                       type="checkbox"
                       checked={soundEffects}
                       onChange={(e) => setSoundEffects(e.target.checked)}
-                      style={{ accentColor: '#00D4B2', width: 16, height: 16 }}
+                      style={{ accentColor: 'var(--accent)', width: 16, height: 16 }}
                     />
                     <div>
                       <p className="sam-settings-label" style={{ margin: 0 }}>

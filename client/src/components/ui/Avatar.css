@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════
    SAMVADA UI: Avatar Component Styles
+   Midnight Navy + Steel Blue
    ═══════════════════════════════════════════ */
 
 .sam-avatar-wrapper {
@@ -10,14 +11,14 @@
 }
 
 .sam-avatar {
-  border-radius: var(--lm-radius-full, 9999px);
+  border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--lm-font-primary, 'Inter', sans-serif);
-  font-weight: 700;
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+  font-weight: 600;
   color: #FFFFFF;
-  border: 2px solid var(--lm-bg-base, #090A0F);
+  border: 2px solid var(--bg-primary, #0B1220);
   overflow: hidden;
   position: relative;
 }
@@ -65,7 +66,7 @@
   bottom: 0;
   right: 0;
   border-radius: 9999px;
-  border: 2px solid var(--lm-bg-base, #090A0F);
+  border: 2px solid var(--bg-primary, #0B1220);
 }
 
 .sam-avatar-wrapper--xs .sam-avatar__status { width: 7px; height: 7px; }
@@ -74,18 +75,16 @@
 .sam-avatar-wrapper--lg .sam-avatar__status { width: 14px; height: 14px; }
 .sam-avatar-wrapper--xl .sam-avatar__status { width: 18px; height: 18px; }
 
-.sam-avatar__status--online { background-color: var(--lm-success, #34D399); }
-.sam-avatar__status--offline { background-color: var(--lm-offline, #64748B); }
-.sam-avatar__status--away { background-color: var(--lm-warning, #FBBF24); }
-.sam-avatar__status--busy { background-color: var(--lm-danger, #F87171); }
+.sam-avatar__status--online { background-color: var(--success, #5E9B7B); }
+.sam-avatar__status--offline { background-color: var(--text-muted, #718092); }
+.sam-avatar__status--away { background-color: var(--warning, #B99A59); }
+.sam-avatar__status--busy { background-color: var(--error, #C66B6B); }
 
 .sam-avatar__status--speaking {
-  background-color: var(--lm-accent, #00D4B2);
-  box-shadow: 0 0 8px var(--lm-accent, #00D4B2);
-  animation: speakingGlow 1.5s ease-in-out infinite;
+  background-color: var(--accent, #4F7FA8);
 }
 
-/* Speaking ring around whole avatar */
+/* Speaking ring around whole avatar (Restrained steel blue, no neon cyan glow) */
 .sam-avatar--speaking {
-  box-shadow: 0 0 0 2px var(--lm-accent, #00D4B2), 0 0 16px rgba(0, 212, 178, 0.4);
+  box-shadow: 0 0 0 2px var(--accent, #4F7FA8);
 }

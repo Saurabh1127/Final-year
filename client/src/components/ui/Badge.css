@@ -6,8 +6,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: var(--lm-font-primary, 'Inter', sans-serif);
-  font-weight: 600;
+  font-family: var(--lm-font-primary, 'IBM Plex Sans', sans-serif);
+  font-weight: 500;
   border-radius: var(--lm-radius-full, 9999px);
   border: 1px solid transparent;
   line-height: 1;
@@ -27,47 +27,43 @@
   font-size: var(--lm-text-sm, 0.8125rem);
 }
 
-/* ── Variants ── */
-/* Mint */
-.sam-badge--mint {
-  background-color: var(--lm-accent-muted, rgba(0, 212, 178, 0.15));
-  border-color: rgba(0, 212, 178, 0.3);
-  color: var(--lm-accent, #00D4B2);
-}
-
-/* Blue / Telemetry */
+/* Primary / Brand (Steel Blue) */
+.sam-badge--mint,
+.sam-badge--primary,
 .sam-badge--blue {
-  background-color: var(--lm-telemetry-muted, rgba(56, 189, 248, 0.15));
-  border-color: rgba(56, 189, 248, 0.3);
-  color: var(--lm-telemetry, #38BDF8);
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  color: var(--accent);
 }
 
-/* Red / Danger / Live */
-.sam-badge--red {
-  background-color: var(--lm-danger-muted, rgba(248, 113, 113, 0.15));
-  border-color: rgba(248, 113, 113, 0.35);
-  color: var(--lm-danger, #F87171);
+/* Success: Semantic Green */
+.sam-badge--success {
+  background-color: color-mix(in srgb, var(--status-success) 12%, transparent);
+  border-color: color-mix(in srgb, var(--status-success) 28%, transparent);
+  color: var(--status-success);
+}
+
+/* Red / Danger / Error */
+.sam-badge--red,
+.sam-badge--error {
+  background-color: color-mix(in srgb, var(--status-error) 12%, transparent);
+  border-color: color-mix(in srgb, var(--status-error) 28%, transparent);
+  color: var(--status-error);
 }
 
 /* Amber / Warning */
-.sam-badge--amber {
-  background-color: var(--lm-warning-muted, rgba(251, 191, 36, 0.15));
-  border-color: rgba(251, 191, 36, 0.3);
-  color: var(--lm-warning, #FBBF24);
+.sam-badge--amber,
+.sam-badge--warning {
+  background-color: color-mix(in srgb, var(--status-warning) 12%, transparent);
+  border-color: color-mix(in srgb, var(--status-warning) 28%, transparent);
+  color: var(--status-warning);
 }
 
-/* Gray / Offline */
+/* Gray / Neutral */
 .sam-badge--gray {
-  background-color: rgba(148, 163, 184, 0.12);
-  border-color: rgba(148, 163, 184, 0.2);
-  color: var(--lm-text-secondary, #94A3B8);
-}
-
-/* Purple */
-.sam-badge--purple {
-  background-color: rgba(168, 85, 247, 0.15);
-  border-color: rgba(168, 85, 247, 0.3);
-  color: #C084FC;
+  background-color: var(--surface-elevated);
+  border-color: var(--border);
+  color: var(--text-secondary);
 }
 
 /* ── Dot Indicator ── */

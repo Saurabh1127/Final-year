@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import './Toast.css';
 
 const VARIANT_ICONS = {
   success: (

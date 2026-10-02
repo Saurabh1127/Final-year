@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { ToastProvider } from './components/ui';
@@ -28,7 +29,7 @@ function RootRoute() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#090A0F', color: '#94A3B8' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary, #0B1220)', color: 'var(--text-secondary, #A9B4C2)', fontFamily: 'var(--font-sans, "IBM Plex Sans", sans-serif)' }}>
         <p>Loading Samvada...</p>
       </div>
     );
@@ -48,10 +49,11 @@ function RootRoute() {
 function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || 'placeholder'}>
-      <AuthProvider>
-        <SocketProvider>
-          <ToastProvider>
-            <Router>
+      <ThemeProvider>
+        <AuthProvider>
+          <SocketProvider>
+            <ToastProvider>
+              <Router>
               <Routes>
                 {/* Public Marketing & Auth Routes */}
                 <Route path="/" element={<RootRoute />} />
@@ -111,13 +113,13 @@ function App() {
                   }
                 />
 
-                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Router>
           </ToastProvider>
         </SocketProvider>
       </AuthProvider>
-    </GoogleOAuthProvider>
+    </ThemeProvider>
+  </GoogleOAuthProvider>
   );
 }
 

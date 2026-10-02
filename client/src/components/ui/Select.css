@@ -1,19 +1,20 @@
 /* ═══════════════════════════════════════════
    SAMVADA UI: Select Component Styles
+   Midnight Navy + Steel Blue
    ═══════════════════════════════════════════ */
 
 .sam-select-group {
   display: flex;
   flex-direction: column;
-  gap: var(--lm-space-1, 4px);
+  gap: 4px;
   width: 100%;
 }
 
 .sam-select-label {
-  font-family: var(--lm-font-primary, 'Inter', sans-serif);
-  font-size: var(--lm-text-sm, 0.8125rem);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+  font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--lm-text-secondary, #94A3B8);
+  color: var(--text-secondary);
 }
 
 .sam-select-wrapper {
@@ -21,24 +22,23 @@
   display: flex;
   align-items: center;
   width: 100%;
-  background-color: var(--lm-bg-input, #0E1018);
-  border: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
-  border-radius: var(--lm-radius-md, 8px);
-  transition: all var(--lm-duration-fast, 120ms) ease;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: all 0.15s ease;
 }
 
 .sam-select-wrapper:hover:not(.sam-select-wrapper--disabled) {
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: var(--border-strong);
 }
 
 .sam-select-wrapper:focus-within:not(.sam-select-wrapper--disabled) {
-  border-color: var(--lm-accent, #00D4B2);
-  box-shadow: 0 0 0 3px var(--lm-border-focus, rgba(0, 212, 178, 0.25));
-  background-color: rgba(14, 16, 24, 0.95);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .sam-select-wrapper--error {
-  border-color: var(--lm-danger, #F87171) !important;
+  border-color: var(--error) !important;
 }
 
 .sam-select-wrapper--disabled {
@@ -51,18 +51,18 @@
   width: 100%;
   background: transparent;
   border: none;
-  color: var(--lm-text-primary, #F8FAFC);
-  font-family: var(--lm-font-primary, 'Inter', sans-serif);
-  font-size: var(--lm-text-base, 0.875rem);
+  color: var(--text-primary);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+  font-size: 0.875rem;
   outline: none;
-  padding: 0 var(--lm-space-8, 32px) 0 var(--lm-space-3, 12px);
+  padding: 0 32px 0 12px;
   cursor: pointer;
   min-width: 0;
 }
 
 .sam-select option {
-  background-color: var(--lm-bg-elevated, #1E2130);
-  color: var(--lm-text-primary, #F8FAFC);
+  background-color: var(--surface);
+  color: var(--text-primary);
   padding: 8px 12px;
 }
 
@@ -75,7 +75,7 @@
   height: 32px;
 }
 .sam-select-wrapper--sm .sam-select {
-  font-size: var(--lm-text-xs, 0.75rem);
+  font-size: 0.75rem;
 }
 
 .sam-select-wrapper--md {
@@ -99,23 +99,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-left: var(--lm-space-3, 12px);
-  color: var(--lm-text-secondary, #94A3B8);
+  padding-left: 12px;
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
 .sam-select-chevron {
   position: absolute;
-  right: var(--lm-space-3, 12px);
+  right: 12px;
   pointer-events: none;
-  color: var(--lm-text-secondary, #94A3B8);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .sam-select-error {
-  font-size: var(--lm-text-xs, 0.75rem);
-  color: var(--lm-danger, #F87171);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+  font-size: 0.75rem;
+  color: var(--error);
   margin-top: 2px;
 }

@@ -3,54 +3,51 @@
    ═══════════════════════════════════════════ */
 
 .sam-card {
-  border-radius: var(--lm-radius-lg, 12px);
+  border-radius: 12px;
   position: relative;
-  transition: all var(--lm-duration-base, 200ms) var(--lm-easing-default, ease);
-  color: var(--lm-text-primary, #F8FAFC);
+  transition: all var(--lm-duration-base, 180ms) ease;
+  color: var(--text-primary);
   overflow: hidden;
 }
 
 /* ── Variants ── */
 .sam-card--surface {
-  background-color: var(--lm-bg-surface, #12151E);
+  background-color: var(--surface);
 }
 
 .sam-card--elevated {
-  background-color: var(--lm-bg-elevated, #1E2130);
-  box-shadow: var(--lm-shadow-md);
+  background-color: var(--surface-elevated);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .sam-card--glass {
-  background-color: rgba(18, 21, 30, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background-color: var(--surface);
 }
 
 .sam-card--interactive {
-  background-color: var(--lm-bg-surface, #12151E);
+  background-color: var(--surface);
   cursor: pointer;
   user-select: none;
 }
 
 .sam-card--interactive:hover {
-  background-color: var(--lm-bg-surface-hover, #1A1D2B);
-  border-color: rgba(0, 212, 178, 0.35) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(0, 212, 178, 0.1);
+  background-color: var(--surface-elevated);
+  border-color: var(--border-strong) !important;
+  transform: translateY(-1px);
 }
 
 .sam-card--interactive:active {
-  transform: translateY(0) scale(0.995);
+  transform: translateY(0);
 }
 
-/* ── Borders & Glow ── */
+/* ── Borders & Clean Highlight ── */
 .sam-card--bordered {
-  border: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--border);
 }
 
 .sam-card--glow {
-  box-shadow: 0 0 24px rgba(0, 212, 178, 0.15);
-  border-color: rgba(0, 212, 178, 0.3) !important;
+  border-color: var(--accent) !important;
+  box-shadow: none;
 }
 
 /* ── Padding ── */

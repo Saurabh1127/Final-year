@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════
    SAMVADA UI: IconButton Component Styles
+   Midnight Navy + Steel Blue
    ═══════════════════════════════════════════ */
 
 .sam-icon-btn-wrap {
@@ -11,12 +12,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--lm-radius-full, 9999px);
+  border-radius: 9999px;
   border: 1px solid transparent;
   cursor: pointer;
-  background-color: var(--lm-bg-surface, #12151E);
-  color: var(--lm-text-secondary, #94A3B8);
-  transition: all var(--lm-duration-base, 200ms) var(--lm-easing-default, ease);
+  background-color: var(--surface);
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
   outline: none;
   user-select: none;
   position: relative;
@@ -26,7 +27,7 @@
 
 .sam-icon-btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--lm-bg-base, #090A0F), 0 0 0 4px var(--lm-border-focus, rgba(0, 212, 178, 0.5));
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .sam-icon-btn:disabled,
@@ -64,93 +65,90 @@
 /* ── Variants ── */
 /* Default */
 .sam-icon-btn--default {
-  background-color: var(--lm-bg-surface, #12151E);
-  border-color: var(--lm-border, rgba(255, 255, 255, 0.08));
-  color: var(--lm-text-secondary, #94A3B8);
+  background-color: var(--surface);
+  border-color: var(--border);
+  color: var(--text-secondary);
 }
 
 .sam-icon-btn--default:hover:not(:disabled) {
-  background-color: var(--lm-bg-surface-hover, #1A1D2B);
-  color: var(--lm-text-primary, #F8FAFC);
-  border-color: rgba(255, 255, 255, 0.18);
-  transform: translateY(-1px);
+  background-color: var(--surface-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
 }
 
 .sam-icon-btn--default:active:not(:disabled) {
-  transform: scale(0.94);
+  transform: scale(0.96);
 }
 
-/* Active (Mint Highlight) */
+/* Active (Steel Blue Highlight) */
 .sam-icon-btn--active {
-  background-color: var(--lm-accent-muted, rgba(0, 212, 178, 0.15));
-  border-color: var(--lm-accent, #00D4B2);
-  color: var(--lm-accent, #00D4B2);
-  box-shadow: 0 0 16px rgba(0, 212, 178, 0.25);
+  background-color: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .sam-icon-btn--active:hover:not(:disabled) {
-  background-color: rgba(0, 212, 178, 0.22);
-  color: var(--lm-accent-hover, #00E8C4);
-  transform: translateY(-1px);
+  background-color: var(--accent-subtle);
+  color: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
-/* Muted / Inactive (Dark with muted red/gray accent) */
+/* Muted / Inactive (Muted error accent) */
 .sam-icon-btn--muted {
-  background-color: rgba(248, 113, 113, 0.12);
-  border-color: rgba(248, 113, 113, 0.3);
-  color: var(--lm-danger, #F87171);
+  background-color: rgba(198, 107, 107, 0.12);
+  border-color: rgba(198, 107, 107, 0.3);
+  color: var(--error);
 }
 
 .sam-icon-btn--muted:hover:not(:disabled) {
-  background-color: rgba(248, 113, 113, 0.2);
-  color: #EF4444;
+  background-color: rgba(198, 107, 107, 0.2);
+  color: var(--error);
 }
 
 /* Danger (Full red background - End Call) */
 .sam-icon-btn--danger {
-  background-color: var(--lm-danger, #F87171);
-  border-color: var(--lm-danger, #F87171);
+  background-color: var(--error);
+  border-color: var(--error);
   color: #FFFFFF;
 }
 
 .sam-icon-btn--danger:hover:not(:disabled) {
-  background-color: #EF4444;
-  box-shadow: 0 0 20px rgba(248, 113, 113, 0.4);
-  transform: translateY(-1px);
+  background-color: #b35959;
 }
 
 .sam-icon-btn--danger:active:not(:disabled) {
-  transform: scale(0.94);
+  transform: scale(0.96);
 }
 
 /* Ghost */
 .sam-icon-btn--ghost {
   background-color: transparent;
   border-color: transparent;
-  color: var(--lm-text-secondary, #94A3B8);
+  color: var(--text-secondary);
 }
 
 .sam-icon-btn--ghost:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.08);
-  color: var(--lm-text-primary, #F8FAFC);
+  background-color: var(--surface-elevated);
+  color: var(--text-primary);
 }
 
 /* ── Tooltip ── */
 .sam-icon-tooltip {
   position: absolute;
   pointer-events: none;
-  background-color: var(--lm-bg-elevated, #1E2130);
-  color: var(--lm-text-primary, #F8FAFC);
+  background-color: var(--surface-elevated);
+  color: var(--text-primary);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 11px;
   font-weight: 500;
   padding: 4px 8px;
-  border-radius: var(--lm-radius-sm, 4px);
-  border: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
-  box-shadow: var(--lm-shadow-md);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   white-space: nowrap;
-  z-index: var(--lm-z-tooltip, 700);
+  z-index: 700;
   opacity: 0;
-  transition: opacity var(--lm-duration-fast, 120ms) ease, transform var(--lm-duration-fast, 120ms) ease;
+  transition: opacity 0.12s ease, transform 0.12s ease;
 }
 
 .sam-icon-btn-wrap:hover .sam-icon-tooltip {
@@ -181,7 +179,7 @@
   transform: translateY(-50%) translateX(4px);
 }
 .sam-icon-btn-wrap:hover .sam-icon-tooltip--left {
-  transform: translateY(-50%) translateX(0);
+  transform: translateX(-50%) translateX(0);
 }
 
 .sam-icon-tooltip--right {

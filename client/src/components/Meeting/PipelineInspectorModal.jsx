@@ -94,19 +94,19 @@ export default function PipelineInspectorModal({ isOpen, onClose, data }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="pipeline-inspector-title"
-        className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl bg-[#0e1017] border border-white/[0.1] shadow-2xl p-5 sm:p-7 text-slate-100 font-sans animate-slide-up"
+        className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl bg-[#162235] border border-[#25364A] shadow-2xl p-5 sm:p-7 text-[#F4F5F3] font-sans animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Modal Header ── */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/[0.08] mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#00d4b2]/10 border border-[#00d4b2]/25 text-[#00d4b2] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-[var(--accent)]/10 border border-[var(--accent)]/25 text-[var(--accent)] flex items-center justify-center shrink-0">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
             </div>
             <div>
-              <h3 id="pipeline-inspector-title" className="text-lg font-bold text-white tracking-tight">Translation Pipeline Diagnostics</h3>
+              <h3 id="pipeline-inspector-title" className="text-lg font-semibold text-[#F4F5F3] tracking-tight font-[var(--font-display)]">Translation Pipeline Diagnostics</h3>
               <p className="text-xs text-slate-400">
                 {data?.speakerName ? `Spoken by ${data.speakerName}` : 'Latest Spoken Utterance Telemetry'}
               </p>
@@ -175,10 +175,10 @@ export default function PipelineInspectorModal({ isOpen, onClose, data }) {
         {/* ── 4-Stage Breakdown Grid ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {/* Stage 1: Audio & VAD */}
-          <div className="p-4 rounded-2xl bg-[#141722] border border-white/[0.06] flex flex-col justify-between">
+          <div className="p-4 rounded-xl bg-surface border border-border flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06] font-semibold text-sm text-[#00d4b2]">
-                <span className="w-5 h-5 rounded-full bg-[#00d4b2]/20 text-[#00d4b2] text-xs flex items-center justify-center font-bold shrink-0">1</span>
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06] font-semibold text-sm text-[var(--accent)]">
+                <span className="w-5 h-5 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] text-xs flex items-center justify-center font-bold shrink-0">1</span>
                 <div className="flex items-center gap-1.5">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
@@ -200,7 +200,7 @@ export default function PipelineInspectorModal({ isOpen, onClose, data }) {
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-white/[0.03] gap-2">
                   <span className="text-slate-400 whitespace-nowrap">Spoken Hint:</span>
-                  <span className="font-mono text-[#00d4b2] font-semibold">{stt.hint_language ? stt.hint_language.toUpperCase() : 'AUTO'}</span>
+                  <span className="font-mono text-[var(--accent)] font-semibold">{stt.hint_language ? stt.hint_language.toUpperCase() : 'AUTO'}</span>
                 </div>
               </div>
             </div>
@@ -226,10 +226,10 @@ export default function PipelineInspectorModal({ isOpen, onClose, data }) {
           </div>
 
           {/* Stage 2: STT (Whisper) */}
-          <div className="p-4 rounded-2xl bg-[#141722] border border-white/[0.06] flex flex-col justify-between">
+          <div className="p-4 rounded-xl bg-surface border border-border flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06] font-semibold text-sm text-[#38bdf8]">
-                <span className="w-5 h-5 rounded-full bg-[#38bdf8]/20 text-[#38bdf8] text-xs flex items-center justify-center font-bold shrink-0">2</span>
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06] font-semibold text-sm text-[#5B9CFF]">
+                <span className="w-5 h-5 rounded-full bg-[#5B9CFF]/20 text-[#5B9CFF] text-xs flex items-center justify-center font-bold shrink-0">2</span>
                 <div className="flex items-center gap-1.5">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -243,7 +243,7 @@ export default function PipelineInspectorModal({ isOpen, onClose, data }) {
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-white/[0.03] gap-2">
                   <span className="text-slate-400 whitespace-nowrap">Detected Lang:</span>
-                  <span className="font-mono text-[#38bdf8] font-bold text-right truncate min-w-0">
+                  <span className="font-mono text-[#5B9CFF] font-bold text-right truncate min-w-0">
                     {stt.detected_language ? stt.detected_language.toUpperCase() : (data?.sourceLanguage?.toUpperCase() || '?')}
                     {stt.language_probability ? ` (${Math.round(stt.language_probability * 100)}%)` : ''}
                   </span>
@@ -257,7 +257,7 @@ export default function PipelineInspectorModal({ isOpen, onClose, data }) {
           </div>
 
           {/* Stage 3: NMT (NLLB) */}
-          <div className="p-4 rounded-2xl bg-[#141722] border border-white/[0.06] flex flex-col justify-between">
+          <div className="p-4 rounded-xl bg-surface border border-border flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06] font-semibold text-sm text-indigo-300">
                 <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs flex items-center justify-center font-bold shrink-0">3</span>
@@ -289,7 +289,7 @@ export default function PipelineInspectorModal({ isOpen, onClose, data }) {
           </div>
 
           {/* Stage 4: TTS */}
-          <div className="p-4 rounded-2xl bg-[#141722] border border-white/[0.06] flex flex-col justify-between">
+          <div className="p-4 rounded-xl bg-surface border border-border flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06] font-semibold text-sm text-amber-300">
                 <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 text-xs flex items-center justify-center font-bold shrink-0">4</span>
@@ -312,7 +312,7 @@ export default function PipelineInspectorModal({ isOpen, onClose, data }) {
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-white/[0.03] gap-2">
                   <span className="text-slate-400 whitespace-nowrap">Total Latency:</span>
-                  <span className="font-mono text-[#00d4b2] font-bold">
+                  <span className="font-mono text-[var(--accent)] font-bold">
                     {diag.latency?.total_seconds ? `${diag.latency.total_seconds}s` : (data?.displayLatency || 'N/A')}
                   </span>
                 </div>
@@ -322,8 +322,8 @@ export default function PipelineInspectorModal({ isOpen, onClose, data }) {
         </div>
 
         {/* ── Quick Diagnostic Guide / Tips ── */}
-        <div className="p-4 rounded-2xl bg-[#00d4b2]/[0.04] border border-[#00d4b2]/20 text-xs text-slate-300">
-          <div className="flex items-center gap-1.5 font-bold text-[#00d4b2] mb-2">
+        <div className="p-4 rounded-xl bg-[var(--accent)]/[0.06] border border-[var(--accent)]/20 text-xs text-slate-300">
+          <div className="flex items-center gap-1.5 font-bold text-[var(--accent)] mb-2">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="16" x2="12" y2="12" />

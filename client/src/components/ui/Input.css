@@ -16,14 +16,14 @@
 }
 
 .sam-input-label {
-  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  font-family: var(--lm-font-primary, 'IBM Plex Sans', sans-serif);
   font-size: var(--lm-text-sm, 0.8125rem);
   font-weight: 500;
-  color: var(--lm-text-secondary, #94A3B8);
+  color: var(--text-secondary);
 }
 
 .sam-input-required {
-  color: var(--lm-accent, #00D4B2);
+  color: var(--accent);
   margin-left: 2px;
 }
 
@@ -32,32 +32,31 @@
   display: flex;
   align-items: center;
   width: 100%;
-  background-color: var(--lm-bg-input, #0E1018);
-  border: 1px solid var(--lm-border, rgba(255, 255, 255, 0.08));
-  border-radius: var(--lm-radius-md, 8px);
+  background-color: var(--lm-bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   transition: all var(--lm-duration-fast, 120ms) ease;
 }
 
 .sam-input-wrapper:hover:not(.sam-input-wrapper--disabled) {
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: var(--border-strong);
 }
 
 .sam-input-wrapper:focus-within:not(.sam-input-wrapper--disabled) {
-  border-color: rgba(255, 255, 255, 0.35);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
-  background-color: rgba(18, 21, 30, 0.98);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .sam-input-wrapper--error {
-  border-color: var(--lm-danger, #F87171) !important;
+  border-color: var(--status-error) !important;
 }
 
 .sam-input-wrapper--error:focus-within {
-  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.25) !important;
+  box-shadow: 0 0 0 1px var(--status-error) !important;
 }
 
 .sam-input-wrapper--disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -65,9 +64,9 @@
   width: 100%;
   background: transparent !important;
   border: none !important;
-  color: var(--lm-text-primary, #F8FAFC);
-  font-family: var(--lm-font-primary, 'Inter', sans-serif);
-  font-size: var(--lm-text-base, 0.875rem);
+  color: var(--text-primary);
+  font-family: var(--lm-font-primary);
+  font-size: var(--lm-text-base, 0.9375rem);
   outline: none !important;
   box-shadow: none !important;
   padding: 0 var(--lm-space-3, 12px);
@@ -85,14 +84,14 @@
 .sam-input:-webkit-autofill:hover,
 .sam-input:-webkit-autofill:focus,
 .sam-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #0E1018 inset !important;
-  -webkit-text-fill-color: #F8FAFC !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--lm-bg-input) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
   transition: background-color 5000s ease-in-out 0s;
-  caret-color: #F8FAFC;
+  caret-color: var(--text-primary);
 }
 
 .sam-input::placeholder {
-  color: var(--lm-text-disabled, #475569);
+  color: var(--text-muted);
 }
 
 .sam-input:disabled {

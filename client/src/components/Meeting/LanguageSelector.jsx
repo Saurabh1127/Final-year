@@ -89,13 +89,13 @@ export default function LanguageSelector({
         value={currentLanguage || (includeAuto ? 'auto' : 'hi')}
         onChange={(e) => onChange && onChange(e.target.value)}
         disabled={disabled}
-        className="px-3 py-1.5 rounded-xl text-xs font-medium bg-[#141722] border border-white/10 text-white outline-none focus:border-[#00d4b2] focus:ring-1 focus:ring-[#00d4b2] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition"
+        className="px-3 py-1.5 rounded-xl text-xs font-medium bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition"
       >
         {includeAuto && (
-          <option value="auto" className="bg-[#141722] text-white">Auto-detect</option>
+          <option value="auto" className="bg-[var(--surface)] text-[var(--text-primary)]">Auto-detect</option>
         )}
         {SUPPORTED_LANGUAGES.map((lang) => (
-          <option key={lang.code} value={lang.code} className="bg-[#141722] text-white">
+          <option key={lang.code} value={lang.code} className="bg-[var(--surface)] text-[var(--text-primary)]">
             {lang.label}
           </option>
         ))}

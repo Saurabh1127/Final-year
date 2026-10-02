@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════
    SAMVADA UI: Core Meeting Room Styles
-   Tokens: #090A0F, #00D4B2 (Mint), #38BDF8 (Telemetry Cyan)
+   Midnight Navy + Steel Blue
    ═══════════════════════════════════════════════════════════ */
 @import '../components/Meeting/RightPanel.css';
 
@@ -9,9 +9,9 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background-color: var(--lm-bg-primary, #090a0f);
-  color: var(--lm-text-primary, #f8fafc);
-  font-family: var(--lm-font-primary, 'Inter', sans-serif);
+  background-color: var(--bg-primary, #0B1220);
+  color: var(--text-primary, #F4F5F3);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   display: flex;
   flex-direction: column;
 }
@@ -54,14 +54,13 @@
 .sam-meeting-header__logo {
   width: 32px;
   height: 32px;
-  border-radius: 9px;
-  background-color: rgba(0, 212, 178, 0.12);
-  border: 1px solid rgba(0, 212, 178, 0.25);
-  color: var(--lm-accent, #00d4b2);
+  border-radius: 8px;
+  background-color: var(--accent-subtle);
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 12px rgba(0, 212, 178, 0.15);
 }
 
 .sam-meeting-header__live-pill {
@@ -106,7 +105,7 @@
 }
 
 .sam-meeting-header__timer svg {
-  color: var(--lm-accent, #00d4b2);
+  color: var(--accent, #4F7FA8);
 }
 
 .sam-meeting-header__divider {
@@ -168,12 +167,12 @@
   align-items: center;
   gap: 5px;
   padding: 2px 8px;
-  border-radius: var(--lm-radius-full, 9999px);
-  background-color: rgba(0, 212, 178, 0.1);
-  border: 1px solid rgba(0, 212, 178, 0.25);
-  color: var(--lm-accent, #00d4b2);
+  border-radius: 6px;
+  background-color: var(--accent-subtle);
+  border: 1px solid var(--border-strong);
+  color: var(--accent, #4F7FA8);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   transition: all var(--lm-transition-fast, 150ms ease);
 }
 
@@ -244,39 +243,36 @@
 }
 
 .sam-ai-pipeline-status--active {
-  background-color: rgba(0, 212, 178, 0.1);
-  border-color: rgba(0, 212, 178, 0.3);
-  color: var(--lm-accent, #00d4b2);
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
 }
 
 .sam-ai-pipeline-status--active .sam-ai-pipeline-status__dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--lm-accent, #00d4b2);
-  box-shadow: 0 0 8px var(--lm-accent, #00d4b2);
+  background-color: var(--accent);
 }
 
 .sam-ai-pipeline-status--asr {
-  background-color: rgba(0, 212, 178, 0.15);
-  border-color: rgba(0, 212, 178, 0.45);
-  color: var(--lm-accent, #00d4b2);
-  box-shadow: 0 0 14px rgba(0, 212, 178, 0.2);
+  background-color: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent);
 }
 
 .sam-ai-pipeline-status__dot--asr {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: var(--lm-accent, #00d4b2);
+  background-color: var(--accent);
   animation: sam-pulse-slow 1s infinite ease-in-out;
 }
 
 .sam-ai-pipeline-status--nmt {
-  background-color: rgba(56, 189, 248, 0.15);
-  border-color: rgba(56, 189, 248, 0.4);
-  color: var(--lm-telemetry, #38bdf8);
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
+  background-color: var(--accent-subtle);
+  border-color: var(--border-strong);
+  color: var(--accent);
 }
 
 .sam-ai-pipeline-status__spinner {
@@ -339,22 +335,22 @@
 }
 
 .sam-meeting-header__action-btn--active {
-  background-color: rgba(0, 212, 178, 0.15);
-  border-color: rgba(0, 212, 178, 0.35);
-  color: var(--lm-accent, #00d4b2);
+  background-color: var(--accent-subtle);
+  border-color: var(--border-strong);
+  color: var(--accent);
 }
 
 .sam-meeting-header__action-btn--trans-idle {
-  background-color: var(--lm-accent, #00d4b2);
-  color: #090a0f;
-  font-weight: 700;
+  background-color: var(--accent);
+  color: #ffffff;
+  font-weight: 500;
   border: none;
-  box-shadow: 0 0 12px rgba(0, 212, 178, 0.3);
+  border-radius: 8px;
 }
 
 .sam-meeting-header__action-btn--trans-idle:hover {
-  background-color: var(--lm-accent-hover, #33e0c4);
-  color: #090a0f;
+  background-color: var(--accent-hover);
+  color: #ffffff;
 }
 
 .sam-meeting-header__action-btn--trans-active {
@@ -487,20 +483,20 @@
   width: 100%;
   height: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: var(--lm-radius-xl, 18px);
-  background-color: #0b0d14;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background-color: var(--surface, #162235);
+  border: 1px solid var(--border, #25364A);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.6);
-  transition: border-color 200ms ease, box-shadow 200ms ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: border 150ms ease, box-shadow 150ms ease;
 }
 
 .sam-participant-tile--speaking {
-  border-color: var(--lm-accent, #00d4b2) !important;
-  box-shadow: 0 0 24px rgba(0, 212, 178, 0.35) !important;
+  border: 1.5px solid var(--accent) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6) !important;
 }
 
 .sam-participant-tile__video {
@@ -525,20 +521,20 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(0, 212, 178, 0.15) 0%, rgba(56, 189, 248, 0.15) 100%);
-  border: 2px solid rgba(0, 212, 178, 0.3);
-  color: var(--lm-accent, #00d4b2);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
-  font-weight: 800;
-  box-shadow: 0 0 16px rgba(0, 212, 178, 0.15);
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
 }
 
 .sam-participant-tile__cam-off-name {
   font-size: 0.75rem;
-  color: var(--lm-text-secondary, #94a3b8);
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -561,19 +557,18 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background-color: var(--lm-accent, #00d4b2);
-  color: #090a0f;
+  background-color: var(--accent);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
-  font-weight: 800;
-  box-shadow: 0 0 16px rgba(0, 212, 178, 0.4);
+  font-weight: 600;
 }
 
 .sam-participant-tile__autoplay-text {
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .sam-participant-tile__top-bar {
@@ -588,20 +583,18 @@
   align-items: center;
   gap: 5px;
   padding: 3px 10px;
-  border-radius: var(--lm-radius-full, 9999px);
-  background-color: rgba(9, 10, 15, 0.85);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 212, 178, 0.35);
-  color: var(--lm-accent, #00d4b2);
-  font-family: var(--lm-font-mono, monospace);
+  border-radius: 6px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   font-size: 0.6875rem;
-  font-weight: 700;
-  box-shadow: 0 0 14px rgba(0, 212, 178, 0.15);
+  font-weight: 600;
 }
 
 .sam-participant-tile__lang-flow-arrow {
-  color: var(--lm-telemetry, #38bdf8);
-  font-weight: 800;
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .sam-participant-tile__info-bar {
@@ -633,7 +626,7 @@
 }
 
 .sam-participant-tile__name--editable:hover {
-  color: var(--lm-accent, #00d4b2);
+  color: var(--accent);
 }
 
 .sam-participant-tile__edit-icon {
@@ -641,10 +634,11 @@
 }
 
 .sam-participant-tile__rename-input {
-  background-color: rgba(0, 0, 0, 0.6);
-  border: 1px solid var(--lm-accent, #00d4b2);
+  background-color: var(--surface);
+  border: 1px solid var(--accent);
   border-radius: 4px;
-  color: #ffffff;
+  color: var(--text-primary);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.75rem;
   padding: 2px 6px;
   outline: none;
@@ -652,7 +646,7 @@
 }
 
 .sam-participant-tile__mute-icon {
-  color: #f43f5e;
+  color: var(--error);
 }
 
 .sam-participant-tile__speaking-pill {
@@ -660,16 +654,15 @@
   align-items: center;
   gap: 4px;
   font-size: 0.6875rem;
-  font-weight: 700;
-  color: var(--lm-accent, #00d4b2);
+  font-weight: 600;
+  color: var(--accent);
 }
 
 .sam-participant-tile__speaking-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background-color: var(--lm-accent, #00d4b2);
-  animation: sam-pulse-slow 1s infinite ease-in-out;
+  background-color: var(--accent);
 }
 
 /* ── Translating Status Floating Pill ── */
@@ -679,18 +672,17 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 30;
-  padding: 6px 16px;
-  border-radius: var(--lm-radius-full, 9999px);
-  background-color: rgba(0, 212, 178, 0.12);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 212, 178, 0.35);
-  color: var(--lm-accent, #00d4b2);
+  padding: 6px 14px;
+  border-radius: 8px;
+  background-color: var(--surface-elevated);
+  border: 1px solid var(--border);
+  color: var(--accent);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 8px 24px rgba(0, 212, 178, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   pointer-events: none;
 }
 
@@ -698,8 +690,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--lm-accent, #00d4b2);
-  animation: sam-pulse-slow 1s infinite ease-in-out;
+  background-color: var(--accent);
 }
 
 /* ── Subtitle Overlay ── */
@@ -711,12 +702,12 @@
   z-index: 30;
   max-width: 680px;
   width: 90%;
-  background-color: rgba(8, 10, 16, 0.92);
+  background-color: rgba(12, 18, 27, 0.94);
   backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 212, 178, 0.25);
-  border-radius: var(--lm-radius-xl, 18px);
+  border: 1px solid var(--color-border-default, #1B2635);
+  border-radius: 12px;
   padding: 14px 22px;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 212, 178, 0.12);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
   animation: sam-fade-in 200ms ease;
   pointer-events: auto;
 }
@@ -769,21 +760,20 @@
   gap: 5px;
   font-family: var(--lm-font-mono, monospace);
   font-size: 0.625rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.05em;
   padding: 2px 8px;
-  border-radius: var(--lm-radius-full, 9999px);
-  background-color: rgba(0, 212, 178, 0.15);
-  border: 1px solid rgba(0, 212, 178, 0.3);
-  color: var(--lm-accent, #00d4b2);
+  border-radius: 6px;
+  background-color: var(--accent-subtle);
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
 }
 
 .sam-subtitle-overlay__lang-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background-color: var(--lm-accent, #00d4b2);
-  animation: sam-pulse-slow 1s infinite ease-in-out;
+  background-color: var(--accent);
 }
 
 .sam-subtitle-overlay__speaker {
@@ -805,7 +795,7 @@
 }
 
 .sam-subtitle-overlay__latency svg {
-  color: var(--lm-accent, #00d4b2);
+  color: var(--accent, #4F7FA8);
 }
 
 .sam-subtitle-overlay__inspect-btn {
@@ -863,11 +853,11 @@
   align-items: center;
   gap: 10px;
   padding: 8px 16px;
-  background-color: rgba(10, 12, 18, 0.85);
+  background-color: rgba(12, 18, 27, 0.92);
   backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--lm-radius-full, 9999px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--color-border-default, #1B2635);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
 }
 
 .sam-meeting-toolbar__btn {
@@ -879,68 +869,65 @@
   border: none;
   cursor: pointer;
   padding: 4px 6px;
-  color: var(--lm-text-secondary, #94a3b8);
-  transition: all var(--lm-transition-fast);
+  color: var(--color-text-secondary, #A7B0BD);
+  transition: all 0.15s ease;
 }
 
 .sam-meeting-toolbar__btn:hover {
-  color: #ffffff;
+  color: var(--color-text-primary, #F2F0EA);
 }
 
 .sam-meeting-toolbar__icon {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background-color: var(--color-bg-elevated, #101923);
+  border: 1px solid var(--color-border-default, #1B2635);
   display: flex;
   align-items: center;
   justify-content: center;
   color: inherit;
-  transition: all var(--lm-transition-fast);
+  transition: all 0.15s ease;
 }
 
 .sam-meeting-toolbar__btn:hover .sam-meeting-toolbar__icon {
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--color-bg-surface-hover, #162331);
+  border-color: var(--color-border-strong, #263547);
   transform: translateY(-1px);
 }
 
 .sam-meeting-toolbar__btn--alert .sam-meeting-toolbar__icon {
-  background-color: #f43f5e;
-  border-color: #f43f5e;
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.4);
+  background-color: rgba(239, 107, 115, 0.15);
+  border-color: rgba(239, 107, 115, 0.35);
+  color: var(--color-status-error, #EF6B73);
 }
 
 .sam-meeting-toolbar__btn--active-mint .sam-meeting-toolbar__icon {
-  background-color: rgba(0, 212, 178, 0.15);
-  border-color: rgba(0, 212, 178, 0.35);
-  color: var(--lm-accent, #00d4b2);
-  box-shadow: 0 0 14px rgba(0, 212, 178, 0.25);
+  background-color: var(--accent-subtle);
+  border-color: var(--border-strong);
+  color: var(--accent);
 }
 
 .sam-meeting-toolbar__btn--active-trans .sam-meeting-toolbar__icon {
-  background-color: var(--lm-accent, #00d4b2);
-  color: #090a0f;
-  border-color: var(--lm-accent, #00d4b2);
-  box-shadow: 0 0 20px rgba(0, 212, 178, 0.45);
-  transform: scale(1.06);
+  background-color: var(--accent);
+  color: #FFFFFF;
+  border-color: var(--accent);
 }
 
 .sam-meeting-toolbar__btn--active-trans .sam-meeting-toolbar__label {
-  color: var(--lm-accent, #00d4b2);
-  font-weight: 700;
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .sam-meeting-toolbar__btn--leave .sam-meeting-toolbar__icon {
-  background-color: #f43f5e;
-  border-color: #f43f5e;
-  color: #ffffff;
-  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.4);
+  background-color: rgba(239, 107, 115, 0.18);
+  border-color: rgba(239, 107, 115, 0.35);
+  color: var(--color-status-error, #EF6B73);
 }
 
 .sam-meeting-toolbar__btn--leave:hover .sam-meeting-toolbar__icon {
-  background-color: #e11d48;
+  background-color: var(--color-status-error, #EF6B73);
+  color: #FFFFFF;
 }
 
 .sam-meeting-toolbar__label {
@@ -1007,9 +994,8 @@
   top: 0;
   bottom: 0;
   width: 360px;
-  background-color: rgba(14, 16, 23, 0.95);
-  backdrop-filter: blur(24px);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--surface, #162235);
+  border-left: 1px solid var(--border, #25364A);
   box-shadow: -16px 0 40px rgba(0, 0, 0, 0.6);
   z-index: 45;
   display: flex;
@@ -1030,10 +1016,11 @@
 
 .sam-transcript-sidebar__header {
   padding: 14px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border, #25364A);
   display: flex;
   flex-direction: column;
   gap: 8px;
+  background-color: var(--surface, #162235);
 }
 
 .sam-transcript-sidebar__header-top {
@@ -1048,11 +1035,13 @@
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
-  border-radius: var(--lm-radius-full, 9999px);
-  background-color: rgba(0, 212, 178, 0.1);
-  border: 1px solid rgba(0, 212, 178, 0.25);
+  border-radius: 6px;
+  background-color: var(--accent-subtle);
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-mono, monospace);
   font-size: 0.6875rem;
-  color: var(--lm-accent, #00d4b2);
+  font-weight: 600;
+  color: var(--accent);
   width: fit-content;
 }
 
@@ -1060,8 +1049,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--lm-accent, #00d4b2);
-  box-shadow: 0 0 6px var(--lm-accent, #00d4b2);
+  background-color: var(--accent);
 }
 
 .sam-transcript-sidebar__empty-icon {
@@ -1072,7 +1060,7 @@
 .sam-transcript-sidebar__empty-sub {
   display: block;
   font-size: 0.6875rem;
-  color: var(--lm-accent, #00d4b2);
+  color: var(--accent);
   margin-top: 6px;
 }
 
@@ -1083,29 +1071,39 @@
 }
 
 .sam-transcript-sidebar__title {
+  font-family: var(--font-display, 'IBM Plex Sans', sans-serif);
   font-size: 0.9375rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary, #F0F4F8);
   margin: 0;
 }
 
 .sam-transcript-sidebar__close-btn {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--lm-text-secondary, #94a3b8);
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border-subtle, #1B2635);
+  color: var(--color-text-secondary, #94A3B8);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--lm-transition-fast);
+  transition: all 120ms ease;
+  touch-action: manipulation;
+}
+
+@media (max-width: 640px) {
+  .sam-transcript-sidebar__close-btn {
+    width: 44px;
+    height: 44px;
+  }
 }
 
 .sam-transcript-sidebar__close-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--color-text-primary, #F0F4F8);
 }
 
 .sam-transcript-sidebar__content {
@@ -1120,15 +1118,16 @@
 .sam-transcript-sidebar__empty {
   padding: 40px 16px;
   text-align: center;
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.8125rem;
-  color: var(--lm-text-tertiary, #64748b);
+  color: var(--color-text-muted, #64748B);
 }
 
 .sam-transcript-entry {
   padding: 12px;
-  border-radius: var(--lm-radius-lg, 12px);
-  background-color: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background-color: var(--color-bg-elevated, #101923);
+  border: 1px solid var(--color-border-default, #1B2635);
 }
 
 .sam-transcript-entry__header {
@@ -1139,9 +1138,10 @@
 }
 
 .sam-transcript-entry__speaker {
+  font-family: var(--font-body, 'IBM Plex Sans', sans-serif);
   font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--lm-accent, #00d4b2);
+  font-weight: 600;
+  color: var(--accent);
 }
 
 .sam-transcript-entry__meta {
@@ -1153,42 +1153,47 @@
 .sam-transcript-entry__inspect-btn {
   background: none;
   border: none;
-  color: var(--lm-text-tertiary, #64748b);
+  color: var(--color-text-muted, #64748B);
   cursor: pointer;
-  padding: 2px;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sam-transcript-entry__inspect-btn:hover {
-  color: var(--lm-accent, #00d4b2);
+  color: var(--accent);
+  background-color: var(--accent-subtle);
 }
 
 .sam-transcript-entry__time {
   font-size: 0.6875rem;
-  color: var(--lm-text-tertiary, #64748b);
-  font-family: var(--lm-font-mono, monospace);
+  color: var(--color-text-muted, #64748B);
+  font-family: var(--font-mono, monospace);
 }
 
 .sam-transcript-entry__original {
   font-size: 0.8125rem;
-  color: #ffffff;
-  margin: 0 0 4px 0;
+  color: var(--color-text-primary, #F0F4F8);
+  margin: 0 0 6px 0;
   line-height: 1.4;
 }
 
 .sam-transcript-entry__translated {
   font-size: 0.75rem;
-  color: var(--lm-text-secondary, #94a3b8);
+  color: var(--color-text-secondary, #94A3B8);
   margin: 0;
   padding-left: 8px;
-  border-left: 2px solid rgba(0, 212, 178, 0.4);
+  border-left: 2px solid var(--accent);
   line-height: 1.4;
 }
 
 .sam-transcript-entry__lang-tag {
-  font-family: var(--lm-font-mono, monospace);
+  font-family: var(--font-mono, monospace);
   font-size: 0.625rem;
-  font-weight: 700;
-  color: var(--lm-telemetry, #38bdf8);
+  font-weight: 600;
+  color: var(--accent);
   text-transform: uppercase;
   margin-right: 4px;
 }
@@ -1201,8 +1206,8 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  background-color: var(--lm-bg-primary, #090a0f);
-  color: var(--lm-text-secondary, #94a3b8);
+  background-color: var(--bg-primary, #0B1220);
+  color: var(--text-secondary, #A9B4C2);
 }
 
 .sam-meeting-error {
@@ -1213,8 +1218,9 @@
   justify-content: center;
   gap: 16px;
   padding: 24px;
-  background-color: var(--lm-bg-primary, #090a0f);
+  background-color: var(--bg-primary, #0B1220);
   max-width: 480px;
   margin: 0 auto;
   text-align: center;
 }
+

@@ -158,7 +158,7 @@ export function AudioVisualizer({
     <div className="sam-audiovisualizer">
       <div className="sam-audiovisualizer__header">
         <div className="sam-audiovisualizer__title-wrap">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: isMuted ? '#F43F5E' : '#00D4B2' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: isMuted ? 'var(--color-status-error, #EF6B73)' : 'var(--accent)' }}>
             {isMuted ? (
               <>
                 <line x1="1" y1="1" x2="23" y2="23" />
@@ -208,10 +208,8 @@ export function AudioVisualizer({
               height: `${h}px`,
               opacity: isMuted ? 0.3 : 0.6 + (h / 34) * 0.4,
               backgroundColor: isMuted
-                ? '#475569'
-                : h > 20
-                ? '#38BDF8'
-                : '#00D4B2',
+                ? 'var(--text-muted)'
+                : 'var(--accent)',
             }}
           />
         ))}
@@ -224,7 +222,7 @@ export function AudioVisualizer({
             className="sam-audiovisualizer__meter-fill"
             style={{
               width: `${isMuted ? 0 : Math.min(100, level * 1.3)}%`,
-              backgroundColor: level > 75 ? '#F59E0B' : '#00D4B2',
+              backgroundColor: level > 75 ? 'var(--color-status-warning, #E8B95B)' : 'var(--accent)',
             }}
           />
         </div>

@@ -1,5 +1,4 @@
 import React from 'react';
-import './StatusIndicator.css';
 
 /**
  * Samvada StatusIndicator Component

@@ -1,5 +1,4 @@
 import React from 'react';
-import './Badge.css';
 
 /**
  * Samvada Badge Component

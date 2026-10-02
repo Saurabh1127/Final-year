@@ -15,7 +15,6 @@ import RightPanel from './RightPanel';
 import LeaveModal from './LeaveModal';
 import PreJoinScreen from './PreJoinScreen';
 import PipelineInspectorModal from './PipelineInspectorModal';
-import '../../pages/Meeting.css';
 
 /**
  * MeetingRoom

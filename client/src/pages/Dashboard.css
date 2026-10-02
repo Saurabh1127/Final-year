@@ -1,24 +1,25 @@
-/* ═══════════════════════════════════════════
-   SAMVADA UI: Dashboard Component Styles
-   ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   SAMVADA UI: Dashboard Styles (Phase 6)
+   Calm Productivity Center, Restrained Editorial Dark Environment
+   ═══════════════════════════════════════════════════════════════════ */
 
 .sam-dashboard {
   flex: 1;
-  padding: var(--lm-space-8, 32px);
-  padding-bottom: var(--lm-space-12, 48px);
-  max-width: 1320px;
+  padding: 32px;
+  padding-bottom: 56px;
+  max-width: 1280px;
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--lm-space-8, 32px);
+  gap: 32px;
   min-height: min-content;
 }
 
 @media (max-width: 640px) {
   .sam-dashboard {
-    padding: var(--lm-space-5, 20px) var(--lm-space-4, 16px);
-    gap: var(--lm-space-6, 24px);
+    padding: 20px 16px;
+    gap: 24px;
   }
 }
 
@@ -53,41 +54,43 @@
   align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: var(--lm-space-4, 16px);
+  gap: 16px;
 }
 
 .sam-dashboard__greeting-wrap {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .sam-dashboard__greeting-title {
-  font-family: var(--lm-font-display, 'Plus Jakarta Sans', sans-serif);
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 800;
-  color: #FFFFFF;
+  font-family: var(--font-display, 'IBM Plex Sans', sans-serif);
+  font-size: clamp(1.6rem, 2.5vw, 2.1rem);
+  font-weight: 600;
+  color: var(--text-primary);
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
 }
 
 .sam-dashboard__greeting-sub {
-  font-size: var(--lm-text-sm, 0.8125rem);
-  color: var(--lm-text-secondary, #94A3B8);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
   margin: 0;
+  line-height: 1.5;
 }
 
 .sam-dashboard__header-actions {
   display: flex;
   align-items: center;
-  gap: var(--lm-space-3, 12px);
+  gap: 12px;
 }
 
 /* ── Quick Actions Grid ── */
 .sam-dashboard__quick-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--lm-space-5, 20px);
+  gap: 20px;
 }
 
 @media (max-width: 960px) {
@@ -97,15 +100,25 @@
 }
 
 .sam-qa-card {
-  padding: var(--lm-space-6, 24px);
+  padding: 24px;
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sam-qa-card:hover:not(.sam-qa-card--disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-elevated);
+  transform: translateY(-1px);
 }
 
 .sam-qa-card--disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed !important;
 }
 
@@ -113,71 +126,69 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--lm-space-4, 16px);
+  margin-bottom: 16px;
 }
 
 .sam-qa-card__icon-wrap {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--lm-radius-lg, 12px);
-  background-color: rgba(0, 212, 178, 0.1);
-  border: 1px solid rgba(0, 212, 178, 0.25);
-  color: var(--lm-accent, #00D4B2);
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background-color: var(--surface-elevated);
+  border: 1px solid var(--border);
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 16px rgba(0, 212, 178, 0.15);
 }
 
 .sam-qa-card__icon-wrap--blue {
-  background-color: rgba(56, 189, 248, 0.1);
-  border-color: rgba(56, 189, 248, 0.25);
-  color: var(--lm-telemetry, #38BDF8);
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.15);
+  background-color: var(--surface-elevated);
+  border-color: var(--border);
+  color: var(--accent);
 }
 
 .sam-qa-card__icon-wrap--muted {
-  background-color: rgba(148, 163, 184, 0.08);
-  border-color: rgba(148, 163, 184, 0.15);
-  color: var(--lm-text-secondary, #94A3B8);
-  box-shadow: none;
+  background-color: var(--surface-elevated);
+  border-color: var(--border);
+  color: var(--text-muted);
 }
 
 .sam-qa-card__title {
-  font-family: var(--lm-font-primary, 'Inter', sans-serif);
-  font-size: var(--lm-text-md, 1rem);
-  font-weight: 700;
-  color: #FFFFFF;
-  margin: 0 0 var(--lm-space-1, 4px) 0;
+  font-family: var(--font-display, 'IBM Plex Sans', sans-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
 }
 
 .sam-qa-card__desc {
-  font-size: var(--lm-text-sm, 0.8125rem);
-  color: var(--lm-text-secondary, #94A3B8);
+  font-size: 0.825rem;
+  color: var(--text-secondary);
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .sam-qa-card__arrow {
   margin-top: auto;
-  padding-top: var(--lm-space-4, 16px);
+  padding-top: 18px;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: var(--lm-text-xs, 0.75rem);
+  font-size: 0.775rem;
   font-weight: 600;
-  color: var(--lm-accent, #00D4B2);
+  color: var(--accent);
 }
 
 /* ── Content Grid (Main + Side) ── */
 .sam-dashboard__grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: var(--lm-space-6, 24px);
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 900px) {
   .sam-dashboard__grid {
     grid-template-columns: 1fr;
   }
@@ -188,23 +199,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--lm-space-4, 16px);
+  margin-bottom: 16px;
 }
 
 .sam-dashboard__sec-title {
-  font-family: var(--lm-font-primary, 'Inter', sans-serif);
-  font-size: var(--lm-text-lg, 1.125rem);
-  font-weight: 700;
-  color: #FFFFFF;
+  font-family: var(--font-display, 'IBM Plex Sans', sans-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
   margin: 0;
 }
 
 /* ── Language Preferences Card ── */
 .sam-lang-card {
-  padding: var(--lm-space-6, 24px);
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: var(--lm-space-5, 20px);
+  gap: 18px;
 }
 
 .sam-lang-card__item {
@@ -214,17 +229,18 @@
 }
 
 .sam-lang-card__label {
-  font-size: var(--lm-text-xs, 0.75rem);
+  font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--lm-text-secondary, #94A3B8);
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono, monospace);
+  color: var(--text-muted);
 }
 
 .sam-lang-card__val {
-  font-size: var(--lm-text-base, 0.875rem);
-  font-weight: 600;
-  color: #FFFFFF;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -232,20 +248,23 @@
 
 /* ── Pipeline Telemetry Card ── */
 .sam-telemetry-card {
-  padding: var(--lm-space-5, 20px);
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: var(--lm-space-3, 12px);
+  gap: 12px;
 }
 
 .sam-telemetry-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: var(--lm-text-xs, 0.75rem);
-  color: var(--lm-text-secondary, #94A3B8);
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.775rem;
+  color: var(--text-secondary);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
 }
 
 .sam-telemetry-item:last-child {
