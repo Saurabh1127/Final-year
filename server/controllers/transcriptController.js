@@ -45,7 +45,7 @@ class TranscriptController {
 
       return res.status(201).json({ success: true, data: entry });
     } catch (err) {
-      console.error('❌ [Transcript] POST error:', err.message);
+      console.error('[ERROR] [Transcript] POST error:', err.message);
       return res.status(500).json({ success: false, message: 'Server error saving transcript.' });
     }
   }
@@ -56,7 +56,7 @@ class TranscriptController {
       const entries = await transcriptService.getTranscripts(meetingId);
       return res.json({ success: true, data: entries });
     } catch (err) {
-      console.error('❌ [Transcript] GET error:', err.message);
+      console.error('[ERROR] [Transcript] GET error:', err.message);
       return res.status(500).json({ success: false, message: 'Server error fetching transcripts.' });
     }
   }

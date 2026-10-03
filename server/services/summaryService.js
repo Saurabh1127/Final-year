@@ -78,7 +78,7 @@ ${dialogueLog}
 
       for (const model of GEMINI_MODELS) {
         try {
-          console.log(`🤖 [Summary] Attempting summarization with model: ${model}`);
+          console.log(`[INFO] [Summary] Attempting summarization with model: ${model}`);
           const geminiResponse = await axios.post(
             `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
             {
@@ -104,18 +104,18 @@ ${dialogueLog}
           }
 
           if (summary && summary.executiveSummary) {
-            console.log(`✅ [Summary] Successfully generated summary using ${model}`);
+            console.log(`[SUCCESS] [Summary] Successfully generated summary using ${model}`);
             break;
           }
         } catch (err) {
-          console.warn(`⚠️  [Summary] Model ${model} failed:`, err.response?.data?.error?.message || err.message);
+          console.warn(`[WARN] [Summary] Model ${model} failed:`, err.response?.data?.error?.message || err.message);
         }
       }
     }
 
     // 5. Fallback: Intelligent Extractive Summarization if LLM unavailable or failed
     if (!summary || !summary.executiveSummary) {
-      console.log('ℹ️  [Summary] Using intelligent extractive fallback summarizer');
+      console.log('[INFO] [Summary] Using intelligent extractive fallback summarizer');
       summary = this._generateExtractiveFallback(transcripts);
     }
 

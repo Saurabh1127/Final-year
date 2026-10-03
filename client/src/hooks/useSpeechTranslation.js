@@ -188,7 +188,7 @@ const useSpeechTranslation = ({
       flushTime,
     });
     console.log(
-      `📤 [Speech] Emitted audio-chunk (WAV, ${(wavBuffer.byteLength / 1024).toFixed(1)}KB, src: ${sourceLanguage || 'auto'}) for room ${roomCode}`
+      `[Speech] Emitted audio-chunk (WAV, ${(wavBuffer.byteLength / 1024).toFixed(1)}KB, src: ${sourceLanguage || 'auto'}) for room ${roomCode}`
     );
   }, [socket, roomCode, speakerName, sourceLanguage]);
 
@@ -207,12 +207,12 @@ const useSpeechTranslation = ({
         if (!speechStartRef.current) {
           speechStartRef.current    = Date.now();
           chunkStartTimeRef.current = Date.now();
-          console.log('🎤 [VAD] Speech START');
+          console.log('[VAD] Speech START');
 
           // Hard cap: flush even if the speaker never pauses
           maxChunkTimerRef.current = setTimeout(() => {
             if (framesRef.current.length > 0) {
-              console.log('⏱️ [VAD] Max chunk reached — force flushing');
+              console.log('[VAD] Max chunk reached - force flushing');
               flushChunk();
             }
           }, VAD_CONFIG.MAX_CHUNK_MS);
@@ -235,7 +235,7 @@ const useSpeechTranslation = ({
           speechStartRef.current &&
           Date.now() - speechStartRef.current >= VAD_CONFIG.MIN_SPEECH_MS
         ) {
-          console.log('🔇 [VAD] Silence detected — flushing chunk');
+          console.log('[VAD] Silence detected - flushing chunk');
           flushChunk();
         }
       }
@@ -249,7 +249,7 @@ const useSpeechTranslation = ({
 
     if (!window.AudioWorklet) {
       const msg = 'AudioWorklet is not supported in this browser. Use Chrome 66+ or Firefox 76+.';
-      console.error('❌ [Speech]', msg);
+      console.error('[ERROR] [Speech]', msg);
       setError(msg);
       return;
     }
@@ -292,9 +292,9 @@ const useSpeechTranslation = ({
 
       setIsTranslating(true);
       setError(null);
-      console.log('🎙️ [Speech] Started AudioWorklet capture on cloned stream.');
+      console.log('[Speech] Started AudioWorklet capture on cloned stream.');
     } catch (err) {
-      console.error('❌ [Speech] Failed to start AudioWorklet:', err);
+      console.error('[ERROR] [Speech] Failed to start AudioWorklet:', err);
       setError('Could not start translation recording.');
     }
   }, [isTranslating, stream, processFrame]);
@@ -327,7 +327,7 @@ const useSpeechTranslation = ({
 
     restoreRemoteAudio();
     setIsTranslating(false);
-    console.log('🛑 [Speech] Stopped.');
+    console.log('[Speech] Stopped.');
   }, [isTranslating, restoreRemoteAudio]);
 
   // ── Restart when stream changes (e.g. device switch) ──────────────────────

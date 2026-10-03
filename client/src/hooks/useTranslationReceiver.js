@@ -85,7 +85,7 @@ const useTranslationReceiver = ({
     if (sequenceNumber && speakerId) {
       const lastPlayed = lastPlayedSeqRef.current[speakerId] || 0;
       if (sequenceNumber < lastPlayed) {
-        console.warn(`⏭️ [TranslationReceiver] Discarding stale audio (seq ${sequenceNumber} < ${lastPlayed}) for ${speakerId}`);
+        console.warn(`[WARN] [TranslationReceiver] Discarding stale audio (seq ${sequenceNumber} < ${lastPlayed}) for ${speakerId}`);
         URL.revokeObjectURL(blobUrl);
         playNext();
         return;
@@ -106,7 +106,7 @@ const useTranslationReceiver = ({
 
     audio.onplay = () => {
       duck();
-      // ⚡ SIMULTANEOUS: Show private subtitle in user's target language when voice starts speaking ⚡
+      // SIMULTANEOUS: Show private subtitle in user's target language when voice starts speaking
       if (onSubtitle && (translatedText || originalText)) {
         onSubtitle({
           speakerName: speakerName || 'Speaker',
@@ -127,7 +127,7 @@ const useTranslationReceiver = ({
         const aiMs = (timing.serverAiReturnTime && timing.serverReceiveTime) ? (timing.serverAiReturnTime - timing.serverReceiveTime) : null;
         const downloadMs = timing.serverAiReturnTime ? (playTime - timing.serverAiReturnTime) : 0;
 
-        console.log(`⏱️ [Translation & Delivery] ${(translationDeliveryMs / 1000).toFixed(2)}s (${translationDeliveryMs}ms)`, {
+        console.log(`[Translation & Delivery] ${(translationDeliveryMs / 1000).toFixed(2)}s (${translationDeliveryMs}ms)`, {
           aiEngine: aiMs ? `${aiMs}ms` : 'N/A',
           networkUpload: `${uploadMs}ms`,
           networkDownloadAndInit: `${downloadMs}ms`,
@@ -153,7 +153,7 @@ const useTranslationReceiver = ({
 
     audio.onended = onDone;
     audio.onerror = () => {
-      console.warn('⚠️ [TranslationReceiver] TTS audio error, skipping.');
+      console.warn('[WARN] [TranslationReceiver] TTS audio error, skipping.');
       if (onSubtitle && (translatedText || originalText)) {
         onSubtitle({
           speakerName: speakerName || 'Speaker',
@@ -174,7 +174,7 @@ const useTranslationReceiver = ({
 
     // Mobile: audio.play() is blocked by browser autoplay policy — show subtitle-only fallback
     audio.play().catch(() => {
-      console.warn('⚠️ [TranslationReceiver] audio.play() blocked (mobile autoplay). Showing subtitle only.');
+      console.warn('[WARN] [TranslationReceiver] audio.play() blocked (mobile autoplay). Showing subtitle only.');
       if (onSubtitle && (translatedText || originalText)) {
         onSubtitle({
           speakerName: speakerName || 'Speaker',
@@ -261,7 +261,7 @@ const useTranslationReceiver = ({
       // Drop oldest if queue is full
       if (audioQueueRef.current.length >= MAX_QUEUE_SIZE) {
         audioQueueRef.current.shift();
-        console.warn('⚠️ [TranslationReceiver] Queue overflow — oldest item dropped.');
+        console.warn('[WARN] [TranslationReceiver] Queue overflow - oldest item dropped.');
       }
 
       // Create a Blob URL from the binary ArrayBuffer

@@ -4,7 +4,7 @@ class TurnService {
   async getCredentials() {
     const METERED_API_KEY = process.env.METERED_API_KEY;
     if (!METERED_API_KEY) {
-      console.warn('⚠️ METERED_API_KEY is not set in environment.');
+      console.warn('[WARN] METERED_API_KEY is not set in environment.');
       const error = new Error('TURN server configuration is missing.');
       error.status = 500;
       throw error;

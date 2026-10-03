@@ -83,18 +83,18 @@ class PersistentAIConnection {
     if (this._destroyed) return;
 
     const url = this._getWsUrl();
-    console.log(`🔌 [AIClient] Connecting persistent WebSocket → ${url}`);
+    console.log(`[AIClient] Connecting persistent WebSocket -> ${url}`);
 
     try {
       this._ws = new WebSocket(url);
     } catch (err) {
-      console.error(`❌ [AIClient] Failed to create WebSocket: ${err.message}`);
+      console.error(`[ERROR] [AIClient] Failed to create WebSocket: ${err.message}`);
       this._scheduleReconnect();
       return;
     }
 
     this._ws.on('open', () => {
-      console.log(`✅ [AIClient] Persistent WebSocket connected. Reusing for all future requests.`);
+      console.log(`[SUCCESS] [AIClient] Persistent WebSocket connected. Reusing for all future requests.`);
       this._connected = true;
       this._reconnectDelay = RECONNECT_BASE_MS; // Reset backoff on successful connect
     });
@@ -104,7 +104,7 @@ class PersistentAIConnection {
       try {
         msg = JSON.parse(data.toString());
       } catch {
-        console.warn('⚠️  [AIClient] Received non-JSON message on persistent WS, ignoring.');
+        console.warn('[WARN] [AIClient] Received non-JSON message on persistent WS, ignoring.');
         return;
       }
 
@@ -112,7 +112,7 @@ class PersistentAIConnection {
 
       if (!jobId) {
         // Shouldn't happen with Phase 8 FastAPI, but be safe
-        console.warn('⚠️  [AIClient] Received message without job_id — cannot route.');
+        console.warn('[WARN] [AIClient] Received message without job_id - cannot route.');
         return;
       }
 
@@ -126,12 +126,12 @@ class PersistentAIConnection {
     });
 
     this._ws.on('error', (err) => {
-      console.error(`❌ [AIClient] Persistent WebSocket error: ${err.message}`);
+      console.error(`[ERROR] [AIClient] Persistent WebSocket error: ${err.message}`);
       // Individual job errors are handled in _ws.on('close')
     });
 
     this._ws.on('close', (code, reason) => {
-      console.warn(`⚠️  [AIClient] Persistent WebSocket closed (code ${code}). Reconnecting…`);
+      console.warn(`[WARN] [AIClient] Persistent WebSocket closed (code ${code}). Reconnecting...`);
       this._connected = false;
       this._ws = null;
 
@@ -152,7 +152,7 @@ class PersistentAIConnection {
   _scheduleReconnect() {
     if (this._destroyed || this._reconnectTimer) return;
 
-    console.log(`🔄 [AIClient] Reconnecting in ${this._reconnectDelay}ms…`);
+    console.log(`[AIClient] Reconnecting in ${this._reconnectDelay}ms...`);
     this._reconnectTimer = setTimeout(() => {
       this._reconnectTimer = null;
       // Exponential backoff capped at RECONNECT_MAX_MS
@@ -171,7 +171,7 @@ class PersistentAIConnection {
       this._ws.send(JSON.stringify({ job_id: jobId, ...payload }));
       return true;
     } catch (err) {
-      console.error(`❌ [AIClient] Send failed for job ${jobId}: ${err.message}`);
+      console.error(`[ERROR] [AIClient] Send failed for job ${jobId}: ${err.message}`);
       return false;
     }
   }
@@ -238,7 +238,7 @@ const _persistentConnection = new PersistentAIConnection();
  * Used as a fallback when the persistent connection is unavailable.
  */
 function _sendOneShotWebSocket(payload, emitter) {
-  console.warn('⚡ [AIClient] Persistent connection unavailable — using one-shot WebSocket fallback.');
+  console.warn('[WARN] [AIClient] Persistent connection unavailable - using one-shot WebSocket fallback.');
 
   let isFinished = false;
   const finish = (msg) => {
@@ -296,7 +296,7 @@ function _sendOneShotWebSocket(payload, emitter) {
         finish(msg);
       }
     } catch (err) {
-      console.warn('⚠️  [AIClient] Error parsing fallback WS message:', err);
+      console.warn('[WARN] [AIClient] Error parsing fallback WS message:', err);
     }
   });
 
@@ -351,7 +351,7 @@ export function processAudio({
 
   // ── Attempt to use persistent connection ────────────────────────────────────
   if (_persistentConnection.isReady) {
-    console.log(`📤 [AIClient] Sending job ${jobId.slice(0, 8)} on persistent connection.`);
+    console.log(`[AIClient] Sending job ${jobId.slice(0, 8)} on persistent connection.`);
 
     // Set up timeout for this specific job
     const timeoutId = setTimeout(() => {

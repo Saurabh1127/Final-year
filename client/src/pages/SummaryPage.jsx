@@ -223,11 +223,11 @@ export function SummaryPage() {
             </p>
             {transcripts.length === 0 ? (
               <span style={{ color: '#f59e0b', fontSize: '0.75rem' }}>
-                ⚠️ No speech transcript records were captured during this call session.
+                No speech transcript records were captured during this call session.
               </span>
             ) : (
               <span style={{ color: 'var(--accent)', fontSize: '0.75rem' }}>
-                ✓ {transcripts.length} transcript entries available for analysis
+                {transcripts.length} transcript entries available for analysis
               </span>
             )}
           </div>

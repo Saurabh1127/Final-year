@@ -46,11 +46,11 @@ export const useWebRTC = (localStream, userId) => {
         const res = await api.get('/turn/credentials');
         const iceServers = res.data;
         if (Array.isArray(iceServers) && iceServers.length > 0) {
-          console.log('📡 [WebRTC] ✅ Got fresh TURN credentials from Metered:', iceServers.length, 'servers');
+          console.log('[WebRTC] Got fresh TURN credentials from Metered:', iceServers.length, 'servers');
           iceConfigRef.current = { iceServers };
         }
       } catch (err) {
-        console.warn('📡 [WebRTC] ℹ️ Using built-in Metered TURN servers:', err.message);
+        console.warn('[WebRTC] Using built-in Metered TURN servers:', err.message);
       }
     };
     fetchTurnCredentials();
@@ -63,7 +63,7 @@ export const useWebRTC = (localStream, userId) => {
 
   // Destroy ALL peer connections — used on unmount
   const destroyAllPeers = useCallback(() => {
-    console.log('📡 [WebRTC] Destroying all peer connections');
+    console.log('[WebRTC] Destroying all peer connections');
     Object.keys(peersRef.current).forEach(peerId => {
       try {
         peersRef.current[peerId].close();
@@ -76,7 +76,7 @@ export const useWebRTC = (localStream, userId) => {
   const removePeerConnection = useCallback((targetUserId) => {
     const pc = peersRef.current[targetUserId];
     if (pc) {
-      console.log(`📡 [WebRTC] Removing peer connection for ${targetUserId}`);
+      console.log(`[WebRTC] Removing peer connection for ${targetUserId}`);
       try { pc.close(); } catch (e) { /* ignore */ }
       delete peersRef.current[targetUserId];
       setRemoteStreams(prev => {
@@ -90,12 +90,12 @@ export const useWebRTC = (localStream, userId) => {
   const createPeerConnection = useCallback((targetUserId, targetSocketId, isInitiator) => {
     // Always destroy existing connection to this user first
     if (peersRef.current[targetUserId]) {
-      console.log(`📡 [WebRTC] Replacing stale peer for ${targetUserId}`);
+      console.log(`[WebRTC] Replacing stale peer for ${targetUserId}`);
       try { peersRef.current[targetUserId].close(); } catch (e) { /* ignore */ }
       delete peersRef.current[targetUserId];
     }
 
-    console.log(`📡 [WebRTC] Creating peer (initiator: ${isInitiator}) for ${targetUserId}`);
+    console.log(`[WebRTC] Creating peer (initiator: ${isInitiator}) for ${targetUserId}`);
     const pc = new RTCPeerConnection(iceConfigRef.current);
     pc._iceCandidateQueue = [];
 
@@ -103,11 +103,11 @@ export const useWebRTC = (localStream, userId) => {
     const stream = localStreamRef.current;
     if (stream) {
       stream.getTracks().forEach(track => {
-        console.log(`📡 [WebRTC] Adding local ${track.kind} track`);
+        console.log(`[WebRTC] Adding local ${track.kind} track`);
         pc.addTrack(track, stream);
       });
     } else {
-      console.warn('⚠️ [WebRTC] No local stream available yet!');
+      console.warn('[WARN] [WebRTC] No local stream available yet!');
     }
 
     // Explicitly add transceivers to receive both audio and video even if local tracks aren't active yet
@@ -132,21 +132,21 @@ export const useWebRTC = (localStream, userId) => {
     };
 
     pc.onicegatheringstatechange = () => {
-      console.log(`📡 [WebRTC] ICE gathering: ${pc.iceGatheringState}`);
+      console.log(`[WebRTC] ICE gathering: ${pc.iceGatheringState}`);
     };
 
     pc.oniceconnectionstatechange = () => {
-      console.log(`📡 [WebRTC] ICE connection: ${pc.iceConnectionState}`);
+      console.log(`[WebRTC] ICE connection: ${pc.iceConnectionState}`);
       // Try ICE restart on failure
       if (pc.iceConnectionState === 'failed') {
-        console.log('📡 [WebRTC] Attempting ICE restart...');
+        console.log('[WebRTC] Attempting ICE restart...');
         pc.restartIce();
       }
     };
 
     // Remote tracks received → store the stream, preserving both audio and video
     pc.ontrack = (event) => {
-      console.log(`📡 [WebRTC] ✅ Received remote ${event.track.kind} track from ${targetUserId}`);
+      console.log(`[WebRTC] Received remote ${event.track.kind} track from ${targetUserId}`);
       setRemoteStreams(prev => {
         const existing = prev[targetUserId];
         let streamToUse;
@@ -170,7 +170,7 @@ export const useWebRTC = (localStream, userId) => {
 
 
     pc.onconnectionstatechange = () => {
-      console.log(`📡 [WebRTC] Connection: ${pc.connectionState} for ${targetUserId}`);
+      console.log(`[WebRTC] Connection: ${pc.connectionState} for ${targetUserId}`);
       if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
         // Don't auto-remove on failed — ICE restart may recover it
         if (pc.connectionState === 'closed') {
@@ -184,7 +184,7 @@ export const useWebRTC = (localStream, userId) => {
       pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
         .then(offer => pc.setLocalDescription(offer))
         .then(() => {
-          console.log(`📡 [WebRTC] Offer sent to ${targetUserId}`);
+          console.log(`[WebRTC] Offer sent to ${targetUserId}`);
           socket.emit('webrtc-offer', {
             targetSocketId,
             offer: pc.localDescription,
@@ -204,13 +204,13 @@ export const useWebRTC = (localStream, userId) => {
 
     const handleParticipantJoined = ({ userId: joinedUserId, socketId }) => {
       if (joinedUserId === userId) return;
-      console.log(`📡 [WebRTC] Participant joined: ${joinedUserId}`);
+      console.log(`[WebRTC] Participant joined: ${joinedUserId}`);
       createPeerConnection(joinedUserId, socketId, true);
     };
 
     const processIceQueue = async (pc) => {
       if (pc._iceCandidateQueue?.length > 0) {
-        console.log(`📡 [WebRTC] Flushing ${pc._iceCandidateQueue.length} queued ICE candidates`);
+        console.log(`[WebRTC] Flushing ${pc._iceCandidateQueue.length} queued ICE candidates`);
         const queue = [...pc._iceCandidateQueue];
         pc._iceCandidateQueue = [];
         for (const candidate of queue) {
@@ -225,14 +225,14 @@ export const useWebRTC = (localStream, userId) => {
 
     const handleOffer = async ({ callerSocketId, callerId, offer }) => {
       if (callerId === userId) return;
-      console.log(`📡 [WebRTC] Received offer from ${callerId}`);
+      console.log(`[WebRTC] Received offer from ${callerId}`);
       const pc = createPeerConnection(callerId, callerSocketId, false);
       try {
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
         await processIceQueue(pc);
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
-        console.log(`📡 [WebRTC] Answer sent to ${callerId}`);
+        console.log(`[WebRTC] Answer sent to ${callerId}`);
         socket.emit('webrtc-answer', {
           targetSocketId: callerSocketId,
           answer: pc.localDescription,
@@ -244,7 +244,7 @@ export const useWebRTC = (localStream, userId) => {
     };
 
     const handleAnswer = async ({ answererId, answer }) => {
-      console.log(`📡 [WebRTC] Received answer from ${answererId}`);
+      console.log(`[WebRTC] Received answer from ${answererId}`);
       const pc = peersRef.current[answererId];
       if (pc) {
         try {
@@ -254,14 +254,14 @@ export const useWebRTC = (localStream, userId) => {
           console.error('Error handling answer:', err);
         }
       } else {
-        console.warn(`⚠️ [WebRTC] No peer for answerer ${answererId}`);
+        console.warn(`[WARN] [WebRTC] No peer for answerer ${answererId}`);
       }
     };
 
     const handleIceCandidate = async ({ senderId, candidate }) => {
       const pc = peersRef.current[senderId];
       if (!pc) {
-        console.warn(`⚠️ [WebRTC] ICE for unknown peer ${senderId}`);
+        console.warn(`[WARN] [WebRTC] ICE for unknown peer ${senderId}`);
         return;
       }
       if (pc.remoteDescription && pc.remoteDescription.type) {
@@ -276,7 +276,7 @@ export const useWebRTC = (localStream, userId) => {
     };
 
     const handleParticipantLeft = ({ userId: leftUserId }) => {
-      console.log(`📡 [WebRTC] Participant left: ${leftUserId}`);
+      console.log(`[WebRTC] Participant left: ${leftUserId}`);
       removePeerConnection(leftUserId);
     };
 

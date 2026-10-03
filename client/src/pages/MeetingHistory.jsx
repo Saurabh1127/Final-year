@@ -164,7 +164,7 @@ export function MeetingHistory() {
 
                   {meeting.languages && (
                     <div className="sam-history-card__detail-item">
-                      <span>🌐 {meeting.languages}</span>
+                      <span>{meeting.languages}</span>
                     </div>
                   )}
                 </div>

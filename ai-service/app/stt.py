@@ -28,9 +28,9 @@ def _get_device_and_compute() -> tuple[str, str]:
     if not _DEPS_AVAILABLE:
         return "cpu", "int8"
     if torch.cuda.is_available():
-        print(f"🎮 GPU detected: {torch.cuda.get_device_name(0)} — faster-whisper on CUDA (INT8).")
+        print(f"[GPU] Detected: {torch.cuda.get_device_name(0)} — faster-whisper on CUDA (INT8).")
         return "cuda", "int8_float16" # compute_type="int8_float16" gives best performance on T4
-    print("💻 No GPU found — faster-whisper on CPU (INT8).")
+    print("[CPU] No GPU found — faster-whisper on CPU (INT8).")
     return "cpu", "int8"
 
 
@@ -42,10 +42,10 @@ def get_model():
             raise RuntimeError("faster-whisper and torch are not installed. Run on Colab.")
         name = os.getenv("WHISPER_MODEL", "small")
         device, compute_type = _get_device_and_compute()
-        print(f"🔊 Loading faster-whisper '{name}' on {device.upper()} ...")
+        print(f"[STT] Loading faster-whisper '{name}' on {device.upper()} ...")
         
         _model = WhisperModel(name, device=device, compute_type=compute_type)
-        print(f"✅ faster-whisper '{name}' ready.")
+        print(f"[STT] faster-whisper '{name}' ready.")
     return _model
 
 
@@ -259,7 +259,7 @@ def transcribe_audio(
                 "segments":             [],
             }
         except Exception as exc:
-            print(f"⚠️ [STT] In-memory transcription error: {exc}. Falling back to tempfile.")
+            print(f"[WARN] [STT] In-memory transcription error: {exc}. Falling back to tempfile.")
 
     # Fallback path — pre-convert to WAV via FFmpeg so faster-whisper/soundfile
     # never sees a WebM/OGG container (which causes the 'metadata_errors' crash).
@@ -276,7 +276,7 @@ def transcribe_audio(
                 tmp.write(audio_bytes)
                 tmp_path = tmp.name
             transcribe_input = tmp_path
-            print(f"⚠️ [STT] FFmpeg WAV conversion failed, using raw {suffix} file.")
+            print(f"[WARN] [STT] FFmpeg WAV conversion failed, using raw {suffix} file.")
         else:
             transcribe_input = tmp_wav_path
 
@@ -316,7 +316,7 @@ def transcribe_audio(
             "segments":             [],
         }
     except Exception as exc:
-        print(f"⚠️ [STT] Audio decoding error: {exc}. Treating as silence.")
+        print(f"[WARN] [STT] Audio decoding error: {exc}. Treating as silence.")
         return {
             "text":                 "",
             "language":             "en",

@@ -6,44 +6,44 @@
 
 ---
 
-## ✨ Key Highlights
+## Key Highlights
 
-- 🗣️ **Speech-to-Speech Translation** — participants speak in their native language and hear others in theirs
-- ⚡ **~1.8s end-to-end latency** on NVIDIA T4 GPU with CTranslate2 INT8 quantization
-- 🌍 **12 languages** — English, Hindi, French, Spanish, German, Japanese, Korean, Chinese, Arabic, Portuguese, Russian, Italian
-- 🔇 **Audio ducking** — original speaker volume reduced 85% during translated playback to prevent acoustic clash
-- 📝 **Live transcripts + AI summaries** — Gemini 1.5 Flash generates structured post-meeting summaries
-- 👥 **Peer-to-peer WebRTC** — sub-200ms audio/video with zero media-server cost
+- **Speech-to-Speech Translation** — participants speak in their native language and hear others in theirs
+- **~1.8s end-to-end latency** on NVIDIA T4 GPU with CTranslate2 INT8 quantization
+- **12 languages** — English, Hindi, French, Spanish, German, Japanese, Korean, Chinese, Arabic, Portuguese, Russian, Italian
+- **Audio ducking** — original speaker volume reduced 85% during translated playback to prevent acoustic clash
+- **Live transcripts + AI summaries** — Gemini 1.5 Flash generates structured post-meeting summaries
+- **Peer-to-peer WebRTC** — sub-200ms audio/video with zero media-server cost
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ### High-Level Three-Tier Overview
 
 ```mermaid
 graph TB
-    subgraph Client["🌐 Tier 1 — Browser Client (React 19 + Vite)"]
+    subgraph Client["Tier 1 — Browser Client (React 19 + Vite)"]
         VAD["Voice Activity Detector\n(Web Audio API RMS)"]
         WebRTC["WebRTC Peer Connections\n(DTLS/SRTP)"]
         SIO_C["Socket.IO Client"]
         UI["Meeting UI\nVideo Tiles · Subtitles · Transcripts"]
     end
 
-    subgraph Server["⚙️ Tier 2 — Application Server (Node.js 20 + Express)"]
+    subgraph Server["Tier 2 — Application Server (Node.js 20 + Express)"]
         REST["REST API\n/api/auth · /api/meetings\n/api/transcripts · /api/summary"]
         SIO_S["Socket.IO Server\nSignaling + Audio Orchestrator"]
         ORCH["Translation Orchestrator\nLanguage Deduplication + Routing"]
         DB_LAYER["Mongoose ODM"]
     end
 
-    subgraph AI["🤖 Tier 3 — AI Microservice (Python + FastAPI)"]
+    subgraph AI["Tier 3 — AI Microservice (Python + FastAPI)"]
         STT["Whisper STT\nfaster-whisper + CTranslate2\n7.4% WER"]
         NMT["NLLB-200 NMT\ndistilled-600M · 200+ langs\nBLEU > 36.2"]
         TTS["Neural TTS\nEdge TTS → gTTS → Sarvam AI"]
     end
 
-    subgraph External["☁️ External Services"]
+    subgraph External["External Services"]
         MONGO[("MongoDB Atlas\nUsers · Meetings\nTranscripts")]
         GEMINI["Google Gemini\n1.5 Flash\nMeeting Summaries"]
         TURN["Metered TURN\nNAT Traversal"]
@@ -74,12 +74,12 @@ graph TB
 
 ```mermaid
 flowchart LR
-    A(["🎙️ Browser Mic"]) --> B["VAD\nRMS Energy\nSilence Window"]
+    A(["Browser Microphone"]) --> B["VAD\nRMS Energy\nSilence Window"]
     B -->|"WebM Blob\n~2.5s chunks"| C["Socket.IO\naudio-chunk"]
     C --> D["Translation\nOrchestrator\nNode.js"]
     D --> E["POST /api/process-audio"]
 
-    subgraph FastAPI["🤖 FastAPI AI Microservice on GPU"]
+    subgraph FastAPI["FastAPI AI Microservice on GPU"]
         E --> F["Stage 1 · STT\nfaster-whisper\nCTranslate2 INT8\n~0.3–0.8s"]
         F -->|"text + detected_lang"| G["Stage 2 · NMT\nNLLB-200-distilled\nFlores-200 codes\n~0.1–0.3s / lang"]
         G -->|"translated texts"| H["Stage 3 · TTS\nEdge Neural TTS\ngTTS fallback\n~0.3–1.5s / lang"]
@@ -87,7 +87,7 @@ flowchart LR
     end
 
     I --> J["Route to Listeners\nby target language"]
-    J -->|"translation-result"| K["🔊 Listener Browser\nAudio Duck 85%\nSubtitle Overlay 4s"]
+    J -->|"translation-result"| K["Listener Browser\nAudio Duck 85%\nSubtitle Overlay 4s"]
 ```
 
 ---
@@ -120,10 +120,10 @@ sequenceDiagram
 
 ```mermaid
 graph TD
-    P1(["👤 Participant 1\nHost"])
-    P2(["👤 Participant 2"])
-    P3(["👤 Participant 3"])
-    P4(["👤 Participant 4"])
+    P1(["Participant 1\nHost"])
+    P2(["Participant 2"])
+    P3(["Participant 3"])
+    P4(["Participant 4"])
 
     P1 <-->|"P2P DTLS/SRTP"| P2
     P1 <-->|"P2P DTLS/SRTP"| P3
@@ -132,7 +132,7 @@ graph TD
     P2 <-->|"P2P DTLS/SRTP"| P4
     P3 <-->|"P2P DTLS/SRTP"| P4
 
-    TURN["☁️ Metered TURN\nNAT Traversal Relay"]
+    TURN["Metered TURN\nNAT Traversal Relay"]
     P1 -.->|STUN/TURN| TURN
     P2 -.->|STUN/TURN| TURN
 ```
@@ -183,7 +183,7 @@ erDiagram
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology | Version | Purpose |
 |---|---|---|---|
@@ -213,7 +213,7 @@ erDiagram
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 samvada/
@@ -268,7 +268,7 @@ samvada/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -379,7 +379,7 @@ npm install && npm run dev
 
 ---
 
-## 🌐 Supported Languages
+## Supported Languages
 
 | Code | Language | TTS Voice |
 |---|---|---|
@@ -398,7 +398,7 @@ npm install && npm run dev
 
 ---
 
-## 📊 Performance Benchmarks
+## Performance Benchmarks
 
 Measured on NVIDIA Tesla T4 GPU (Google Colab free tier).
 
@@ -418,7 +418,7 @@ Measured on NVIDIA Tesla T4 GPU (Google Colab free tier).
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
 ```mermaid
 gantt
@@ -443,7 +443,7 @@ gantt
 
 ---
 
-## ⚠️ Known Limitations (MVP)
+## Known Limitations (MVP)
 
 - **Max 5 participants** per room — WebRTC full-mesh limitation (N×(N-1)/2 connections)
 - **Ephemeral AI service** — Google Colab sessions reset after ~12h of inactivity
@@ -453,16 +453,16 @@ gantt
 
 ---
 
-## 📚 Documentation & Guides
+## Documentation & Guides
 
 Comprehensive technical specifications, architecture diagrams, data flows, and benchmark figures are consolidated directly within this [README.md](README.md).
 
 For step-by-step instructions on deploying the GPU AI microservice:
-- 📖 **[Colab & Ngrok Setup Guide](ai-service/COLAB_INTEGRATION_GUIDE.md)** — Step-by-step instructions for launching Whisper, NLLB-200, and Edge-TTS on a free Tesla T4 GPU in Google Colab.
+- **[Colab & Ngrok Setup Guide](ai-service/COLAB_INTEGRATION_GUIDE.md)** — Step-by-step instructions for launching Whisper, NLLB-200, and Edge-TTS on a free Tesla T4 GPU in Google Colab.
 
 ---
 
-## 📄 License
+## License
 
 Developed as a Final Year B.E. Computer Engineering project at **Thakur College of Engineering and Technology (TCET), Mumbai** — Academic Year 2026-27.
 

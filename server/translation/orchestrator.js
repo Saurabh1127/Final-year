@@ -76,7 +76,7 @@ export function registerParticipant(roomCode, socketId, { userId, speakerName, t
   }
   roomParticipants.get(roomCode).set(socketId, { userId, speakerName, targetLanguage });
   console.log(
-    `📋 [Orchestrator] Registered ${speakerName} in room ${roomCode} (lang: ${targetLanguage})`
+    `[Orchestrator] Registered ${speakerName} in room ${roomCode} (lang: ${targetLanguage})`
   );
 }
 
@@ -103,7 +103,7 @@ export function updateParticipantLanguage(roomCode, socketId, targetLanguage) {
   if (room && room.has(socketId)) {
     room.get(socketId).targetLanguage = targetLanguage;
     console.log(
-      `🌐 [Orchestrator] Language updated for socket ${socketId} → ${targetLanguage}`
+      `[Orchestrator] Language updated for socket ${socketId} -> ${targetLanguage}`
     );
   }
 }
@@ -145,13 +145,13 @@ function _enqueueChunk(speakerId, entry) {
     const dropped = queue.shift(); // Evict the oldest (head) — keep the newest
     const age = Date.now() - dropped.enqueuedAt;
     console.log(
-      `⚠️  [Orchestrator] Queue full for ${entry.metadata?.speakerName} — dropped oldest chunk (was ${age}ms old)`
+      `[WARN] [Orchestrator] Queue full for ${entry.metadata?.speakerName} - dropped oldest chunk (was ${age}ms old)`
     );
   }
 
   queue.push({ ...entry, enqueuedAt: Date.now() });
   console.log(
-    `📥 [Orchestrator] Queued chunk for ${entry.metadata?.speakerName} (queue depth: ${queue.length})`
+    `[Orchestrator] Queued chunk for ${entry.metadata?.speakerName} (queue depth: ${queue.length})`
   );
 }
 
@@ -175,7 +175,7 @@ function _runSpeakerQueue(speakerId) {
 
   if (age > STALE_THRESHOLD_MS) {
     console.log(
-      `⏩ [Orchestrator] Dropped stale chunk for ${next.metadata?.speakerName} (${age}ms old — threshold ${STALE_THRESHOLD_MS}ms)`
+      `[Orchestrator] Dropped stale chunk for ${next.metadata?.speakerName} (${age}ms old - threshold ${STALE_THRESHOLD_MS}ms)`
     );
     // Chunk is too old — skip it and try the next one immediately
     _runSpeakerQueue(speakerId);
@@ -227,7 +227,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
   const nodeBuffer = Buffer.isBuffer(audioBuffer) ? audioBuffer : Buffer.from(audioBuffer);
 
   // Skip tiny blobs (< 2000 bytes — likely silence or malformed chunks)
-  console.log(`🎤 [Orchestrator] Processing chunk from ${speakerName} in room ${roomCode} (${nodeBuffer.byteLength} bytes)`);
+  console.log(`[Orchestrator] Processing chunk from ${speakerName} in room ${roomCode} (${nodeBuffer.byteLength} bytes)`);
 
   // ── Phase 7: Subtitle-First — emit "Translating..." immediately ──────────────
   // Broadcast to other participants in the room (excluding the speaker) so listeners
@@ -238,14 +238,14 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
     timestamp: Date.now(),
   });
   if (nodeBuffer.byteLength < 2000) {
-    console.log(`🔇 [Orchestrator] Chunk too small (${nodeBuffer.byteLength}b < 2000), skipping.`);
+    console.log(`[Orchestrator] Chunk too small (${nodeBuffer.byteLength}b < 2000), skipping.`);
     onComplete();
     return;
   }
 
   const room = roomParticipants.get(roomCode);
   if (!room || room.size === 0) {
-    console.log(`⚠️  [Orchestrator] Audio chunk dropped: room ${roomCode} has no registered participants.`);
+    console.log(`[WARN] [Orchestrator] Audio chunk dropped: room ${roomCode} has no registered participants.`);
     onComplete();
     return;
   }
@@ -294,15 +294,15 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
 
     // Discard no-speech results
     if (!original_text || original_text.trim() === '' || original_text === '[Pipeline Error]') {
-      console.log('🔇 [Orchestrator] AI detected silence or empty transcription.');
+      console.log('[Orchestrator] AI detected silence or empty transcription.');
       if (diagnostics) {
         logPipelineDiagnostic(speakerName, roomCode, diagnostics);
       }
       return;
     }
 
-    console.log(`🤖 [Orchestrator] Recognized (${source_language}): "${original_text}"`);
-    console.log(`🌐 [Orchestrator] Translations:`, translations);
+    console.log(`[Orchestrator] Recognized (${source_language}): "${original_text}"`);
+    console.log(`[Orchestrator] Translations:`, translations);
 
     const serverAiReturnTime = Date.now();
 
@@ -317,7 +317,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
         translations,
       });
     } catch (saveErr) {
-      console.warn('⚠️  [Orchestrator] Failed to persist transcript:', saveErr.message);
+      console.warn('[WARN] [Orchestrator] Failed to persist transcript:', saveErr.message);
     }
 
     // Broadcast new-transcript to ALL participants for the sidebar
@@ -400,7 +400,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
   emitter.on('done', (donePayload) => {
     const latency = donePayload?.latency || donePayload || {};
     const finalDiagnostics = donePayload?.diagnostics || textResult?.diagnostics;
-    console.log(`✅ [Orchestrator] Stream complete for ${speakerName}. Metrics:`, latency);
+    console.log(`[SUCCESS] [Orchestrator] Stream complete for ${speakerName}. Metrics:`, latency);
 
     if (finalDiagnostics) {
       logPipelineDiagnostic(speakerName, roomCode, finalDiagnostics);
@@ -416,7 +416,7 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
   });
 
   emitter.on('error', (err) => {
-    console.error(`❌ [Orchestrator] AI service streaming error: ${err.message}`);
+    console.error(`[ERROR] [Orchestrator] AI service streaming error: ${err.message}`);
     socket.emit('translation-error', { message: 'Translation service streaming interrupted.' });
     onComplete();
   });
@@ -426,27 +426,27 @@ async function _processSpeakerChunk(io, socket, audioBuffer, metadata, speakerId
 function logPipelineDiagnostic(speakerName, roomCode, diag) {
   if (!diag) return;
   const { status, primary_remedy, warnings = [], stt = {}, nmt = {}, tts = {}, vad = {}, latency = {} } = diag;
-  const statusIcon = status === 'healthy' ? '✅ HEALTHY' : status === 'warning' ? '⚠️ WARNING' : '❌ ERROR';
-  console.log(`\n┌── 🩺 PIPELINE DIAGNOSTIC [${speakerName} in ${roomCode}] ── [${statusIcon}]`);
-  console.log(`│ 1. 🎤 Audio / VAD : ${vad.duration_seconds || 0}s (${Math.round((vad.audio_bytes || 0) / 1024)} KB) | Spoken Hint: '${stt.hint_language || 'auto'}'`);
-  console.log(`│ 2. 🗣️ STT (Whisper): "${(stt.original_text || '').slice(0, 65)}"`);
+  const statusIcon = status === 'healthy' ? '[HEALTHY]' : status === 'warning' ? '[WARNING]' : '[ERROR]';
+  console.log(`\n┌── PIPELINE DIAGNOSTIC [${speakerName} in ${roomCode}] ── [${statusIcon}]`);
+  console.log(`│ 1. Audio / VAD : ${vad.duration_seconds || 0}s (${Math.round((vad.audio_bytes || 0) / 1024)} KB) | Spoken Hint: '${stt.hint_language || 'auto'}'`);
+  console.log(`│ 2. STT (Whisper): "${(stt.original_text || '').slice(0, 65)}"`);
   console.log(`│    └─ Detected: '${stt.detected_language}' (${Math.round((stt.language_probability || 0) * 100)}% conf) | LogProb: ${stt.confidence_logprob || 0} | ${stt.asr_seconds || 0}s`);
-  console.log(`│ 3. 🌐 NMT (NLLB)  : ${nmt.source_nllb_code || stt.detected_language} ➔ ${nmt.target_languages?.join(', ')} | ${nmt.nmt_seconds || 0}s`);
+  console.log(`│ 3. NMT (NLLB)  : ${nmt.source_nllb_code || stt.detected_language} -> ${nmt.target_languages?.join(', ')} | ${nmt.nmt_seconds || 0}s`);
   if (nmt.translations) {
     for (const [lang, text] of Object.entries(nmt.translations)) {
       console.log(`│    └─ [${lang.toUpperCase()}]: "${(text || '').slice(0, 65)}"`);
     }
   }
-  console.log(`│ 4. 🔊 TTS Voice   : ${tts.engine || 'none'} | ${tts.tts_seconds || 0}s`);
-  console.log(`│ 5. ⏱️ Total Time  : ${latency.total_seconds || 0}s`);
+  console.log(`│ 4. TTS Voice   : ${tts.engine || 'none'} | ${tts.tts_seconds || 0}s`);
+  console.log(`│ 5. Total Time  : ${latency.total_seconds || 0}s`);
   if (warnings.length > 0) {
-    console.log(`│ 6. ⚠️ DIAGNOSIS / ROOT CAUSE IDENTIFIED:`);
+    console.log(`│ 6. DIAGNOSIS / ROOT CAUSE IDENTIFIED:`);
     for (const w of warnings) {
       console.log(`│    - [${w.stage?.toUpperCase()}] ${w.title}: ${w.message}`);
-      console.log(`│      👉 Recommendation: ${w.suggestion}`);
+      console.log(`│      Recommendation: ${w.suggestion}`);
     }
   } else {
-    console.log(`│ 6. 🩺 Diagnosis   : All pipeline stages performed with high confidence.`);
+    console.log(`│ 6. Diagnosis   : All pipeline stages performed with high confidence.`);
   }
   console.log(`└──────────────────────────────────────────────────────────────────────────\n`);
 }

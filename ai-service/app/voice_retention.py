@@ -22,7 +22,7 @@ class VoiceRetentionEngine:
 
     def __init__(self) -> None:
         self.active = os.getenv("USE_XTTS", "false").lower() == "true"
-        print(f"🎙️  VoiceRetentionEngine status: {'ACTIVE' if self.active else 'INACTIVE (Edge TTS Default)'}")
+        print(f"[VOICE] VoiceRetentionEngine status: {'ACTIVE' if self.active else 'INACTIVE (Edge TTS Default)'}")
 
     def clone_and_synthesize(
         self,

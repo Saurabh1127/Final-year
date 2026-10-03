@@ -31,7 +31,7 @@ except ImportError:
 
 def log_gpu_stats(stage: str = "") -> None:
     """Print GPU VRAM and system RAM usage for diagnostics."""
-    prefix = f"📊 [{stage}]" if stage else "📊"
+    prefix = f"[STATS] [{stage}]" if stage else "[STATS]"
     if _TORCH_AVAILABLE and torch.cuda.is_available():
         alloc = torch.cuda.memory_allocated() / 1e9
         reserved = torch.cuda.memory_reserved() / 1e9
@@ -131,7 +131,7 @@ _FILLER_NOISE_WORDS: frozenset[str] = frozenset({
     "um", "uh", "hmm", "ah", "oh",
 })
 
-# Regex: detect [MUSIC], [APPLAUSE], ♪ etc. — common Whisper noise tags
+# Regex: detect [MUSIC], [APPLAUSE], musical notes etc. — common Whisper noise tags
 _NOISE_TAG_RE = re.compile(
     r"(\[.*?\]|<.*?>|♪|♫|\*+)",
     re.IGNORECASE,
@@ -177,7 +177,7 @@ def _is_hallucination(text: str) -> bool:
     Return True if the transcribed text is likely a Whisper hallucination.
 
     Checks (in order):
-    1. Contains noise tags like [MUSIC] or ♪
+    1. Contains noise tags like [MUSIC] or musical notes
     2. Empty after normalisation
     3. Pure filler noise (single "um", "uh", "hmm")
     4. Exact match against hallucination spam phrases
@@ -186,35 +186,35 @@ def _is_hallucination(text: str) -> bool:
     """
     # 1. Noise tags
     if _NOISE_TAG_RE.search(text):
-        print(f"🚫 [Filter] Noise tag detected in: \"{text[:60]}\" → rejected.")
+        print(f"[FILTER] Noise tag detected in: \"{text[:60]}\" -> rejected.")
         return True
 
     norm = _normalize(text)
 
     # 2. Empty / pure whitespace after normalisation
     if not norm:
-        print(f"🚫 [Filter] Empty after normalisation → rejected.")
+        print(f"[FILTER] Empty after normalisation -> rejected.")
         return True
 
     # 3. Pure filler noise
     if norm in _FILLER_NOISE_WORDS:
-        print(f"🚫 [Filter] Single filler noise word: \"{norm}\" → rejected.")
+        print(f"[FILTER] Single filler noise word: \"{norm}\" -> rejected.")
         return True
 
     # 4. Exact blocklist match
     if norm in _HALLUCINATION_BLOCKLIST:
-        print(f"🚫 [Filter] Exact blocklist match: \"{norm}\" → rejected.")
+        print(f"[FILTER] Exact blocklist match: \"{norm}\" -> rejected.")
         return True
 
     # 5. Multi-word spam phrase contained in utterance
     for blocked in _HALLUCINATION_BLOCKLIST:
         if len(blocked) >= 12 and blocked in norm:
-            print(f"🚫 [Filter] Spam phrase match: \"{blocked}\" in \"{norm}\" → rejected.")
+            print(f"[FILTER] Spam phrase match: \"{blocked}\" in \"{norm}\" -> rejected.")
             return True
 
     # 6. Repetition loop
     if _has_repetition_loop(norm):
-        print(f"🚫 [Filter] Repetition loop detected: \"{norm[:60]}\" → rejected.")
+        print(f"[FILTER] Repetition loop detected: \"{norm[:60]}\" -> rejected.")
         return True
 
     return False
@@ -252,18 +252,18 @@ def _is_foreign_hallucination(
     if expected_lang and expected_lang.lower() not in ("auto", "", "none"):
         if detected_lang.lower() != expected_lang.lower():
             if word_count <= 4 or avg_logprob < -0.70 or lang_prob < 0.75:
-                print(f"🚫 [Filter] Language mismatch hallucination (expected {expected_lang}, got {detected_lang}, words={word_count}, lang_prob={lang_prob:.2f}) → rejected.")
+                print(f"[FILTER] Language mismatch hallucination (expected {expected_lang}, got {detected_lang}, words={word_count}, lang_prob={lang_prob:.2f}) -> rejected.")
                 return True
 
     # Check 2: Low language confidence on short utterances (even in auto mode)
     # Whisper on background noise produces low lang_prob (< 0.55)
     if lang_prob < 0.55 and word_count <= 6:
-        print(f"🚫 [Filter] Low language confidence artifact (lang={detected_lang}, lang_prob={lang_prob:.2f}, words={word_count}) → rejected.")
+        print(f"[FILTER] Low language confidence artifact (lang={detected_lang}, lang_prob={lang_prob:.2f}, words={word_count}) -> rejected.")
         return True
 
     # Check 3: Ultra-low language probability (< 0.40) regardless of word length
     if lang_prob < 0.40:
-        print(f"🚫 [Filter] Critically low language probability ({lang_prob:.2f}) → rejected.")
+        print(f"[FILTER] Critically low language probability ({lang_prob:.2f}) -> rejected.")
         return True
 
     return False
@@ -393,7 +393,7 @@ class SpeechToSpeechEngine:
             device_label = "CUDA GPU" if torch.cuda.is_available() else "CPU"
         else:
             device_label = "CPU (torch not installed — run on Colab)"
-        print(f"🚀 SpeechToSpeechEngine ready | Device: {device_label}")
+        print(f"[READY] SpeechToSpeechEngine ready | Device: {device_label}")
 
     async def process_stream(
         self,
@@ -438,10 +438,10 @@ class SpeechToSpeechEngine:
         # (e.g. if Whisper tagged Devanagari Hindi text as 'en' or 'ur', correct it to 'hi')
         resolved_src = resolve_source_language(original_text, detected_lang)
         if resolved_src != detected_lang:
-            print(f"🔄 [Pipeline] Script inspector corrected language: '{detected_lang}' ➔ '{resolved_src}'")
+            print(f"[PIPELINE] Script inspector corrected language: '{detected_lang}' -> '{resolved_src}'")
             detected_lang = resolved_src
 
-        print(f"📝 STT [{asr_s}s] [{detected_lang.upper()}]: {original_text[:80]}"
+        print(f"[STT] [{asr_s}s] [{detected_lang.upper()}]: {original_text[:80]}"
               f"  | duration={duration_s}s no_speech={no_speech_prob:.3f} logprob={avg_logprob:.3f} lang_prob={lang_prob:.3f}")
         log_gpu_stats("after-STT")
 
@@ -476,7 +476,7 @@ class SpeechToSpeechEngine:
                 else "Foreign hallucination (short low-conf segment)" if foreign_reject
                 else "Hallucination pattern detected"
             )
-            print(f"🔇 [Filter] Utterance filtered: {reject_reason}")
+            print(f"[FILTER] Utterance filtered: {reject_reason}")
             filtered_diagnostics = {
                 "status": "warning",
                 "primary_remedy": f"Speech segment was filtered out: {reject_reason}.",
@@ -530,7 +530,7 @@ class SpeechToSpeechEngine:
 
 
         nmt_s = round(time.time() - t0, 3)
-        print(f"🌐 NMT [{nmt_s}s]: translated to {list(translations.keys())}")
+        print(f"[NMT] [{nmt_s}s]: translated to {list(translations.keys())}")
         log_gpu_stats("after-NMT")
 
         # Initial diagnostic evaluation (STT + NMT)
@@ -573,7 +573,7 @@ class SpeechToSpeechEngine:
             }
         }
 
-        # ⚡ YIELD TEXT IMMEDIATELY (with early diagnostic trace) ⚡
+        # YIELD TEXT IMMEDIATELY (with early diagnostic trace)
         yield {
             "type": "text",
             "original_text": original_text,
@@ -603,13 +603,13 @@ class SpeechToSpeechEngine:
                 # Configurable via SKIP_SAME_LANG_TTS env var (default: true). Set to false for solo testing.
                 skip_same_lang = os.getenv("SKIP_SAME_LANG_TTS", "true").lower() in ("true", "1")
                 if skip_same_lang and detected_lang.lower() == lang.lower():
-                    print(f"⏩ [TTS] Skipped TTS for '{lang}' (matches spoken '{detected_lang}') — avoids voice echo & cuts latency.")
+                    print(f"[TTS] Skipped TTS for '{lang}' (matches spoken '{detected_lang}') — avoids voice echo & cuts latency.")
                     return None
                 try:
                     tts_result = await asyncio.to_thread(synthesize_speech, translated_text, lang, audio_bytes, True)
                     return (lang, tts_result)
                 except Exception as exc:
-                    print(f"⚠️ TTS generation failed for {lang}: {exc}")
+                    print(f"[WARN] [TTS] Generation failed for {lang}: {exc}")
                     return None
 
             # Launch all TTS calls concurrently — cuts latency by ~50% for multi-language rooms
@@ -633,7 +633,7 @@ class SpeechToSpeechEngine:
 
 
         total_s = round(time.time() - t_start, 3)
-        print(f"⚡ Pipeline stream done [{total_s}s] ➔ STT: {asr_s}s | NMT: {nmt_s}s | TTS: {tts_s}s | Engine: {last_tts_engine}")
+        print(f"[DONE] Pipeline stream complete [{total_s}s] -> STT: {asr_s}s | NMT: {nmt_s}s | TTS: {tts_s}s | Engine: {last_tts_engine}")
 
         # Final diagnostic with TTS confirmation
         final_status, final_warnings, final_remedy = _diagnose_pipeline(
@@ -665,7 +665,7 @@ class SpeechToSpeechEngine:
             }
         }
 
-        # ⚡ YIELD FINAL METRICS & COMPLETE DIAGNOSTICS ⚡
+        # YIELD FINAL METRICS & COMPLETE DIAGNOSTICS
         yield {
             "type": "done",
             "latency": final_diagnostics["latency"],

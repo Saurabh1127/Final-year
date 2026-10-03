@@ -7,7 +7,7 @@ import { getLanguageLabel } from './LanguageSelector';
  * Video & audio tile representing a meeting participant (local or remote).
  * Features:
  * - Electric mint border glow when speaking
- * - Prominent language flow badge (e.g. "🎙️ Hindi → 🎧 English")
+ * - Prominent language flow badge (e.g. "Hindi -> English")
  * - Dynamic avatar placeholder with user initial when video is disabled
  * - Inline rename support for local participant
  * - Autoplay block fallback handler for mobile browsers

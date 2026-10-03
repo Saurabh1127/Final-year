@@ -1,4 +1,4 @@
-# 🚀 SAMVADA AI — Google Colab Setup & MERN Integration Guide
+# SAMVADA AI — Google Colab Setup & MERN Integration Guide
 
 Welcome to **SAMVADA AI** — A Real-Time Multi-Lingual Speech-to-Speech Translation & Meeting Platform.
 
@@ -9,7 +9,7 @@ This guide provides a **step-by-step walkthrough** for:
 
 ---
 
-## 🛠️ Part 1: Setting Up the AI Microservice in Google Colab
+## Part 1: Setting Up the AI Microservice in Google Colab
 
 ### Prerequisites
 * A free **Google Account** (to access Google Colab).
@@ -22,13 +22,13 @@ This guide provides a **step-by-step walkthrough** for:
    * Create a **New Notebook**.
 
 2. **Enable GPU Hardware Acceleration**:
-   * In top menu: Click `Runtime` ➔ `Change runtime type`.
+   * In top menu: Click `Runtime` -> `Change runtime type`.
    * Select **T4 GPU** under Hardware accelerator and click **Save**.
 
 3. **Run Notebook Cells (`colab_test.py`)**:
    Copy and paste each cell block below into separate code cells in your Colab notebook:
 
-#### 🔹 Cell 1: Check GPU VRAM
+#### Cell 1: Check GPU VRAM
 ```python
 import torch
 print("CUDA available:", torch.cuda.is_available())
@@ -37,7 +37,7 @@ if torch.cuda.is_available():
     print("VRAM:", round(torch.cuda.get_device_properties(0).total_memory / 1e9, 2), "GB")
 ```
 
-#### 🔹 Cell 2: Clone GitHub Repository
+#### Cell 2: Clone GitHub Repository
 ```python
 import os, shutil
 GITHUB_REPO = "https://github.com/Saurabh1127/Final-year.git"
@@ -47,7 +47,7 @@ os.system(f"git clone {GITHUB_REPO} {REPO_DIR}")
 os.chdir(f"{REPO_DIR}/ai-service")
 ```
 
-#### 🔹 Cell 3: Install Required Dependencies
+#### Cell 3: Install Required Dependencies
 ```python
 !pip install -q fastapi==0.111.0 uvicorn[standard]==0.30.1 pydantic==2.7.4 \
     python-dotenv==1.0.1 python-multipart==0.0.9 websockets==12.0 \
@@ -56,7 +56,7 @@ os.chdir(f"{REPO_DIR}/ai-service")
     gTTS==2.5.1 edge-tts==6.1.12 nest_asyncio requests pyngrok
 ```
 
-#### 🔹 Cell 4: Configure AI Models & API Keys
+#### Cell 4: Configure AI Models & API Keys
 ```python
 import os
 os.environ["WHISPER_MODEL"] = "large-v3"
@@ -64,7 +64,7 @@ os.environ["NLLB_MODEL"]    = "facebook/nllb-200-distilled-1.3B"
 os.environ["SARVAM_API_KEY"] = "sk_up7c1rdn_zGiuPp7vz1uMyxcjbvVVJ7Fc"
 ```
 
-#### 🔹 Cell 5 & 6: Load AI Model Weights into GPU Memory
+#### Cell 5 & 6: Load AI Model Weights into GPU Memory
 ```python
 import whisper
 whisper.load_model("large-v3")
@@ -74,7 +74,7 @@ AutoTokenizer.from_pretrained("facebook/nllb-200-distilled-1.3B")
 AutoModelForSeq2SeqLM.from_pretrained("facebook/nllb-200-distilled-1.3B")
 ```
 
-#### 🔹 Cell 7: Launch FastAPI Server & Expose via Ngrok
+#### Cell 7: Launch FastAPI Server & Expose via Ngrok
 ```python
 import subprocess, time
 from pyngrok import ngrok
@@ -86,48 +86,48 @@ server = subprocess.Popen(
 )
 time.sleep(6)
 tunnel = ngrok.connect(8000)
-print(f"🌐 PUBLIC FASTAPI URL: {tunnel.public_url}")
+print(f"PUBLIC FASTAPI URL: {tunnel.public_url}")
 ```
 
-#### 🔹 Cell 8: 3-Way Audio Verification Widget (Colab Mic ➔ Translation)
+#### Cell 8: 3-Way Audio Verification Widget (Colab Mic -> Translation)
 * Record your mic input in Colab.
 * Listen to **Original Mic Input**, **Sarvam AI Hindi**, and **Microsoft Edge Neural Speech Hindi** side-by-side!
 
 ---
 
-## 🧠 Part 2: How the AI Microservice Pipeline Works
+## Part 2: How the AI Microservice Pipeline Works
 
 The SAMVADA AI microservice utilizes a **Cascaded Speech-to-Speech Translation (S2ST) Architecture**:
 
 ```
-[ 🎙️ Audio Input (WebM/WAV) ]
+[ Audio Input (WebM/WAV) ]
              │
              ▼
  ┌─────────────────────────┐
- │ 1. OpenAI Whisper       │ ➔ Automatic Speech Recognition (ASR)
+ │ 1. OpenAI Whisper       │ -> Automatic Speech Recognition (ASR)
  │    large-v3 (1.55B)     │    Transcribes input audio to source text & language.
  └───────────┬─────────────┘
              │ (Source Text: "Hello, welcome to our meeting.")
              ▼
  ┌─────────────────────────┐
- │ 2. Meta NLLB            │ ➔ Neural Machine Translation (NMT)
+ │ 2. Meta NLLB            │ -> Neural Machine Translation (NMT)
  │    distilled-1.3B       │    Translates text to target language (e.g. Hindi "नमस्ते...").
  └───────────┬─────────────┘
              │ (Translated Text)
              ▼
  ┌─────────────────────────┐
- │ 3. Multi-Engine TTS     │ ➔ Text-to-Speech Synthesis
+ │ 3. Multi-Engine TTS     │ -> Text-to-Speech Synthesis
  │    - Sarvam AI bulbul:v2│    Synthesizes natural audio. Indian languages default to Sarvam AI,
  │    - Edge Neural Speech │    Global languages default to Microsoft Edge Neural Speech.
  └───────────┬─────────────┘
              │
              ▼
- [ 🔊 Output Translated Audio + Live Subtitle Payload ]
+ [ Output Translated Audio + Live Subtitle Payload ]
 ```
 
 ---
 
-## 🔗 Part 3: Step-by-Step MERN + Colab Integration Guide
+## Part 3: Step-by-Step MERN + Colab Integration Guide
 
 To connect your local React Frontend and Node.js Express server with the Colab GPU backend:
 
@@ -202,7 +202,7 @@ const processAudioChunk = async (audioBlob, targetLanguage) => {
 
 ---
 
-## 📊 Summary Architecture Map
+## Summary Architecture Map
 
 ```
   ┌─────────────────┐       Direct Audio WebM POST       ┌────────────────────────┐
@@ -221,7 +221,7 @@ const processAudioChunk = async (audioBlob, targetLanguage) => {
 
 ---
 
-## ✅ System Verification Checklist
+## System Verification Checklist
 
 * [x] **ASR**: Whisper `large-v3` running on Colab T4 GPU (~0.4s STT).
 * [x] **NMT**: Meta NLLB `1.3B` supporting 200+ languages including 22 Indian regional languages (~0.15s).

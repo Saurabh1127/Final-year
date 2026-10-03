@@ -58,16 +58,16 @@ const PORT = process.env.PORT || 5000;
 
 // Prevent server crashes from killing meetings
 process.on('uncaughtException', (err) => {
-  console.error('❌ Uncaught Exception:', err.message);
+  console.error('[FATAL] Uncaught Exception:', err.message);
 });
 process.on('unhandledRejection', (reason) => {
-  console.error('❌ Unhandled Rejection:', reason);
+  console.error('[FATAL] Unhandled Rejection:', reason);
 });
 
 connectDB().then(() => {
   server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT} (bound to 0.0.0.0)`);
-    console.log(`📡 Socket.IO ready`);
-    console.log(`🤖 AI service URL: ${process.env.AI_SERVICE_URL}`);
+    console.log(`[SERVER] Running on port ${PORT} (bound to 0.0.0.0)`);
+    console.log(`[SOCKET] Socket.IO ready`);
+    console.log(`[AI] Service URL: ${process.env.AI_SERVICE_URL}`);
   });
 });

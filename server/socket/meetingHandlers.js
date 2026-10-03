@@ -23,7 +23,7 @@ export default (io, socket) => {
       const existingSockets = await io.in(roomCode).fetchSockets();
       for (const s of existingSockets) {
         if (s.userId?.toString() === userId?.toString() && s.id !== socket.id) {
-          console.log(`🔌 [Meeting] Evicting stale socket ${s.id} for user ${userId} in room ${roomCode}`);
+          console.log(`[Meeting] Evicting stale socket ${s.id} for user ${userId} in room ${roomCode}`);
           unregisterParticipant(roomCode, s.id);
           s.leave(roomCode);
           s.emit('session-replaced', { message: 'You have joined this meeting from another tab or window.' });
@@ -108,7 +108,7 @@ export default (io, socket) => {
   socket.on('end-meeting', async ({ roomCode }) => {
     try {
       const hostId = socket.userId || socket.user?.userId;
-      console.log(`👑 [Meeting] Host ${hostId} ending meeting ${roomCode}`);
+      console.log(`[Meeting] Host ${hostId} ending meeting ${roomCode}`);
 
       await meetingService.endMeeting({ roomCode, hostId });
 
@@ -136,14 +136,14 @@ export default (io, socket) => {
   socket.on('update-language', ({ roomCode, targetLanguage }) => {
     if (!roomCode || !targetLanguage) return;
     updateParticipantLanguage(roomCode, socket.id, targetLanguage);
-    console.log(`🌐 [Meeting] ${socket.id} changed language to ${targetLanguage} in room ${roomCode}`);
+    console.log(`[Meeting] ${socket.id} changed language to ${targetLanguage} in room ${roomCode}`);
   });
 
   // Handle mid-meeting display name rename
   socket.on('rename-participant', ({ roomCode, userId, newDisplayName }) => {
     if (!roomCode || !userId || !newDisplayName?.trim()) return;
     const trimmedName = newDisplayName.trim().slice(0, 50); // cap at 50 chars
-    console.log(`✏️ [Meeting] ${userId} renamed to "${trimmedName}" in room ${roomCode}`);
+    console.log(`[Meeting] ${userId} renamed to "${trimmedName}" in room ${roomCode}`);
     // Broadcast to all OTHER participants in the room
     socket.to(roomCode).emit('participant-renamed', {
       userId,
@@ -151,4 +151,3 @@ export default (io, socket) => {
     });
   });
 };
-

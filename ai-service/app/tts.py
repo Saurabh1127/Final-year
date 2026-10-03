@@ -162,7 +162,7 @@ async def stream_edge_tts(text: str, target_lang: str):
             yield buffer
             
     except Exception as e:
-        print(f"⚠️ edge_tts stream error for {target_lang}: {e}")
+        print(f"[WARN] [TTS] Edge TTS stream error for {target_lang}: {e}")
         raise
 
 
@@ -185,14 +185,14 @@ def synthesize_edge_tts(text: str, target_lang: str) -> bytes:
                         audio_data += chunk["data"]
                 return audio_data
             except Exception as e:
-                print(f"⚠️ edge_tts error for {target_lang}: {e}")
+                print(f"[WARN] [TTS] Edge TTS error for {target_lang}: {e}")
                 raise
 
         loop = asyncio.new_event_loop()
         try:
             return loop.run_until_complete(asyncio.wait_for(_async_synthesize(), timeout=15.0))
         except asyncio.TimeoutError:
-            print(f"⚠️ edge_tts timed out after 15 seconds for {target_lang}")
+            print(f"[WARN] [TTS] Edge TTS timed out after 15 seconds for {target_lang}")
             raise RuntimeError("TTS generation timed out")
         finally:
             loop.close()
@@ -241,17 +241,17 @@ def synthesize_speech(
     if use_sarvam and target_lang in SARVAM_LANG_MAP:
         try:
             raw = synthesize_sarvam_tts(text, target_lang, api_key=sarvam_key)
-            mime, engine_name = "audio/wav", "🇮🇳 Sarvam AI (bulbul:v3)"
+            mime, engine_name = "audio/wav", "Sarvam AI (bulbul:v3)"
         except Exception as exc:
-            print(f"⚠️ Sarvam AI TTS failed for '{target_lang}': {exc} — Fallback to Edge Neural TTS")
+            print(f"[WARN] [TTS] Sarvam AI TTS failed for '{target_lang}': {exc} — Fallback to Edge Neural TTS")
 
     # Option 2: Microsoft Edge Neural Speech (Default Primary Engine)
     if raw is None:
         try:
             raw = synthesize_edge_tts(text, target_lang)
-            mime, engine_name = "audio/mp3", f"🎙️ Microsoft Edge Neural Speech ({EDGE_VOICE_MAP_MALE.get(target_lang, 'default')})"
+            mime, engine_name = "audio/mp3", f"Microsoft Edge Neural Speech ({EDGE_VOICE_MAP_MALE.get(target_lang, 'default')})"
         except Exception as exc:
-            print(f"⚠️ Edge TTS failed for '{target_lang}': {exc} — Fallback to gTTS")
+            print(f"[WARN] [TTS] Edge TTS failed for '{target_lang}': {exc} — Fallback to gTTS")
 
     # Option 3: Google TTS Fallback
     if raw is None:
