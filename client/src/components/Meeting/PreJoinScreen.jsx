@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DeviceSelector } from './DeviceSelector';
 import { AudioVisualizer } from './AudioVisualizer';
 import LanguageSelector from './LanguageSelector';
-import './PreJoinScreen.css';
+import { ThemeToggle } from '../ui';
 
 /**
  * PreJoinScreen
@@ -155,15 +155,16 @@ export function PreJoinScreen({
         <div className="sam-prejoin__brand">
           <div className="sam-prejoin__logo-icon">
             <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="2.5" />
-              <path d="M10 16C10 12.5 13 9 16 9C19 9 22 12.5 22 16C22 19.5 19 23 16 23" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-              <circle cx="16" cy="16" r="3.5" fill="currentColor" />
+              <circle cx="16" cy="16" r="14" stroke="var(--accent)" strokeWidth="2.5" />
+              <path d="M10 16C10 12.5 13 9 16 9C19 9 22 12.5 22 16C22 19.5 19 23 16 23" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" />
+              <circle cx="16" cy="16" r="3.5" fill="var(--accent)" />
             </svg>
           </div>
           <span className="sam-prejoin__brand-text">SAMVADA</span>
         </div>
 
         <div className="sam-prejoin__topbar-right">
+          <ThemeToggle />
           <button
             type="button"
             onClick={handleCopyCode}
@@ -194,7 +195,7 @@ export function PreJoinScreen({
             {/* Top floating badges */}
             <div className="sam-prejoin__video-top-badges">
               <div className="sam-prejoin__badge-pill sam-prejoin__badge-pill--preview">
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#00D4B2' }} />
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--accent)' }} />
                 <span>Camera Preview</span>
               </div>
 
@@ -298,7 +299,7 @@ export function PreJoinScreen({
           {/* Bottom Mirror & Quality Note */}
           <div className="sam-prejoin__preview-note">
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#38BDF8' }} />
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--accent)' }} />
               WebRTC HD Stream Ready
             </span>
 
@@ -364,7 +365,7 @@ export function PreJoinScreen({
           <div className="sam-prejoin__section">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h3 className="sam-prejoin__section-title">AI Translation Pipeline</h3>
-              <span style={{ fontSize: '0.6875rem', color: '#00D4B2', fontWeight: 600 }}>NLLB-200 Active</span>
+              <span style={{ fontSize: '0.6875rem', color: 'var(--accent)', fontWeight: 600 }}>NLLB-200 Active</span>
             </div>
 
             <div className="sam-prejoin__lang-grid">

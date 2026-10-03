@@ -1,5 +1,4 @@
 import React from 'react';
-import './EmptyState.css';
 
 /**
  * Samvada EmptyState Component

@@ -1,5 +1,4 @@
 import React from 'react';
-import './IconButton.css';
 
 /**
  * Samvada IconButton Component

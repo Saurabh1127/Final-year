@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { Drawer } from '../ui';
-import './AppShell.css';
 
 /**
  * Samvada AppShell Layout Component

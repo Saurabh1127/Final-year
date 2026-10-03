@@ -8,13 +8,12 @@ import { RecentMeetings } from '../components/Dashboard/RecentMeetings';
 import { LanguagePreferencesCard } from '../components/Dashboard/LanguagePreferencesCard';
 import { CreateMeetingModal } from '../components/Dashboard/CreateMeetingModal';
 import { JoinMeetingModal } from '../components/Dashboard/JoinMeetingModal';
-import './Dashboard.css';
 
 function getGreeting(name = 'there') {
   const hour = new Date().getHours();
-  if (hour < 12) return `Good morning, ${name} ☀️`;
-  if (hour < 18) return `Good afternoon, ${name} 🌤️`;
-  return `Good evening, ${name} 🌙`;
+  if (hour < 12) return `Good morning, ${name}`;
+  if (hour < 18) return `Good afternoon, ${name}`;
+  return `Good evening, ${name}`;
 }
 
 export function Dashboard() {
@@ -41,18 +40,20 @@ export function Dashboard() {
   };
 
   return (
-    <div className="sam-dashboard">
+    <div className="sam-dashboard w-full max-w-7xl mx-auto flex flex-col gap-8 p-4 sm:p-8 pb-14 min-h-min">
       {/* ── Greeting Header ── */}
-      <div className="sam-dashboard__header">
-        <div className="sam-dashboard__greeting-wrap">
-          <h1 className="sam-dashboard__greeting-title">{greeting}</h1>
-          <p className="sam-dashboard__greeting-sub">
+      <div className="sam-dashboard__header flex flex-wrap items-start justify-between gap-4">
+        <div className="sam-dashboard__greeting-wrap flex flex-col gap-1.5">
+          <h1 className="sam-dashboard__greeting-title font-sans text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary m-0">
+            {greeting}
+          </h1>
+          <p className="sam-dashboard__greeting-sub text-sm text-text-secondary m-0">
             Break language barriers. Build seamless global connections.
           </p>
         </div>
 
-        <div className="sam-dashboard__header-actions">
-          <Badge variant={connected ? 'mint' : 'amber'} size="md" dot pulse={connected}>
+        <div className="sam-dashboard__header-actions flex items-center gap-3">
+          <Badge variant={connected ? 'success' : 'amber'} size="md" dot pulse={connected}>
             {connected ? 'Realtime Engine Active' : 'Connecting Engine...'}
           </Badge>
 
@@ -73,7 +74,7 @@ export function Dashboard() {
       </div>
 
       {/* ── Quick Actions Row ── */}
-      <div className="sam-dashboard__quick-actions">
+      <div className="sam-dashboard__quick-actions grid grid-cols-1 md:grid-cols-3 gap-5">
         <QuickActionCard
           title="Start Instant Meeting"
           description="Create a secure room with dual-stream real-time translation enabled."
@@ -132,8 +133,8 @@ export function Dashboard() {
           />
         </div>
 
-        {/* Right Column: Language Preferences & Pipeline Telemetry */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {/* Right Column: Language Preferences & Pipeline Telemetry (1 col on lg) */}
+        <div className="flex flex-col gap-5">
           <LanguagePreferencesCard
             spokenLanguage={spokenLang}
             preferredLanguage={targetLang}
@@ -141,31 +142,40 @@ export function Dashboard() {
           />
 
           {/* AI Pipeline Health Card */}
-          <Card variant="surface" padding="none" className="sam-telemetry-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <h4 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 700, color: '#FFFFFF' }}>
+          <Card variant="surface" padding="none" className="sam-telemetry-card rounded-xl border border-border bg-surface p-5 flex flex-col gap-3">
+            <div className="flex items-center justify-between mb-1">
+              <h4 className="m-0 text-sm font-bold text-text-primary">
                 AI Engine Telemetry
               </h4>
-              <Badge variant="blue" size="sm">
+              <Badge variant="gray" size="sm">
                 v2.4 Neural
               </Badge>
             </div>
 
-            <div className="sam-telemetry-item">
+            <div className="sam-telemetry-item flex items-center justify-between text-xs text-text-secondary py-2 border-b border-border">
               <span>Speech Recognition (ASR)</span>
-              <span style={{ color: '#34D399', fontWeight: 600 }}>Whisper v3 Turbo</span>
+              <span className="font-semibold text-accent inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-status-success" />
+                Whisper v3 Turbo
+              </span>
             </div>
-            <div className="sam-telemetry-item">
+            <div className="sam-telemetry-item flex items-center justify-between text-xs text-text-secondary py-2 border-b border-border">
               <span>Machine Translation (NMT)</span>
-              <span style={{ color: '#34D399', fontWeight: 600 }}>NLLB-200 Distilled</span>
+              <span className="font-semibold text-accent inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-status-success" />
+                NLLB-200 Distilled
+              </span>
             </div>
-            <div className="sam-telemetry-item">
+            <div className="sam-telemetry-item flex items-center justify-between text-xs text-text-secondary py-2 border-b border-border">
               <span>Voice Activity Detector (VAD)</span>
-              <span style={{ color: '#00D4B2', fontWeight: 600 }}>AudioWorklet (Client)</span>
+              <span className="font-semibold text-accent inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-status-success" />
+                AudioWorklet (Client)
+              </span>
             </div>
-            <div className="sam-telemetry-item">
+            <div className="sam-telemetry-item flex items-center justify-between text-xs text-text-secondary py-2 border-b-0">
               <span>Audio Ducking Level</span>
-              <span style={{ color: '#38BDF8', fontWeight: 600 }}>-18 dB Attenuation</span>
+              <span className="font-semibold text-text-secondary">-18 dB Attenuation</span>
             </div>
           </Card>
         </div>

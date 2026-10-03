@@ -1,5 +1,4 @@
 import React, { useState, useId } from 'react';
-import './Input.css';
 
 /**
  * Samvada Input Component

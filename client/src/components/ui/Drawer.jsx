@@ -1,5 +1,4 @@
 import React, { useEffect, useId, useRef } from 'react';
-import './Drawer.css';
 
 /**
  * Samvada Drawer Component

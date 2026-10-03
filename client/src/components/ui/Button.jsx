@@ -1,5 +1,4 @@
 import React from 'react';
-import './Button.css';
 
 /**
  * Samvada Primary Button Component

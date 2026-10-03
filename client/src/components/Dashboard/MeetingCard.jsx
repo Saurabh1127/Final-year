@@ -21,36 +21,36 @@ export function MeetingCard({
   });
 
   return (
-    <Card variant="surface" padding="md" style={{ marginBottom: '12px' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h4 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#F8FAFC' }}>
+    <Card variant="surface" padding="none" className="rounded-xl border border-border bg-surface p-4 mb-3 transition-colors hover:bg-surface-elevated">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2">
+            <h4 className="m-0 text-sm font-semibold text-text-primary">
               {title}
             </h4>
-            <Badge variant={status === 'active' ? 'mint' : 'gray'} size="sm" dot={status === 'active'}>
+            <Badge variant={status === 'active' ? 'success' : 'gray'} size="sm" dot={status === 'active'}>
               {status === 'active' ? 'ACTIVE' : 'ENDED'}
             </Badge>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.75rem', color: '#94A3B8' }}>
-            <span style={{ fontFamily: 'var(--lm-font-mono)' }}>#{roomCode}</span>
+          <div className="flex items-center gap-3 text-xs text-text-muted">
+            <span className="font-mono">#{roomCode}</span>
             <span>•</span>
             <span>{dateStr}</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
+          <div className="flex gap-1.5 mt-1 flex-wrap">
             {languages.map((lang) => (
-              <Badge key={lang} variant="blue" size="sm">
+              <Badge key={lang} variant="gray" size="sm">
                 {lang}
               </Badge>
             ))}
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div className="flex gap-2 items-center">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => onJoin(roomCode)}
           >

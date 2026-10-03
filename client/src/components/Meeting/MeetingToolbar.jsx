@@ -91,9 +91,9 @@ export function MeetingToolbar({
                 : 'sam-meeting-toolbar__btn--trans-idle'
             }`}
             onClick={toggleTranslation}
-            title={translationEnabled ? 'AI Translation active (click to stop)' : 'Enable live AI translation'}
+            title={translationEnabled ? 'AI Translation active (Cmd/Ctrl+T to stop)' : 'Enable live AI translation (Cmd/Ctrl+T)'}
             id="btn-toolbar-translation"
-            aria-label="Toggle live AI translation"
+            aria-label="Toggle live AI translation (Cmd/Ctrl+T)"
           >
             <div className="sam-meeting-toolbar__icon sam-meeting-toolbar__icon--trans">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -134,9 +134,9 @@ export function MeetingToolbar({
             type="button"
             className={`sam-meeting-toolbar__btn ${showTranscript ? 'sam-meeting-toolbar__btn--active-mint' : ''}`}
             onClick={toggleTranscript}
-            title="Toggle Live Transcript panel"
+            title="Toggle Live Transcript panel (Cmd/Ctrl+K)"
             id="btn-toolbar-transcript"
-            aria-label="Toggle transcript"
+            aria-label="Toggle transcript (Cmd/Ctrl+K)"
           >
             <div className="sam-meeting-toolbar__icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -153,9 +153,9 @@ export function MeetingToolbar({
             type="button"
             className={`sam-meeting-toolbar__btn ${showParticipants ? 'sam-meeting-toolbar__btn--active-mint' : ''}`}
             onClick={toggleParticipants}
-            title="Toggle People roster"
+            title="Toggle People roster (Cmd/Ctrl+P)"
             id="btn-toolbar-participants"
-            aria-label="Toggle participants list"
+            aria-label="Toggle participants list (Cmd/Ctrl+P)"
           >
             <div className="sam-meeting-toolbar__icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

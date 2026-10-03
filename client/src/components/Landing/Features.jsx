@@ -3,7 +3,7 @@ import React from 'react';
 const FEATURES = [
   {
     title: 'Cascaded Neural Inference',
-    desc: 'Combines accelerated Whisper automatic speech recognition with Meta NLLB-200 translation and neural Edge-TTS synthesis for broadcast-quality vocal delivery.',
+    desc: ['Whisper ASR + NLLB-200 translation', 'Neural Edge-TTS synthesis'],
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
@@ -13,7 +13,7 @@ const FEATURES = [
   },
   {
     title: 'Intelligent Audio Ducking',
-    desc: 'Eliminates acoustic clashes. When translated speech plays in your ear, the original speaker’s voice is smoothly attenuated by 85–90% and restored upon completion.',
+    desc: ['Original voice attenuated 85%', 'Restored smoothly on completion'],
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
@@ -24,7 +24,7 @@ const FEATURES = [
   },
   {
     title: 'Full-Mesh WebRTC Video',
-    desc: 'High-definition, ultra-low latency peer-to-peer video streaming. Media exchanges directly between browser peers with zero intermediary transcoding bottleneck.',
+    desc: ['Ultra-low latency P2P streaming', 'Zero intermediary transcoding'],
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect width="18" height="18" x="3" y="3" rx="2" />
@@ -34,8 +34,8 @@ const FEATURES = [
     isBlue: false,
   },
   {
-    title: 'AudioWorklet Voice Detection',
-    desc: 'High-precision browser-level VAD monitors acoustic energy in real-time. Pauses trigger clean chunk finalization so words are never chopped mid-sentence.',
+    title: 'AudioWorklet VAD',
+    desc: ['Real-time acoustic monitoring', 'Clean chunk finalization'],
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
@@ -47,7 +47,7 @@ const FEATURES = [
   },
   {
     title: 'Target Language Deduplication',
-    desc: 'When multiple participants subscribe to the same language stream, a single inference result is broadcast to all listeners, minimizing server GPU overhead.',
+    desc: ['Single inference per language', 'Minimizes server GPU overhead'],
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -60,7 +60,7 @@ const FEATURES = [
   },
   {
     title: 'AI Summary & Dual Transcripts',
-    desc: 'Automated post-meeting summaries powered by Google Gemini. Review decisions, key takeaways, action items, and full multilingual transcripts in one place.',
+    desc: ['Automated Gemini summaries', 'Full multilingual transcripts'],
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -99,7 +99,14 @@ export function Features() {
                 {feature.icon}
               </div>
               <h3 className="sam-feature-title">{feature.title}</h3>
-              <p className="sam-feature-desc">{feature.desc}</p>
+              <ul className="sam-feature-desc list-none p-0 m-0 space-y-2 mt-2">
+                {feature.desc.map((point, j) => (
+                  <li key={j} className="flex items-start gap-2">
+                    <span className={feature.isBlue ? 'text-[var(--color-accent-secondary)] font-bold' : 'text-[var(--accent)] font-bold'}>•</span>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>

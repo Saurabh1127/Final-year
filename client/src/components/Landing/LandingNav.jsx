@@ -1,51 +1,55 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Drawer } from '../ui';
+import { Button, Drawer, ThemeToggle } from '../ui';
+import { useTheme } from '../../context/ThemeContext';
 
 export function LandingNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
 
   return (
-    <header className="sam-landing-nav">
+    <header className="sam-landing-nav bg-[var(--surface)]/90 border-b border-[var(--border)] backdrop-blur-md transition-colors duration-300">
       <div className="sam-landing-container sam-landing-nav__inner">
         {/* Brand */}
         <Link to="/" className="sam-landing-nav__brand">
-          <div className="sam-landing-nav__logo-mark">
+          <div className="sam-landing-nav__logo-mark" style={{ borderColor: 'var(--border-strong)', backgroundColor: 'var(--accent-muted)' }}>
             <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="14" stroke="#00D4B2" strokeWidth="2.5" />
+              <circle cx="16" cy="16" r="14" stroke="var(--accent)" strokeWidth="2.5" />
               <path
                 d="M10 16C10 12.5 13 9 16 9C19 9 22 12.5 22 16C22 19.5 19 23 16 23"
-                stroke="#00D4B2"
+                stroke="var(--accent)"
                 strokeWidth="2.5"
                 strokeLinecap="round"
               />
-              <circle cx="16" cy="16" r="3.5" fill="#00D4B2" />
+              <circle cx="16" cy="16" r="3.5" fill="var(--accent)" />
             </svg>
           </div>
-          <span className="sam-landing-nav__title">SAMVADA</span>
+          <span className="sam-landing-nav__title text-[var(--text-primary)] font-semibold tracking-tight transition-colors duration-300">SAMVADA</span>
         </Link>
 
         {/* Desktop Nav Links */}
         <nav className="sam-landing-nav__links">
-          <a href="#features" className="sam-landing-nav__link">
+          <a href="#features" className="sam-landing-nav__link text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-150">
             Features
           </a>
-          <a href="#how-it-works" className="sam-landing-nav__link">
+          <a href="#how-it-works" className="sam-landing-nav__link text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-150">
             How It Works
           </a>
-          <a href="#use-cases" className="sam-landing-nav__link">
+          <a href="#use-cases" className="sam-landing-nav__link text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-150">
             Use Cases
           </a>
-          <a href="#technology" className="sam-landing-nav__link">
+          <a href="#technology" className="sam-landing-nav__link text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-150">
             Technology
           </a>
         </nav>
 
         {/* Desktop Actions */}
-        <div className="sam-landing-nav__actions">
+        <div className="sam-landing-nav__actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <ThemeToggle />
+          
           <Link to="/login" style={{ textDecoration: 'none' }}>
             <Button variant="ghost" size="sm">
-              Sign in
+              Sign In
             </Button>
           </Link>
           <Link to="/register" style={{ textDecoration: 'none' }}>

@@ -1,5 +1,4 @@
 import React from 'react';
-import './Tabs.css';
 
 /**
  * Samvada Tabs Navigation Component

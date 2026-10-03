@@ -9,15 +9,17 @@ export function RecentMeetings({
 }) {
   return (
     <div>
-      <div className="sam-dashboard__sec-header">
-        <h3 className="sam-dashboard__sec-title">Recent Meetings</h3>
-        <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
+      <div className="sam-dashboard__sec-header flex items-center justify-between mb-4">
+        <h3 className="sam-dashboard__sec-title text-lg font-semibold text-text-primary tracking-tight m-0">
+          Recent Meetings
+        </h3>
+        <span className="text-xs text-text-muted">
           {meetings.length} sessions recorded
         </span>
       </div>
 
       {meetings.length > 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className="flex flex-col gap-3">
           {meetings.map((m) => (
             <MeetingCard
               key={m.roomCode}
@@ -27,14 +29,7 @@ export function RecentMeetings({
           ))}
         </div>
       ) : (
-        <div
-          style={{
-            borderRadius: 'var(--lm-radius-lg)',
-            border: '1px solid var(--lm-border)',
-            backgroundColor: 'var(--lm-bg-surface)',
-            padding: '40px 16px',
-          }}
-        >
+        <div className="rounded-xl border border-border bg-surface p-8 sm:p-12">
           <EmptyState
             size="md"
             title="No Recent Meetings"

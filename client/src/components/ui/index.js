@@ -14,3 +14,4 @@ export { StatusIndicator } from './StatusIndicator';
 export { Divider } from './Divider';
 export { EmptyState } from './EmptyState';
 export { Skeleton } from './Skeleton';
+export { ThemeToggle, ThemeSegmentedControl } from './ThemeToggle';

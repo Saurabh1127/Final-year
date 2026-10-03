@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import './Summary.css';
 
 /**
  * SummaryPage
@@ -130,7 +129,7 @@ export function SummaryPage() {
 
             <div className="sam-summary-header__title-wrap">
               <h1 className="sam-summary-header__title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#00D4B2' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent)' }}>
                   <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
                   <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
                   <path d="M9 12h6m-6 4h6" />
@@ -227,7 +226,7 @@ export function SummaryPage() {
                 ⚠️ No speech transcript records were captured during this call session.
               </span>
             ) : (
-              <span style={{ color: '#00d4b2', fontSize: '0.75rem' }}>
+              <span style={{ color: 'var(--accent)', fontSize: '0.75rem' }}>
                 ✓ {transcripts.length} transcript entries available for analysis
               </span>
             )}
@@ -259,10 +258,10 @@ export function SummaryPage() {
                 >
                   {copiedSummary ? (
                     <>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#00D4B2' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent)' }}>
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
-                      <span style={{ color: '#00D4B2' }}>Copied</span>
+                      <span style={{ color: 'var(--accent)' }}>Copied</span>
                     </>
                   ) : (
                     <>

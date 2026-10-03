@@ -1,5 +1,4 @@
 import React, { useId } from 'react';
-import './Select.css';
 
 /**
  * Samvada Select Component

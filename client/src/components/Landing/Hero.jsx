@@ -91,10 +91,10 @@ export function Hero() {
               />
 
               <div style={{ marginTop: '16px', display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <span style={{ width: '4px', height: '14px', background: '#00D4B2', borderRadius: '2px', animation: 'speakingGlow 0.8s infinite alternate' }} />
-                <span style={{ width: '4px', height: '22px', background: '#00D4B2', borderRadius: '2px', animation: 'speakingGlow 0.6s infinite alternate' }} />
-                <span style={{ width: '4px', height: '18px', background: '#00D4B2', borderRadius: '2px', animation: 'speakingGlow 0.7s infinite alternate' }} />
-                <span style={{ width: '4px', height: '12px', background: '#00D4B2', borderRadius: '2px', animation: 'speakingGlow 0.9s infinite alternate' }} />
+                <span style={{ width: '4px', height: '14px', background: 'var(--accent)', borderRadius: '2px', animation: 'speakingGlow 0.8s infinite alternate' }} />
+                <span style={{ width: '4px', height: '22px', background: 'var(--accent)', borderRadius: '2px', animation: 'speakingGlow 0.6s infinite alternate' }} />
+                <span style={{ width: '4px', height: '18px', background: 'var(--accent)', borderRadius: '2px', animation: 'speakingGlow 0.7s infinite alternate' }} />
+                <span style={{ width: '4px', height: '12px', background: 'var(--accent)', borderRadius: '2px', animation: 'speakingGlow 0.9s infinite alternate' }} />
               </div>
 
               <span className="sam-mockup-tile__name">Aarav Sharma (Host)</span>
@@ -123,9 +123,9 @@ export function Hero() {
                 Aarav → Elena
               </div>
               <div className="sam-mockup-caption-text">
-                <span style={{ color: '#94A3B8' }}>Original: </span>
+                <span style={{ color: 'var(--text-muted)' }}>Original: </span>
                 <span style={{ fontStyle: 'italic', marginRight: '12px' }}>"नमस्ते, इस परियोजना की प्रगति बहुत अच्छी चल रही है।"</span>
-                <span style={{ color: '#00D4B2', fontWeight: 600 }}>Translation: </span>
+                <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Translation: </span>
                 <span>"Hello, this project's progress is going very well."</span>
               </div>
             </div>

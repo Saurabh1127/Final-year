@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import './Transcripts.css';
 
 /**
  * Transcripts
@@ -164,10 +163,10 @@ export function Transcripts() {
               >
                 {copied ? (
                   <>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#00D4B2' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent)' }}>
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    <span style={{ color: '#00D4B2' }}>Copied</span>
+                    <span style={{ color: 'var(--accent)' }}>Copied</span>
                   </>
                 ) : (
                   <>

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
-import { Avatar, StatusIndicator } from '../ui';
+import { Avatar, StatusIndicator, ThemeToggle } from '../ui';
 import { SidebarItem } from './SidebarItem';
 import NotificationCenter from '../Notifications/NotificationCenter';
 
@@ -73,14 +73,14 @@ export function Sidebar({
       <div className="sam-sidebar__brand">
         <div className="sam-sidebar__logo-mark">
           <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
-            <circle cx="16" cy="16" r="14" stroke="#00D4B2" strokeWidth="2.5" />
+            <circle cx="16" cy="16" r="14" stroke="var(--accent)" strokeWidth="2.5" />
             <path
               d="M10 16C10 12.5 13 9 16 9C19 9 22 12.5 22 16C22 19.5 19 23 16 23"
-              stroke="#00D4B2"
+              stroke="var(--accent)"
               strokeWidth="2.5"
               strokeLinecap="round"
             />
-            <circle cx="16" cy="16" r="3.5" fill="#00D4B2" />
+            <circle cx="16" cy="16" r="3.5" fill="var(--accent)" />
           </svg>
         </div>
 
@@ -98,7 +98,9 @@ export function Sidebar({
         )}
 
         {!collapsed && (
-          <div style={{ position: 'relative', marginLeft: 'auto' }}>
+          <div style={{ position: 'relative', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <ThemeToggle />
+
             <button
               ref={notifBtnRef}
               type="button"

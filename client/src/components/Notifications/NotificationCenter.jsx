@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import NotificationItem from './NotificationItem';
-import './NotificationCenter.css';
 
 const DEFAULT_NOTIFICATIONS = [
   {

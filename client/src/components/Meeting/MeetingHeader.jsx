@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import LanguageSelector, { getLanguageLabel } from './LanguageSelector';
+import { ThemeToggle } from '../ui';
 
 /**
  * MeetingHeader
@@ -183,7 +184,7 @@ export function MeetingHeader({
               </>
             ) : isReceiving ? (
               <>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#00D4B2' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent)' }}>
                   <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                   <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
                 </svg>
@@ -311,6 +312,9 @@ export function MeetingHeader({
             </svg>
             <span className="sam-meeting-header__hide-mobile">Telemetry</span>
           </button>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
         </div>
       </div>
     </header>

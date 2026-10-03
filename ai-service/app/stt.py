@@ -136,6 +136,51 @@ def _decode_audio_to_numpy(audio_bytes: bytes, mime_type: str | None = None) -> 
         return None
 
 
+def _audio_bytes_to_wav(audio_bytes: bytes) -> str | None:
+    """
+    Convert raw audio bytes (any format: WebM, OGG, MP4, etc.) to a 16kHz mono WAV
+    temp file using FFmpeg. Returns the temp file path, or None on failure.
+    Caller is responsible for deleting the file.
+    """
+    tmp_wav_path = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_wav:
+            tmp_wav_path = tmp_wav.name
+
+        cmd = [
+            "ffmpeg",
+            "-hide_banner",
+            "-loglevel", "error",
+            "-i", "pipe:0",
+            "-ar", "16000",
+            "-ac", "1",
+            "-f", "wav",
+            "-y",
+            tmp_wav_path,
+        ]
+        process = subprocess.Popen(
+            cmd,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        _, err = process.communicate(input=audio_bytes, timeout=15)
+        if process.returncode != 0:
+            try:
+                os.unlink(tmp_wav_path)
+            except OSError:
+                pass
+            return None
+        return tmp_wav_path
+    except Exception:
+        if tmp_wav_path:
+            try:
+                os.unlink(tmp_wav_path)
+            except OSError:
+                pass
+        return None
+
+
 def transcribe_audio(
     audio_bytes: bytes,
     source_language: str | None = None,
@@ -216,18 +261,29 @@ def transcribe_audio(
         except Exception as exc:
             print(f"⚠️ [STT] In-memory transcription error: {exc}. Falling back to tempfile.")
 
-    # Fallback path using tempfile
-    suffix = _mime_to_ext(mime_type)
+    # Fallback path — pre-convert to WAV via FFmpeg so faster-whisper/soundfile
+    # never sees a WebM/OGG container (which causes the 'metadata_errors' crash).
+    tmp_wav_path = None
     tmp_path = None
     try:
-        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
-            tmp.write(audio_bytes)
-            tmp_path = tmp.name
+        # First try: FFmpeg → WAV temp file (most reliable, bypasses soundfile)
+        tmp_wav_path = _audio_bytes_to_wav(audio_bytes)
+
+        if tmp_wav_path is None:
+            # Last resort: write raw bytes with correct extension
+            suffix = _mime_to_ext(mime_type)
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+                tmp.write(audio_bytes)
+                tmp_path = tmp.name
+            transcribe_input = tmp_path
+            print(f"⚠️ [STT] FFmpeg WAV conversion failed, using raw {suffix} file.")
+        else:
+            transcribe_input = tmp_wav_path
 
         opts = _get_transcribe_opts(source_language)
 
         segments, info = model.transcribe(
-            tmp_path,
+            transcribe_input,
             beam_size=beam_size,
             vad_filter=True,
             vad_parameters=vad_params,
@@ -270,8 +326,10 @@ def transcribe_audio(
             "segments":             [],
         }
     finally:
-        if tmp_path:
-            try:
-                os.unlink(tmp_path)
-            except OSError:
-                pass
+        for p in (tmp_wav_path, tmp_path):
+            if p:
+                try:
+                    os.unlink(p)
+                except OSError:
+                    pass
+

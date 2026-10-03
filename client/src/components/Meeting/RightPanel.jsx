@@ -3,7 +3,6 @@ import Tabs from '../ui/Tabs';
 import TranscriptPanel from './TranscriptPanel';
 import ParticipantsPanel from './ParticipantsPanel';
 import ChatPanel from './ChatPanel';
-import './RightPanel.css';
 
 /**
  * RightPanel

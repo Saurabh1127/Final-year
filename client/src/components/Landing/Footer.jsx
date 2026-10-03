@@ -11,19 +11,19 @@ export function Footer() {
             <Link to="/" className="sam-auth-logo-row" style={{ justifyContent: 'flex-start', margin: 0 }}>
               <div className="sam-auth-logo-mark">
                 <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
-                  <circle cx="16" cy="16" r="14" stroke="#00D4B2" strokeWidth="2.5" />
+                  <circle cx="16" cy="16" r="14" stroke="var(--accent)" strokeWidth="2.5" />
                   <path
                     d="M10 16C10 12.5 13 9 16 9C19 9 22 12.5 22 16C22 19.5 19 23 16 23"
-                    stroke="#00D4B2"
+                    stroke="var(--accent)"
                     strokeWidth="2.5"
                     strokeLinecap="round"
                   />
-                  <circle cx="16" cy="16" r="3.5" fill="#00D4B2" />
+                  <circle cx="16" cy="16" r="3.5" fill="var(--accent)" />
                 </svg>
               </div>
               <span className="sam-auth-brand-name">SAMVADA</span>
             </Link>
-            <p style={{ fontSize: '0.8125rem', color: '#94A3B8', lineHeight: 1.5, margin: 0, maxWidth: '280px' }}>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--lnd-text2)', lineHeight: 1.5, margin: 0, maxWidth: '280px' }}>
               Real-time multilingual video conferencing powered by cascaded speech-to-speech neural networks and WebRTC.
             </p>
           </div>

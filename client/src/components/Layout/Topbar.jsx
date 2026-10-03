@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
-import { Avatar, StatusIndicator } from '../ui';
+import { Avatar, StatusIndicator, ThemeToggle } from '../ui';
 import NotificationCenter from '../Notifications/NotificationCenter';
 
 /**
@@ -31,16 +31,16 @@ export function Topbar({ onOpenMobileMenu }) {
         </button>
 
         <div className="sam-topbar__brand">
-          <div className="sam-topbar__logo-mark">
+          <div className="sam-topbar__logo-mark" style={{ borderColor: 'var(--border-strong)', backgroundColor: 'var(--accent-muted)' }}>
             <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="14" stroke="#00D4B2" strokeWidth="2.5" />
+              <circle cx="16" cy="16" r="14" stroke="var(--accent)" strokeWidth="2.5" />
               <path
                 d="M10 16C10 12.5 13 9 16 9C19 9 22 12.5 22 16C22 19.5 19 23 16 23"
-                stroke="#00D4B2"
+                stroke="var(--accent)"
                 strokeWidth="2.5"
                 strokeLinecap="round"
               />
-              <circle cx="16" cy="16" r="3.5" fill="#00D4B2" />
+              <circle cx="16" cy="16" r="3.5" fill="var(--accent)" />
             </svg>
           </div>
           <span className="sam-topbar__title">SAMVADA</span>
@@ -48,6 +48,8 @@ export function Topbar({ onOpenMobileMenu }) {
       </div>
 
       <div className="sam-topbar__right" style={{ position: 'relative' }}>
+        <ThemeToggle />
+
         {/* Notifications Dropdown Trigger */}
         <button
           ref={bellRef}
