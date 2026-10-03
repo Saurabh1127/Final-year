@@ -38,18 +38,41 @@ const useTranslationReceiver = ({
   const pendingTimeoutRef = useRef(null);             // Auto-clear pending indicator if no result arrives
   const fallbackSubtitleTimeoutRef = useRef(null);   // Fallback timer if audio does not arrive
 
-  // ── Audio Ducking ────────────────────────────────────────────────────────────
-  const duck = useCallback(() => {
-    remoteAudioRefs.forEach((ref) => {
-      if (ref?.current) ref.current.volume = 0.15;
-    });
+  // ── Audio Ducking & Volume Management ──────────────────────────────────────
+  const getAudioElements = useCallback(() => {
+    const list = remoteAudioRefs?.current || remoteAudioRefs || [];
+    return Array.isArray(list) ? list : [];
   }, [remoteAudioRefs]);
 
-  const restore = useCallback(() => {
-    remoteAudioRefs.forEach((ref) => {
-      if (ref?.current) ref.current.volume = 1.0;
+  const duck = useCallback(() => {
+    getAudioElements().forEach((ref) => {
+      const el = ref?.current || ref;
+      if (el && typeof el.volume === 'number') {
+        el.volume = 0.05; // Duck to near-silence while AI TTS voice speaks
+      }
     });
-  }, [remoteAudioRefs]);
+  }, [getAudioElements]);
+
+  const restore = useCallback(() => {
+    const baseVolume = enabled ? 0.15 : 1.0;
+    getAudioElements().forEach((ref) => {
+      const el = ref?.current || ref;
+      if (el && typeof el.volume === 'number') {
+        el.volume = baseVolume;
+      }
+    });
+  }, [getAudioElements, enabled]);
+
+  // Sync baseline volume whenever translation is toggled on/off
+  useEffect(() => {
+    const baseVolume = enabled ? 0.15 : 1.0;
+    getAudioElements().forEach((ref) => {
+      const el = ref?.current || ref;
+      if (el && typeof el.volume === 'number') {
+        el.volume = baseVolume;
+      }
+    });
+  }, [enabled, getAudioElements]);
 
   // ── Play Next Item in Queue ───────────────────────────────────────────────────
   const playNext = useCallback(() => {

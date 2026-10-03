@@ -14,6 +14,9 @@ export function ParticipantGrid({
   localStream,
   onRename,
   sourceLanguage = 'auto',
+  translationEnabled = false,
+  registerRemoteAudioRef,
+  unregisterRemoteAudioRef,
 }) {
   const localId = localParticipant?.userId?.toString();
   const uniqueRemoteMap = new Map();
@@ -47,6 +50,7 @@ export function ParticipantGrid({
           isLocal={true}
           onRename={onRename}
           sourceLanguage={sourceLanguage}
+          translationEnabled={translationEnabled}
         />
       )}
 
@@ -58,6 +62,9 @@ export function ParticipantGrid({
             participant={p}
             stream={remoteStream}
             isLocal={false}
+            translationEnabled={translationEnabled}
+            registerRemoteAudioRef={registerRemoteAudioRef}
+            unregisterRemoteAudioRef={unregisterRemoteAudioRef}
           />
         );
       })}

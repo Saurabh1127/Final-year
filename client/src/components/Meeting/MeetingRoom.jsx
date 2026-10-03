@@ -41,6 +41,18 @@ export function MeetingRoom({ roomCode }) {
   const echoAudioRef = useRef(null);
   const remoteVideoRefs = useRef([]);
 
+  const registerRemoteAudioRef = useCallback((el) => {
+    if (!el) return;
+    if (!remoteVideoRefs.current.includes(el)) {
+      remoteVideoRefs.current.push(el);
+    }
+  }, []);
+
+  const unregisterRemoteAudioRef = useCallback((el) => {
+    if (!el) return;
+    remoteVideoRefs.current = remoteVideoRefs.current.filter((ref) => ref !== el);
+  }, []);
+
   // Hardware capture & WebRTC
   const { localStream, startCapture, stopCapture, isMuted, toggleMute, isVideoOff, toggleVideo, error: mediaError } = useAudioCapture();
   const { remoteStreams, removePeerConnection } = useWebRTC(hasJoinedLobby ? localStream : null, user?.id);
@@ -304,6 +316,9 @@ export function MeetingRoom({ roomCode }) {
           localStream={localStream}
           onRename={onRename}
           sourceLanguage={sourceLanguage}
+          translationEnabled={translationEnabled}
+          registerRemoteAudioRef={registerRemoteAudioRef}
+          unregisterRemoteAudioRef={unregisterRemoteAudioRef}
         />
 
         <RightPanel
