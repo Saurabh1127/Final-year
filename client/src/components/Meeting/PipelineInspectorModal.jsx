@@ -5,10 +5,10 @@ import React, { useEffect, useRef } from 'react';
  *
  * Real-time End-to-End Speech Translation Diagnostics Inspector.
  * Breaks down any spoken utterance across all 4 pipeline stages:
- *   1. 🎤 Audio & VAD
- *   2. 🗣️ Speech Recognition (Faster-Whisper)
- *   3. 🌐 Machine Translation (Meta NLLB-200)
- *   4. 🔊 Speech Synthesis (TTS — Sarvam AI bulbul:v3 / Edge-TTS)
+ *   1. Audio & VAD
+ *   2. Speech Recognition (Faster-Whisper)
+ *   3. Machine Translation (Meta NLLB-200)
+ *   4. Speech Synthesis (TTS — Sarvam AI bulbul:v3 / Edge-TTS)
  */
 export default function PipelineInspectorModal({ isOpen, onClose, data }) {
   const modalRef = useRef(null);

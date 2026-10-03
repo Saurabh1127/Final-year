@@ -141,9 +141,9 @@ export function ParticipantsPanel({
                 )}
               </div>
               <div className="sam-participant-row__lang">
-                <span>🎙️ {getLanguageLabel(sourceLanguage)}</span>
+                <span>Speaks: {getLanguageLabel(sourceLanguage)}</span>
                 <span className="sam-participant-row__lang-arrow">→</span>
-                <span>🎧 {getLanguageLabel(targetLanguage)}</span>
+                <span>Listens: {getLanguageLabel(targetLanguage)}</span>
               </div>
             </div>
 
@@ -215,7 +215,7 @@ export function ParticipantsPanel({
                   )}
                 </div>
                 <div className="sam-participant-row__lang">
-                  <span>🎧 Listening in {getLanguageLabel(targetLang)}</span>
+                  <span>Listens in {getLanguageLabel(targetLang)}</span>
                 </div>
               </div>
 

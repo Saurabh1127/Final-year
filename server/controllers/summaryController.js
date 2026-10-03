@@ -11,7 +11,7 @@ class SummaryController {
         data: summary,
       });
     } catch (err) {
-      console.error('❌ [Summary] API error:', err.response?.data || err.message);
+      console.error('[ERROR] [Summary] API error:', err.response?.data || err.message);
       return res.status(err.status || 500).json({
         success: false,
         message: err.message || 'Failed to generate meeting summary.',
@@ -26,7 +26,7 @@ class SummaryController {
       const summary = await summaryService.getSummary(meetingId);
       return res.json({ success: true, data: summary });
     } catch (err) {
-      console.error('❌ [Summary] GET error:', err.message);
+      console.error('[ERROR] [Summary] GET error:', err.message);
       return res.status(err.status || 500).json({ success: false, message: err.message || 'Server error fetching summary.' });
     }
   }

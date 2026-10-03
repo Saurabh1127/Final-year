@@ -109,23 +109,23 @@ async def lifespan(app: "FastAPI"):  # type: ignore[valid-type]
     import gc
     import asyncio
 
-    print("🚀 Initialising AI Service Pipeline...")
+    print("[STARTUP] Initialising AI Service Pipeline...")
 
     # ── 1. Load + Warm up Whisper STT ────────────────────────────────────────
     from .stt import get_model as get_stt_model
     try:
         stt_model = get_stt_model()
-        print("🔥 [Warmup] Running Whisper dummy inference to pre-heat CUDA kernels...")
+        print("[WARMUP] Running Whisper dummy inference to pre-heat CUDA kernels...")
         try:
             import numpy as np
             # 0.5 seconds of silence at 16kHz — tiny enough to be instant
             dummy_audio = np.zeros(8000, dtype=np.float32)
             list(stt_model.transcribe(dummy_audio, beam_size=1, vad_filter=False)[0])
-            print("✅ [Warmup] Whisper kernel warm-up complete.")
+            print("[WARMUP] Whisper kernel warm-up complete.")
         except Exception as warmup_err:
-            print(f"⚠️ [Warmup] Whisper warmup failed (non-fatal): {warmup_err}")
+            print(f"[WARN] [Warmup] Whisper warmup failed (non-fatal): {warmup_err}")
     except Exception as e:
-        print(f"⚠️ STT preload failed: {e}")
+        print(f"[WARN] STT preload failed: {e}")
 
     # Force aggressive garbage collection before loading the next heavy model
     import torch
@@ -137,7 +137,7 @@ async def lifespan(app: "FastAPI"):  # type: ignore[valid-type]
     from .translator import get_translator_and_tokenizer
     try:
         translator, tokenizer = get_translator_and_tokenizer()
-        print("🔥 [Warmup] Running NLLB dummy inference to pre-heat CUDA kernels...")
+        print("[WARMUP] Running NLLB dummy inference to pre-heat CUDA kernels...")
         try:
             # Translate a single short token from English → Hindi (cheapest possible call)
             tokenizer.src_lang = "eng_Latn"
@@ -147,22 +147,22 @@ async def lifespan(app: "FastAPI"):  # type: ignore[valid-type]
                 target_prefix=[["hin_Deva"]],
                 max_decoding_length=5,
             )
-            print("✅ [Warmup] NLLB kernel warm-up complete.")
+            print("[WARMUP] NLLB kernel warm-up complete.")
         except Exception as warmup_err:
-            print(f"⚠️ [Warmup] NLLB warmup failed (non-fatal): {warmup_err}")
+            print(f"[WARN] [Warmup] NLLB warmup failed (non-fatal): {warmup_err}")
     except Exception as e:
-        print(f"⚠️ NMT preload failed: {e}")
+        print(f"[WARN] NMT preload failed: {e}")
 
     # Final GPU memory snapshot after warmup
     if torch.cuda.is_available():
         alloc = torch.cuda.memory_allocated() / 1e9
         reserved = torch.cuda.memory_reserved() / 1e9
         total = torch.cuda.get_device_properties(0).total_memory / 1e9
-        print(f"📊 [Warmup] GPU ready: {alloc:.2f}GB alloc / {reserved:.2f}GB reserved / {total:.1f}GB total")
-        print("✅ [Warmup] All models loaded and kernels warm — first request will be fast!")
+        print(f"[WARMUP] GPU ready: {alloc:.2f}GB alloc / {reserved:.2f}GB reserved / {total:.1f}GB total")
+        print("[WARMUP] All models loaded and kernels warm — first request will be fast!")
 
     yield
-    print("🛑 Shutting down AI service...")
+    print("[SHUTDOWN] Shutting down AI service...")
 
 
 
@@ -306,7 +306,7 @@ async def websocket_process_audio(websocket: WebSocket) -> None:
         { "job_id": "...", "type": "done",        ... }
     """
     await websocket.accept()
-    print(f"🔌 WebSocket connected: {websocket.client}")
+    print(f"[WEBSOCKET] Connected: {websocket.client}")
 
     try:
         while True:
@@ -348,9 +348,9 @@ async def websocket_process_audio(websocket: WebSocket) -> None:
                 await websocket.send_json({**chunk, "job_id": job_id})
 
     except WebSocketDisconnect:
-        print(f"🔌 WebSocket disconnected: {websocket.client}")
+        print(f"[WEBSOCKET] Disconnected: {websocket.client}")
     except Exception as exc:
-        print(f"⚠️  WebSocket error: {exc}")
+        print(f"[WARN] [WEBSOCKET] Error: {exc}")
         try:
             await websocket.send_json({"error": str(exc), "job_id": None})
         except Exception:
@@ -454,28 +454,28 @@ audio{{width:100%;margin-top:7px;border-radius:8px}}
 </head>
 <body>
 <header>
-  <h1>🌐 SAMVADA AI Service</h1>
+  <h1>SAMVADA AI Service</h1>
   <p class="sub">Test Dashboard — Whisper-small · NLLB-200-600M · gTTS <span class="badge">v2.0</span></p>
 </header>
 <div class="grid">
   <div>
     <div class="card">
-      <h2>🎙️ Audio Input</h2>
+      <h2>Audio Input</h2>
       <label class="field">Source Language</label>
       <select id="srcLang">
-        <option value="auto">🔍 Auto-detect (Whisper)</option>
+        <option value="auto">Auto-detect (Whisper)</option>
         {lang_options}
       </select>
       <label class="field">Target Languages</label>
       <div class="lang-wrap" id="tgtBoxes">{lang_checkboxes}</div>
       <label class="field" style="margin-top:18px">Record from Microphone</label>
       <div>
-        <button class="btn btn-rec" id="recBtn" onclick="toggleRec()">⏺ Start Recording</button>
+        <button class="btn btn-rec" id="recBtn" onclick="toggleRec()">Start Recording</button>
         <span id="recTimer" style="margin-left:9px;color:var(--muted);font-size:.8rem"></span>
       </div>
       <label class="field" style="margin-top:18px">— or — Upload Audio File</label>
       <div class="dz" id="dz" onclick="document.getElementById('af').click()">
-        <div>📂 Click or drag &amp; drop audio file</div>
+        <div>Click or drag &amp; drop audio file</div>
         <div style="font-size:.76rem;margin-top:3px">WAV · MP3 · WebM · OGG · M4A</div>
         <input type="file" id="af" accept="audio/*" style="display:none" onchange="onFile(this)"/>
       </div>
@@ -483,24 +483,24 @@ audio{{width:100%;margin-top:7px;border-radius:8px}}
       <input type="text" id="meetingId" value="demo-meeting-001"/>
       <label class="field">User / Speaker ID</label>
       <input type="text" id="userId" value="speaker-01"/>
-      <button class="btn btn-primary" id="goBtn" onclick="run()" disabled>🚀 Translate Speech</button>
+      <button class="btn btn-primary" id="goBtn" onclick="run()" disabled>Translate Speech</button>
       <div class="status s-idle" id="statusBar">Ready — record or upload audio, then click Translate.</div>
     </div>
   </div>
   <div>
     <div class="card">
-      <h2>📝 Transcription (Whisper-small)</h2>
+      <h2>Transcription (Whisper-small)</h2>
       <div class="rbox">
         <div class="rlabel">Detected Language: <span id="detLang" style="color:var(--accent2)">—</span></div>
         <div id="sttOut" style="color:var(--muted);font-style:italic">Transcription appears here…</div>
       </div>
     </div>
     <div class="card" style="margin-top:20px">
-      <h2>🌐 Translations (NLLB-200) + 🔈 Audio (gTTS)</h2>
+      <h2>Translations (NLLB-200) + Audio (gTTS)</h2>
       <div id="tOut" style="color:var(--muted);font-style:italic;font-size:.88rem">Translations appear here after processing…</div>
     </div>
     <div class="card" style="margin-top:20px">
-      <h2>⚡ Pipeline Latency</h2>
+      <h2>Pipeline Latency</h2>
       <div class="metrics">
         <div class="metric"><div class="mv" id="mSTT">—</div><div class="ml">STT</div></div>
         <div class="metric"><div class="mv" id="mNMT">—</div><div class="ml">NMT</div></div>
@@ -517,15 +517,15 @@ dz.addEventListener('dragover',e=>{{e.preventDefault();dz.classList.add('dragove
 dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
 dz.addEventListener('drop',e=>{{e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files[0])setFile(e.dataTransfer.files[0])}});
 function onFile(i){{if(i.files[0])setFile(i.files[0])}}
-function setFile(f){{blob=f;dz.classList.add('has-file');dz.innerHTML=`<div>✅ ${{f.name}}</div><div style="font-size:.76rem;margin-top:3px">${{(f.size/1024).toFixed(1)}} KB</div>`;document.getElementById('goBtn').disabled=false}}
+function setFile(f){{blob=f;dz.classList.add('has-file');dz.innerHTML=`<div>${{f.name}}</div><div style="font-size:.76rem;margin-top:3px">${{(f.size/1024).toFixed(1)}} KB</div>`;document.getElementById('goBtn').disabled=false}}
 async function toggleRec(){{rec?stopRec():await startRec()}}
 async function startRec(){{
   try{{
     const s=await navigator.mediaDevices.getUserMedia({{audio:true}});
     chunks=[];mr=new MediaRecorder(s);
     mr.ondataavailable=e=>chunks.push(e.data);
-    mr.onstop=()=>{{blob=new Blob(chunks,{{type:'audio/webm'}});s.getTracks().forEach(t=>t.stop());document.getElementById('goBtn').disabled=false;const b=document.getElementById('recBtn');b.textContent=`✅ Recorded ${{rs}}s`;b.classList.remove('on')}};
-    mr.start();rec=true;rs=0;const b=document.getElementById('recBtn');b.textContent='⏹ Stop Recording';b.classList.add('on');
+    mr.onstop=()=>{{blob=new Blob(chunks,{{type:'audio/webm'}});s.getTracks().forEach(t=>t.stop());document.getElementById('goBtn').disabled=false;const b=document.getElementById('recBtn');b.textContent=`Recorded ${{rs}}s`;b.classList.remove('on')}};
+    mr.start();rec=true;rs=0;const b=document.getElementById('recBtn');b.textContent='Stop Recording';b.classList.add('on');
     ri=setInterval(()=>{{rs++;document.getElementById('recTimer').textContent=rs+'s'}},1000);
   }}catch(e){{setStatus('err','Mic error: '+e.message)}}
 }}
@@ -546,8 +546,8 @@ async function run(){{
   try{{
     const res=await fetch('/api/process-audio',{{method:'POST',body:fd}});
     if(!res.ok)throw new Error('HTTP '+res.status+': '+await res.text());
-    showResults(await res.json());setStatus('done','✅ Pipeline complete!');
-  }}catch(e){{setStatus('err','❌ '+e.message)}}
+    showResults(await res.json());setStatus('done','Pipeline complete!');
+  }}catch(e){{setStatus('err','Error: '+e.message)}}
   finally{{document.getElementById('goBtn').disabled=false}}
 }}
 function showResults(d){{

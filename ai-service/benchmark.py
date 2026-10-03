@@ -87,7 +87,7 @@ def run_hybrid_stack(sentences):
 
 def main():
     print("="*60)
-    print("🚀 LINGUAMEET AI PIPELINE BENCHMARK (Phase 4)")
+    print("LINGUAMEET AI PIPELINE BENCHMARK (Phase 4)")
     print("="*60)
     print(f"Dataset Size: {len(BENCHMARK_DATA)} sentences (EN -> HI)")
     print("Initializing models. This may take a moment on the first run...")
@@ -99,19 +99,19 @@ def main():
     print("\n--- Running Baseline: NLLB-200 (INT8) ---")
     nllb_preds, nllb_latency = run_nllb_baseline(sources)
     nllb_bleu = sacrebleu.corpus_bleu(nllb_preds, references)
-    print(f"✅ NLLB Latency (per sentence): {nllb_latency:.3f} seconds")
-    print(f"✅ NLLB BLEU Score: {nllb_bleu.score:.2f}")
+    print(f"[PASS] NLLB Latency (per sentence): {nllb_latency:.3f} seconds")
+    print(f"[PASS] NLLB BLEU Score: {nllb_bleu.score:.2f}")
 
     # 2. Benchmark Hybrid Stack (IndicTrans2)
     print("\n--- Running Hybrid Stack: IndicTrans2 (FP16) ---")
     hybrid_preds, hybrid_latency = run_hybrid_stack(sources)
     hybrid_bleu = sacrebleu.corpus_bleu(hybrid_preds, references)
-    print(f"✅ IndicTrans2 Latency (per sentence): {hybrid_latency:.3f} seconds")
-    print(f"✅ IndicTrans2 BLEU Score: {hybrid_bleu.score:.2f}")
+    print(f"[PASS] IndicTrans2 Latency (per sentence): {hybrid_latency:.3f} seconds")
+    print(f"[PASS] IndicTrans2 BLEU Score: {hybrid_bleu.score:.2f}")
 
     # 3. Print Results Summary
     print("\n" + "="*60)
-    print("📊 BENCHMARK RESULTS FOR THESIS")
+    print("BENCHMARK RESULTS FOR THESIS")
     print("="*60)
     print(f"{'Metric':<20} | {'NLLB-200 Baseline':<20} | {'IndicTrans2 Hybrid':<20}")
     print("-" * 65)
@@ -119,7 +119,7 @@ def main():
     print(f"{'BLEU Score':<20} | {nllb_bleu.score:.2f}{'':<16} | {hybrid_bleu.score:.2f}")
     
     improvement = hybrid_bleu.score - nllb_bleu.score
-    print(f"\n💡 Conclusion: IndicTrans2 improves translation quality by {improvement:+.2f} BLEU points")
+    print(f"\nConclusion: IndicTrans2 improves translation quality by {improvement:+.2f} BLEU points")
     print("   at the cost of slightly higher latency. This validates the Hybrid Router architecture!")
     print("="*60)
 

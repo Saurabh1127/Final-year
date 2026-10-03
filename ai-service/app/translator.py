@@ -55,9 +55,9 @@ def _get_device() -> str:
     if not _DEPS_AVAILABLE:
         return "cpu"
     if torch.cuda.is_available():
-        print(f"🎮 GPU detected: {torch.cuda.get_device_name(0)} — NLLB (CTranslate2) on CUDA.")
+        print(f"[GPU] Detected: {torch.cuda.get_device_name(0)} — NLLB (CTranslate2) on CUDA.")
         return "cuda"
-    print("💻 No GPU — NLLB (CTranslate2) on CPU.")
+    print("[CPU] No GPU — NLLB (CTranslate2) on CPU.")
     return "cpu"
 
 
@@ -90,13 +90,13 @@ def _resolve_model_path(model_name_or_path: str) -> str:
 
     for candidate in candidates:
         if os.path.isfile(os.path.join(candidate, "model.bin")):
-            print(f"📁 Found converted CTranslate2 NLLB model at: '{candidate}'")
+            print(f"[NMT] Found converted CTranslate2 NLLB model at: '{candidate}'")
             return candidate
 
     # 3. If no converted directory exists, auto-convert it using ct2-transformers-converter
     target_dir = raw_name if "-int8" in raw_name else raw_name + "-int8"
     hf_source = model_name_or_path if "/" in model_name_or_path else f"facebook/{raw_name.replace('-int8', '')}"
-    print(f"🔄 Converting HuggingFace '{hf_source}' to CTranslate2 INT8 in '{target_dir}'...")
+    print(f"[NMT] Converting HuggingFace '{hf_source}' to CTranslate2 INT8 in '{target_dir}'...")
     subprocess.run([
         "ct2-transformers-converter",
         "--model", hf_source,
@@ -117,7 +117,7 @@ def get_translator_and_tokenizer():
         raw_model_path = os.getenv("NLLB_MODEL", "nllb-200-distilled-600M-int8")
         model_path = _resolve_model_path(raw_model_path)
         device = _get_device()
-        print(f"🌐 Loading CTranslate2 NLLB '{model_path}' on {device.upper()} ...")
+        print(f"[NMT] Loading CTranslate2 NLLB '{model_path}' on {device.upper()} ...")
         
         # Ensure tokenizer loads from the same directory or fallback to HF hub
         try:
@@ -151,7 +151,7 @@ def get_translator_and_tokenizer():
             inter_threads=inter_threads,
             intra_threads=intra_threads,
         )
-        print(f"✅ NLLB (CTranslate2) ready. "
+        print(f"[NMT] NLLB (CTranslate2) ready. "
               f"[inter_threads={inter_threads}, intra_threads={intra_threads}]")
     return _translator, _tokenizer
 
@@ -242,7 +242,7 @@ def translate_text(text: str, src: str, tgt: str) -> str:
         target = results[0].hypotheses[0][1:]
         return tokenizer.decode(tokenizer.convert_tokens_to_ids(target))
     except Exception as nllb_exc:
-        print(f"⚠️ NLLB translation failed: {nllb_exc}")
+        print(f"[WARN] [NMT] Translation failed: {nllb_exc}")
         return text
 
 
@@ -295,7 +295,7 @@ def translate_to_multiple(text: str, src: str, targets: list[str]) -> dict[str, 
             target_tokens = results[i].hypotheses[0][1:]
             out[tgt] = tokenizer.decode(tokenizer.convert_tokens_to_ids(target_tokens))
     except Exception as exc:
-        print(f"⚠️ NLLB Batch translation failed: {exc}")
+        print(f"[WARN] [NMT] Batch translation failed: {exc}")
         for tgt in remaining_targets:
             if tgt not in out:
                 out[tgt] = text  # Graceful fallback to source text

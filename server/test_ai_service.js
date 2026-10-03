@@ -48,7 +48,7 @@ function generateTestWav() {
 }
 
 async function testAIService() {
-  console.log(`\n🔬 Testing AI service at: ${AI_URL}\n`);
+  console.log(`\n[TEST] Testing AI service at: ${AI_URL}\n`);
 
   // 1. Health check
   try {
@@ -56,14 +56,14 @@ async function testAIService() {
       headers: { 'ngrok-skip-browser-warning': 'true' },
       timeout: 10000,
     });
-    console.log('✅ Health check:', JSON.stringify(health.data, null, 2));
+    console.log('[SUCCESS] Health check:', JSON.stringify(health.data, null, 2));
   } catch (err) {
-    console.error('❌ Health check failed:', err.message);
+    console.error('[ERROR] Health check failed:', err.message);
     return;
   }
 
   // 2. Send test audio (WAV tone)
-  console.log('\n📤 Sending test WAV audio (1s 440Hz tone)...');
+  console.log('\n[TEST] Sending test WAV audio (1s 440Hz tone)...');
   const wavBuffer = generateTestWav();
   
   const form = new FormData();
@@ -87,10 +87,10 @@ async function testAIService() {
       maxBodyLength: Infinity,
     });
     const elapsed = Date.now() - start;
-    console.log(`\n✅ Response received in ${elapsed}ms:`);
+    console.log(`\n[SUCCESS] Response received in ${elapsed}ms:`);
     console.log(JSON.stringify(res.data, null, 2));
   } catch (err) {
-    console.error('❌ Process audio failed:', err.message);
+    console.error('[ERROR] Process audio failed:', err.message);
     if (err.response) {
       console.error('Response status:', err.response.status);
       console.error('Response data:', JSON.stringify(err.response.data, null, 2));

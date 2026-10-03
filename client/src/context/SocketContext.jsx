@@ -23,17 +23,17 @@ export const SocketProvider = ({ children }) => {
       setSocket(s);
 
       s.on('connect', () => {
-        console.log('🔌 Socket connected:', s.id);
+        console.log('[Socket] Connected:', s.id);
         setConnected(true);
       });
 
       s.on('disconnect', (reason) => {
-        console.log('🔌 Socket disconnected:', reason);
+        console.log('[Socket] Disconnected:', reason);
         setConnected(false);
       });
 
       s.on('connect_error', (err) => {
-        console.error('❌ Socket connection error:', err.message);
+        console.error('[Socket] Connection error:', err.message);
         setConnected(false);
       });
 

@@ -17,7 +17,7 @@ if torch.cuda.is_available():
     print("GPU:", torch.cuda.get_device_name(0))
     print("VRAM:", round(torch.cuda.get_device_properties(0).total_memory / 1e9, 2), "GB")
 else:
-    print("⚠️  No GPU detected. Go to Runtime → Change runtime type → T4 GPU")
+    print("[WARN] No GPU detected. Go to Runtime -> Change runtime type -> T4 GPU")
 
 
 # ───────────────────────────────────────────────────────────────────
@@ -35,14 +35,14 @@ REPO_DIR    = "/content/Final-year"
 if os.path.exists(REPO_DIR):
     shutil.rmtree(REPO_DIR)
 
-print(f"📥 Cloning repository: {GITHUB_REPO} ...")
+print(f"Cloning repository: {GITHUB_REPO} ...")
 exit_code = os.system(f"git clone {GITHUB_REPO} {REPO_DIR}")
 
 if exit_code != 0 or not os.path.exists(f"{REPO_DIR}/ai-service"):
-    print("\n❌ ERROR: Failed to clone repository or 'ai-service' directory missing!")
+    print("\n[ERROR] Failed to clone repository or 'ai-service' directory missing!")
 else:
     os.chdir(f"{REPO_DIR}/ai-service")
-    print("✅ Repo cloned successfully!")
+    print("Repo cloned successfully.")
     print("Working directory:", os.getcwd())
 
 
@@ -55,7 +55,7 @@ else:
 # AI, Translation, and TTS dependencies
 !pip install -q faster-whisper transformers accelerate sentencepiece nest_asyncio gTTS edge-tts
 
-print("✅ All packages installed cleanly.")
+print("All packages installed cleanly.")
 
 
 # ───────────────────────────────────────────────────────────────────
@@ -87,9 +87,9 @@ print(f"  SARVAM_API_KEY = {'CONFIGURED' if os.environ.get('SARVAM_API_KEY') els
 # The FastAPI server loads it on startup via the lifespan handler.
 from faster_whisper import WhisperModel
 model_name = os.environ.get("WHISPER_MODEL", "small")
-print(f"⬇️  Downloading faster-whisper '{model_name}' to cache...")
+print(f"Downloading faster-whisper '{model_name}' to cache...")
 _fw = WhisperModel(model_name, device="cpu", compute_type="int8")
-print(f"✅ faster-whisper '{model_name}' cached.")
+print(f"faster-whisper '{model_name}' cached.")
 del _fw
 import torch; torch.cuda.empty_cache()
 import gc; gc.collect()
@@ -106,7 +106,7 @@ nllb_name = os.environ.get("NLLB_MODEL", "facebook/nllb-200-distilled-600M")
 if "-int8" not in nllb_name:
     output_dir = nllb_name.split("/")[-1] + "-int8"
 
-    print(f"⬇️  Downloading and converting NLLB '{nllb_name}' to CTranslate2 INT8 format...")
+    print(f"Downloading and converting NLLB '{nllb_name}' to CTranslate2 INT8 format...")
     if not os.path.exists(output_dir):
         subprocess.run([
             "ct2-transformers-converter",
@@ -115,15 +115,15 @@ if "-int8" not in nllb_name:
             "--quantization", "int8",
             "--force"
         ], check=True)
-        print(f"✅ NLLB '{nllb_name}' converted and saved to {output_dir}/")
+        print(f"NLLB '{nllb_name}' converted and saved to {output_dir}/")
     else:
-        print(f"✅ NLLB converted model already exists in {output_dir}/")
+        print(f"NLLB converted model already exists in {output_dir}/")
 
     # Update env var to point to the converted model directory for the API
     os.environ["NLLB_MODEL"] = output_dir
     print(f"  NLLB_MODEL is now set to: {os.environ['NLLB_MODEL']}")
 else:
-    print(f"✅ NLLB_MODEL is already set to converted directory: {nllb_name}")
+    print(f"NLLB_MODEL is already set to converted directory: {nllb_name}")
 
 # Force update the .env file so FastAPI picks up the correct path on reboot
 with open(f"{REPO_DIR}/ai-service/.env", "w") as f:
@@ -141,14 +141,14 @@ from pyngrok import ngrok
 # Ngrok now requires an authtoken for all free accounts.
 token = os.environ.get("NGROK_AUTHTOKEN")
 if not token:
-    print("🔑 Please enter your ngrok Authtoken.")
+    print("Please enter your ngrok Authtoken.")
     print("   (Get it for free at: https://dashboard.ngrok.com/get-started/your-authtoken)")
     token = input("Ngrok Authtoken (paste here and press Enter): ")
 
 if token.strip():
     ngrok.set_auth_token(token.strip())
 else:
-    print("❌ No token provided. Ngrok tunnel will likely fail.")
+    print("[WARN] No token provided. Ngrok tunnel will likely fail.")
 
 # Write logs to a file to prevent stdout pipe buffer from filling up and freezing the server
 log_file = open(f"{REPO_DIR}/ai-service/server.log", "w")
@@ -159,7 +159,7 @@ server = subprocess.Popen(
     stderr=subprocess.STDOUT,
 )
 
-print("⏳ Starting FastAPI server on Colab T4 GPU...")
+print("Starting FastAPI server on Colab T4 GPU...")
 time.sleep(6)
 
 try:
@@ -167,15 +167,15 @@ try:
     public_url = tunnel.public_url
 
     print("\n" + "═"*65)
-    print("🌐  SAMVADA AI SERVICE IS LIVE & EXPOSED TO REACT FRONTE N D!")
+    print("SAMVADA AI SERVICE IS LIVE & EXPOSED TO REACT FRONTEND")
     print("═"*65)
-    print(f"\n  FastAPI Public URL → {public_url}")
-    print(f"  Interactive Docs   → {public_url}/docs")
-    print(f"  Health Check Status→ {public_url}/health")
-    print(f"  WebSocket URL      → {public_url.replace('https','wss')}/ws/process-audio")
+    print(f"\n  FastAPI Public URL -> {public_url}")
+    print(f"  Interactive Docs   -> {public_url}/docs")
+    print(f"  Health Check Status-> {public_url}/health")
+    print(f"  WebSocket URL      -> {public_url.replace('https','wss')}/ws/process-audio")
     print("═"*65)
 except Exception as e:
-    print("\n❌ Failed to start ngrok tunnel. Make sure your authtoken is correct.")
+    print("\n[ERROR] Failed to start ngrok tunnel. Make sure your authtoken is correct.")
     print(str(e))
 
 
@@ -203,7 +203,7 @@ var record = path => new Promise(async resolve => {
   recorder.start();
   button = document.createElement('button');
   button.onclick = () => { recorder.stop(); };
-  button.innerText = '🔴 STOP RECORDING';
+  button.innerText = 'STOP RECORDING';
   button.style = 'background: #f87171; color: white; border: none; padding: 14px 28px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; margin: 15px 0; display: block;';
   document.body.appendChild(button);
   while (recorder.state == 'recording') await sleep(100);
@@ -215,12 +215,12 @@ var record = path => new Promise(async resolve => {
 });
 """
 
-print("🎙️ SPEAK ANY ENGLISH SENTENCE TO TEST SPEECH TRANSLATION:")
+print("SPEAK ANY ENGLISH SENTENCE TO TEST SPEECH TRANSLATION:")
 display(HTML("<script>" + RECORD_JS + "</script>"))
 data = google.colab.output.eval_js("record()")
 recorded_audio_bytes = base64.b64decode(data.split(',')[1])
 
-print("\n🚀 Sending audio to FastAPI server for processing...")
+print("\nSending audio to FastAPI server for processing...")
 
 # We send the request to the local FastAPI server instead of importing the engine.
 # This prevents the notebook from loading a second copy of the AI models into VRAM!
@@ -238,25 +238,25 @@ response = requests.post(
 )
 
 if response.status_code != 200:
-    print(f"❌ Server Error: {response.status_code}\n{response.text}")
+    print(f"[ERROR] Server Error: {response.status_code}\n{response.text}")
 else:
     result = response.json()
     hindi_text = result.get("translations", {}).get("hi", "")
 
 print("\n" + "═"*65)
-print(f"📝 ORIGINAL SPOKEN TEXT [{result.get('source_language','?').upper()}]: \"{result.get('original_text','')}\"")
-print(f"🌐 TRANSLATED HINDI TEXT: \"{hindi_text}\"")
+print(f"ORIGINAL SPOKEN TEXT [{result.get('source_language','?').upper()}]: \"{result.get('original_text','')}\"")
+print(f"TRANSLATED HINDI TEXT: \"{hindi_text}\"")
 print("═"*65)
 
-print("\n🔊 3-WAY AUDIO COMPARISON:")
+print("\n3-WAY AUDIO COMPARISON:")
 
 print("\n" + "─"*65)
-print("🎤 1. YOUR ORIGINAL RECORDED VOICE")
+print("1. YOUR ORIGINAL RECORDED VOICE")
 print("─"*65)
 display(Audio(data=recorded_audio_bytes, autoplay=False))
 
 print("\n" + "─"*65)
-print("🔊 2. AI TRANSLATED VOICE (Returned from API)")
+print("2. AI TRANSLATED VOICE (Returned from API)")
 print("─"*65)
 
 audio_b64 = result.get("audio_base64")
@@ -264,11 +264,11 @@ if audio_b64:
     audio_bytes = base64.b64decode(audio_b64)
     display(Audio(data=audio_bytes, autoplay=False))
 else:
-    print("⚠️ No audio returned from API.")
+    print("[WARN] No audio returned from API.")
 
 lat = result.get("latency", {})
 print("\n" + "═"*65)
-print(f"⚡ LATENCY: STT={lat.get('asr_seconds')}s | NMT={lat.get('nmt_seconds')}s | TOTAL={lat.get('total_seconds')}s")
+print(f"LATENCY: STT={lat.get('asr_seconds')}s | NMT={lat.get('nmt_seconds')}s | TOTAL={lat.get('total_seconds')}s")
 print("═"*65)
 
 
@@ -277,4 +277,4 @@ print("═"*65)
 # ───────────────────────────────────────────────────────────────────
 # ngrok.kill()
 # server.terminate()
-# print("✅ Server stopped.")
+# print("Server stopped.")

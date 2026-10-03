@@ -46,7 +46,7 @@ const setupSocket = (httpServer) => {
   });
 
   io.on('connection', (socket) => {
-    console.log(`🔌 Socket connected: ${socket.id} (User: ${socket.user?.userId || 'recovered'})`);
+    console.log(`[SOCKET] Connected: ${socket.id} (User: ${socket.user?.userId || 'recovered'})`);
 
     // Register handlers
     meetingHandlers(io, socket);
@@ -58,7 +58,7 @@ const setupSocket = (httpServer) => {
     );
 
     socket.on('disconnect', async (reason) => {
-      console.log(`🔌 Socket disconnected: ${socket.id} (${reason})`);
+      console.log(`[SOCKET] Disconnected: ${socket.id} (${reason})`);
       
       // Cleanup participant state on disconnect
       if (socket.roomCode && socket.userId) {

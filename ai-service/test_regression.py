@@ -25,7 +25,7 @@ import math
 try:
     import requests
 except ImportError:
-    print("❌ pip install requests")
+    print("[ERROR] pip install requests")
     sys.exit(1)
 
 
@@ -53,12 +53,12 @@ def generate_wav(duration_s: float = 2.0, sample_rate: int = 16000, freq: float 
 
 def run_test(base_url: str):
     print(f"\n{'='*65}")
-    print(f"🔬 SAMVADA Regression Test")
+    print(f"SAMVADA Regression Test")
     print(f"   AI Service: {base_url}")
     print(f"{'='*65}\n")
 
     # 1. Health check
-    print("1️⃣  Health check...")
+    print("[1/3] Health check...")
     try:
         r = requests.get(f"{base_url}/health", headers={"ngrok-skip-browser-warning": "true"}, timeout=10)
         health = r.json()
@@ -68,11 +68,11 @@ def run_test(base_url: str):
         print(f"   TTS:     {health.get('tts_engine')}")
         print(f"   Device:  {health.get('device')}")
     except Exception as e:
-        print(f"   ❌ Health check failed: {e}")
+        print(f"   [ERROR] Health check failed: {e}")
         return
 
     # 2. Send test audio
-    print("\n2️⃣  Sending test audio (2s WAV tone → EN→HI)...")
+    print("\n[2/3] Sending test audio (2s WAV tone -> EN->HI)...")
     wav_bytes = generate_wav(duration_s=2.0)
 
     files = {"audio": ("test.wav", wav_bytes, "audio/wav")}
@@ -98,17 +98,17 @@ def run_test(base_url: str):
         wall_time = round(time.time() - t0, 3)
         result = r.json()
     except Exception as e:
-        print(f"   ❌ Request failed: {e}")
+        print(f"   [ERROR] Request failed: {e}")
         return
 
     # 3. Print results
-    print(f"\n3️⃣  Results:")
+    print(f"\n[3/3] Results:")
     print(f"   STT text:     \"{result.get('original_text', '')}\"")
     print(f"   Source lang:   {result.get('source_language', '?')}")
     print(f"   Hindi text:   \"{result.get('translations', {}).get('hi', '')}\"")
 
     lat = result.get("latency", {})
-    print(f"\n   ⚡ Latency:")
+    print(f"\n   Latency Metrics:")
     print(f"      STT:   {lat.get('asr_seconds', '?')}s")
     print(f"      NMT:   {lat.get('nmt_seconds', '?')}s")
     print(f"      TTS:   {lat.get('tts_seconds', '?')}s")
@@ -116,10 +116,10 @@ def run_test(base_url: str):
     print(f"      Wall:  {wall_time}s (includes network)")
 
     has_audio = bool(result.get("audio_translations", {}).get("hi", {}).get("audio_base64"))
-    print(f"\n   🔈 Hindi audio: {'✅ Present' if has_audio else '❌ Missing'}")
+    print(f"\n   Hindi audio: {'Present' if has_audio else 'Missing'}")
 
     if result.get("error"):
-        print(f"\n   ⚠️  Error: {result['error'][:200]}")
+        print(f"\n   [ERROR] Error: {result['error'][:200]}")
 
     # 4. Save baseline
     baseline = {
@@ -137,7 +137,7 @@ def run_test(base_url: str):
     out_path = os.path.join(os.path.dirname(__file__), "regression_baseline.json")
     with open(out_path, "w") as f:
         json.dump(baseline, f, indent=2)
-    print(f"\n   💾 Baseline saved to: {out_path}")
+    print(f"\n   Baseline saved to: {out_path}")
     print(f"{'='*65}\n")
 
 
