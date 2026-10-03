@@ -5,7 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+<<<<<<< HEAD
     "tunnel": ".\\cloudflared.cmd tunnel --protocol http2 --edge-ip-version 4 --url http://localhost:5173",
+=======
+    "tunnel": ".\\cloudflared.cmd tunnel --protocol http2 --edge-ip-version 4 --url http://127.0.0.1:5173",
+    "tunnel:ngrok": ".\\ngrok.cmd http 5173",
+>>>>>>> a39d01a83a1d6a0c0bc19628be3f302316186f0e
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
