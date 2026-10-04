@@ -8,9 +8,9 @@ import { handleAudioChunk, unregisterParticipant } from '../translation/orchestr
 const setupSocket = (httpServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: '*',   // Allow any origin — required for ngrok + cross-device testing
+      origin: process.env.CLIENT_URL || '*',   // Production: Vercel URL; Dev: any origin
       methods: ['GET', 'POST'],
-      credentials: false,
+      credentials: true,
     },
     maxHttpBufferSize: 2e6, // 2MB — enough for audio chunks (~50-200KB each)
 

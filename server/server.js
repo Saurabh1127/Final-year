@@ -20,9 +20,14 @@ const server = http.createServer(app);
 
 // Middleware
 app.use(helmet());
+
+const allowedOrigins = process.env.CLIENT_URL
+  ? [process.env.CLIENT_URL]   // Production: only allow Vercel frontend
+  : ['*'];                     // Local dev: allow any origin
+
 app.use(cors({
-  origin: '*',   // Allow any origin — required for ngrok + cross-device testing
-  credentials: false,
+  origin: process.env.CLIENT_URL || '*',
+  credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
 

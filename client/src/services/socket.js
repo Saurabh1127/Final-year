@@ -9,11 +9,12 @@ export const getSocket = () => {
   if (!socket) {
     socket = io(SOCKET_URL, {
       autoConnect: false,
+      withCredentials: true,
 
-      // ── Transport: websocket only (skip polling upgrade dance) ──────
-      // Using both ['websocket', 'polling'] causes an extra HTTP round-trip
-      // for the upgrade. Over ngrok this adds latency and can drop the connection.
-      transports: ['websocket'],
+      // ── Transport: start with polling, upgrade to websocket ─────────
+      // Pure websocket-only can fail behind some Railway/Vercel proxies.
+      // Let Engine.IO negotiate the upgrade automatically.
+      transports: ['polling', 'websocket'],
 
       // ── Reconnection strategy (like Zoom/Meet) ─────────────────────
       reconnection: true,
