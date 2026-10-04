@@ -1,7 +1,10 @@
 import { io } from 'socket.io-client';
 
-// Connect directly to backend URL if specified in .env, otherwise fallback to same-origin proxy
-const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL || '';
+// In production (Vercel), VITE_API_URL must point to the Railway backend.
+// In dev, it falls back to '' which connects to same-origin (via Vite proxy).
+const SOCKET_URL = import.meta.env.VITE_API_URL || '';
+
+console.log('[SOCKET] URL:', SOCKET_URL || '(using dev proxy / same-origin)');
 
 let socket = null;
 

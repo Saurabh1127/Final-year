@@ -1,14 +1,17 @@
 import axios from 'axios';
 
-// Connect directly to backend URL if specified in .env, otherwise fallback to /api proxy
-const backendBase = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL;
-const API_URL = backendBase ? `${backendBase.replace(/\/$/, '')}/api` : '/api';
+// In production (Vercel), VITE_API_URL must point to the Railway backend.
+// In dev, it falls back to '' which uses the Vite proxy.
+const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_URL = `${API_BASE.replace(/\/$/, '')}/api`;
+
+console.log('[API] Base URL:', API_BASE || '(using dev proxy)');
+console.log('[API] Full URL:', API_URL);
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
   },
 });
 

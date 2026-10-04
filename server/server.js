@@ -19,7 +19,11 @@ const app = express();
 const server = http.createServer(app);
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  // Relax cross-origin policies so the Vercel frontend can call this API
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginOpenerPolicy: { policy: 'unsafe-none' },
+}));
 
 const allowedOrigins = process.env.CLIENT_URL
   ? [process.env.CLIENT_URL]   // Production: only allow Vercel frontend
